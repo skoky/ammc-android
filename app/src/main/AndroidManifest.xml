@@ -27,7 +27,10 @@
         <activity
             android:name=".ConnectActivity"
             android:label="@string/title_activity_connect"
-            android:parentActivityName=".MainActivity"/>
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings" />
     </application>
 
 </manifest>
