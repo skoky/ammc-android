@@ -1,4 +1,4 @@
-package skoky.com.ammc
+package com.skoky
 
 import android.annotation.TargetApi
 import android.content.Context
@@ -16,7 +16,7 @@ import android.preference.PreferenceManager
 import android.preference.RingtonePreference
 import android.text.TextUtils
 import android.view.MenuItem
-
+import com.skoky.R
 /**
  * A [PreferenceActivity] that presents a set of application settings. On
  * handset devices, settings are presented as a single list. On tablets,

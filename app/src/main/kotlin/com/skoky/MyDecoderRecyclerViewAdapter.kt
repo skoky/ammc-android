@@ -1,4 +1,4 @@
-package skoky.com.ammc
+package com.skoky
 
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import android.widget.TextView
 
 
-import skoky.com.ammc.DecodersListFragment.OnListFragmentInteractionListener
-import skoky.com.ammc.dummy.DummyContent.DummyItem
+import com.skoky.DecodersListFragment.OnListFragmentInteractionListener
+import com.skoky.dummy.DummyContent.DummyItem
 
 import kotlinx.android.synthetic.main.fragment_decoder.view.*
 

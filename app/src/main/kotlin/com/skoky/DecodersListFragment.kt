@@ -1,4 +1,4 @@
-package skoky.com.ammc
+package com.skoky
 
 import android.app.Fragment
 import android.content.Context
@@ -10,8 +10,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 
-import skoky.com.ammc.dummy.DummyContent
-import skoky.com.ammc.dummy.DummyContent.DummyItem
+import com.skoky.dummy.DummyContent
+import com.skoky.dummy.DummyContent.DummyItem
 
 /**
  * A fragment representing a list of Items.

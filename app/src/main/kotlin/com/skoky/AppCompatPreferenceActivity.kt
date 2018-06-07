@@ -1,4 +1,4 @@
-package skoky.com.ammc
+package com.skoky
 
 import android.content.res.Configuration
 import android.os.Bundle

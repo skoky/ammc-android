@@ -1,4 +1,4 @@
-package skoky.com.ammc;
+package com.skoky;
 
 import org.junit.Test;
 

@@ -1,12 +1,10 @@
-package skoky.com.ammc
+package com.skoky
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.TargetApi
 import android.support.v7.app.AppCompatActivity
-
 import android.os.AsyncTask
-
 import android.os.Build
 import android.os.Bundle
 import android.provider.ContactsContract
@@ -42,7 +40,7 @@ class ConnectActivity : AppCompatActivity() {
         //mAddress = findViewById(R.id.txt_address) as AutoCompleteTextView
 
         mPortView = findViewById(R.id.txt_port) as EditText
-        mPortView!!.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, keyEvent ->
+        mPortView!!.setOnEditorActionListener(TextView.OnEditorActionListener { _, id, _ ->
             if (id == R.id.login || id == EditorInfo.IME_NULL) {
                 attemptLogin()
                 return@OnEditorActionListener true

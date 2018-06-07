@@ -1,4 +1,4 @@
-package skoky.com.ammc
+package com.skoky
 
 import android.app.Fragment
 import android.content.Intent
@@ -16,7 +16,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import org.jetbrains.anko.toast
-import skoky.com.ammc.dummy.DummyContent
+import com.skoky.dummy.DummyContent
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, DecodersListFragment.OnListFragmentInteractionListener {
     override fun onListFragmentInteraction(item: DummyContent.DummyItem?) {
@@ -80,7 +80,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         } else super.onOptionsItemSelected(item)
 
     }
-
 
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
