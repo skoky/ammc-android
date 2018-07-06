@@ -11,19 +11,30 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
+        android:background="@drawable/rounded"
         android:minHeight="100dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:background="@drawable/rounded">
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/decodersStatus"
+            android:id="@+id/decodersFound"
+            style="@style/amm_text_white"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Querying decoders"
-            style="@style/amm_text_white"
-            android:padding="10dp"/>
+            android:padding="10dp"
+            android:text="Decoders: 0" />
+
+        <ProgressBar
+            android:layout_width="61dp"
+            android:layout_height="41dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="8dp"
+            android:gravity="right"
+            android:indeterminate="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
     </android.support.constraint.ConstraintLayout>
 
     <android.support.constraint.ConstraintLayout
@@ -31,18 +42,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
+        android:background="@drawable/rounded"
         android:minHeight="200dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
-        android:background="@drawable/rounded">
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout">
 
         <TextView
+            style="@style/amm_text_white"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Single mode"
-            style="@style/amm_text_white"
-            android:padding="10dp"/>
+            android:padding="10dp"
+            android:text="Single mode" />
 
     </android.support.constraint.ConstraintLayout>
 
@@ -51,19 +62,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
+        android:background="@drawable/rounded"
         android:minHeight="200dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout3"
-        android:background="@drawable/rounded">
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout3">
 
         <TextView
+            style="@style/amm_text_white"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Racing mode"
-            style="@style/amm_text_white"
-            android:padding="10dp"/>
+            android:padding="10dp"
+            android:text="Racing mode" />
 
     </android.support.constraint.ConstraintLayout>
 

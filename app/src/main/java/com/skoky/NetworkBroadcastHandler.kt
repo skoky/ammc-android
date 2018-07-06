@@ -12,7 +12,7 @@ object NetworkBroadcastHandler {
     private const val TAG = "NetworkBroadcastHandler"
     private const val INCOMING_PORT = 5303
 
-    fun receiveBroadcastData(c: Context) {
+    fun receiveBroadcastData(c: Context, handler: (ByteArray) -> Unit) {
 
         Log.w(TAG, "Starting broadcast listener")
         val incomingBuffer = ByteArray(1024)
@@ -32,11 +32,8 @@ object NetworkBroadcastHandler {
                         val data = incomingPacket.data
                         Log.w(TAG, "Received data length ${incomingPacket.length}")
 
-                        val intent = Intent()
-                        intent.action = "com.skoky.decoder.broadcast"
-                        intent.putExtra("data", data.copyOf(incomingPacket.length))
-                        c.sendBroadcast(intent)
-                        Log.w(TAG,"Broadcast sent $intent")
+                        data?.let { handler(it.copyOf(incomingPacket.length)) }
+
                     }
                 } catch (e: Exception) {
                     Log.w(TAG, "Broadcast socket closed $e")

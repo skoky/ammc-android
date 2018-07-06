@@ -36,9 +36,6 @@ class MainActivity : AppCompatActivity(), StartupFragment.OnListFragmentInteract
         Log.d(TAG, "Clicked $item")
     }
 
-    var decoderService: DecoderService? = null
-    var isBound = false
-
     private var ambToConnectTcpIp: String? = null
     private lateinit var app: MyApp
     private lateinit var mDrawerLayout: DrawerLayout
@@ -92,7 +89,7 @@ class MainActivity : AppCompatActivity(), StartupFragment.OnListFragmentInteract
         fragmentTransaction.replace(R.id.screen_container, fr)
         fragmentTransaction.commit()
 
-        Log.w(TAG,"Binding service")
+        Log.w(TAG, "Binding service")
         val intent = Intent(this, DecoderService::class.java)
         bindService(intent, decoderServiceConnection, Context.BIND_AUTO_CREATE)
 
@@ -106,18 +103,19 @@ class MainActivity : AppCompatActivity(), StartupFragment.OnListFragmentInteract
     private val decoderServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName,
                                         service: IBinder) {
+
             val binder = service as DecoderService.MyLocalBinder
-            decoderService = binder.getService()
-            isBound = true
-            Log.d(TAG, "Service -> " + decoderService!!.connectDecoder("aDecoder"))
+            app.decoderService = binder.getService()
 
-            decoderService!!.listenOnDecodersBroadcasts()
-            Log.w(TAG, "Decoder service bound")
-
+            app.decoderService?.let {
+                Log.w(TAG, "Decoder service bound")
+                Log.d(TAG, "Service -> " + it.connectDecoder("aDecoder"))
+                it.listenOnDecodersBroadcasts()
+            }
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
-            isBound = false
+            app.decoderService = null
         }
     }
 

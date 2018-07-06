@@ -3,6 +3,7 @@ package com.skoky
 import android.app.Application
 import android.os.PowerManager
 import com.skoky.MyApp.Companion.cachedApplicationContext
+import com.skoky.services.DecoderService
 import com.skoky.timing.data.DatabaseHelper
 import com.skoky.watchdogs.Watchdog
 
@@ -12,6 +13,9 @@ import java.lang.ref.WeakReference
  * Called automatically when you base your application on the AngApplication in your AndroidManifest.xml
  */
 class MyApp : Application() {
+
+    var decoderService : DecoderService? = null
+
     var wb: Watchdog? = null
     var isRaceRunning = false
     lateinit var dbHelper: DatabaseHelper

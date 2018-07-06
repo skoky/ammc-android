@@ -3,15 +3,16 @@ package com.skoky.fragment
 import android.content.IntentFilter
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.util.JsonReader
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.fragment.content.StartupContent.DummyItem
 import com.skoky.services.DecodeBroadcastReceiver
+import com.skoky.services.DecoderService
 import eu.plib.Parser
 import org.json.JSONObject
 
@@ -23,8 +24,10 @@ class StartupFragment : Fragment() {
 
     var lastMessageFromDecoder: ByteArray? = null
     var ds: TextView? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val app = activity!!.application as MyApp
 
         arguments?.let {
             columnCount = it.getInt(ARG_COLUMN_COUNT)
@@ -32,13 +35,13 @@ class StartupFragment : Fragment() {
 
         val receiver = DecodeBroadcastReceiver()
         receiver.setHandler { data ->
-            Log.w(TAG, "Received ${data}")
-            val parsed = Parser.decode(data)
-            val json = JSONObject(parsed)
-            val decoderId = json.get("decoderId") as String
-            val msg = "${parsed}"
-            lastMessageFromDecoder = data
-            ds?.let { it.text = "Decoder: $decoderId" }
+            app.decoderService?.let {
+
+                val decodersSize = it.getDecoders().size
+                lastMessageFromDecoder = data
+                ds?.let { ds -> ds.text = "Decoder: $decodersSize" }
+
+            }
 
         }
         context!!.registerReceiver(receiver, IntentFilter("com.skoky.decoder.broadcast"))
@@ -48,7 +51,7 @@ class StartupFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
 
         val view = inflater.inflate(R.layout.main_content, container, false)
-        ds = view.findViewById<TextView>(R.id.decodersStatus)
+        ds = view.findViewById<TextView>(R.id.decodersFound)
 
         return view
     }

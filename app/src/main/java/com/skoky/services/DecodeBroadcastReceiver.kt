@@ -5,9 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 
-
 class DecodeBroadcastReceiver() : BroadcastReceiver() {
-
 
     private var handler: (ByteArray) -> Unit = {}
 
@@ -21,6 +19,7 @@ class DecodeBroadcastReceiver() : BroadcastReceiver() {
                 Log.w(TAG, "Received something ${d.size}")
                 handler(d)
             }
+            handler(ByteArray(0))
         }
     }
 
