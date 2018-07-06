@@ -8,7 +8,7 @@ android {
     buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId "com.skoky"
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 27
         versionCode 42
         versionName "2.0"

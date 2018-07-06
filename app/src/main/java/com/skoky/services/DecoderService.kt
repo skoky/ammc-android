@@ -6,17 +6,22 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.support.annotation.RequiresApi
+import android.support.v7.util.SortedList
 import android.util.Log
 import com.skoky.NetworkBroadcastHandler
 import eu.plib.Parser
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.toast
+import org.jetbrains.anko.uiThread
 import org.json.JSONObject
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
+import java.net.Socket
+import java.nio.ByteBuffer
 import javax.sql.DataSource
 
-data class Decoder(val id: String, var ipAddress : String? = null) {
+data class Decoder(val id: String, var ipAddress: String? = null, var decoderType: String? = null, var connection: Socket? = null) {
     override fun equals(other: Any?): Boolean {
         return id == (other as? Decoder)?.id
     }
@@ -24,22 +29,90 @@ data class Decoder(val id: String, var ipAddress : String? = null) {
 
 class DecoderService : Service() {
 
+    private var decoders = mutableListOf<Decoder>(Decoder(id = "1111", decoderType = "TranX", ipAddress = "192.168.0.231"))
+
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "Created")
-    }
 
-    private val decoders = mutableListOf<Decoder>()
+        decoders.sortedWith(compareBy({ it.id }, { it.id }))
+    }
 
     fun listenOnDecodersBroadcasts() {
 
         doAsync {
+            Thread.sleep(2000)
+            sendBroadcast()
+
             NetworkBroadcastHandler.receiveBroadcastData() { processMsg(it) }
         }
     }
 
     fun getDecoders(): List<Decoder> {
         return decoders.toList()
+    }
+
+    fun connectOrDisconnectFirstDecoder() {
+        if (decoders.isEmpty()) return
+
+        val decoder = decoders.first()
+
+        if (decoder.connection == null) {
+            doAsync {
+                try {
+                    val socket = Socket(decoder.ipAddress, 5403)
+                    decoder.connection = socket
+                    decoders.remove(decoder)
+                    decoders.add(decoder)
+                    Log.i(TAG, "Decoder $decoder connected")
+                    sendBroadcast()
+
+                    doAsync {
+                        listenOnConnection(socket, decoder)
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error connecting decoder", e)
+                    uiThread {
+                        toast("Connection not possible")
+                    }
+                }
+            }
+        } else {
+            try {
+                decoder.connection?.let { it.close() }
+                decoder.connection = null
+                decoders.remove(decoder)
+                decoders.add(decoder)
+
+                sendBroadcast()
+            } catch (e: Exception) {
+                Log.w(TAG, "Unable to disconnect decoder $decoder", e)
+            }
+        }
+    }
+
+    private fun listenOnConnection(socket: Socket, decoder: Decoder) {
+        val buffer = ByteArray(1024)
+        try {
+            var read = 0
+            while (socket.isBound && read != -1 ) {
+                socket.getInputStream()?.let {
+                    read = it.read(buffer)
+                    Log.i(TAG, "Received $read bytes")
+                }
+                sendBroadcast()
+            }
+        } catch (e: Exception) {
+            Log.w(TAG,"Decoder connection error $decoder", e)
+        }
+
+        decoder.connection=null
+        decoders.remove(decoder)
+        decoders.add(decoder)
+
+        Log.i(TAG, "Decoder disconnected")
+        sendBroadcast()
+
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
@@ -56,29 +129,49 @@ class DecoderService : Service() {
         }
 
         if (json.has("recordType") && decoderId != null) when (json.get("recordType")) {
-            "Status" ->
+            "Status" -> {
                 sendNetworkRequest()
+                sendVersionRequest()
+            }
             "NetworkSettings" ->
                 if (json.has("activeIPAddress") && decoderId != null) {
                     val decoder = decoders.find { it.id == decoderId }
-                    decoder?.let { d->
+                    decoder?.let { d ->
                         d.ipAddress = json.get("activeIPAddress") as? String
                         decoders.removeIf { it.id == d.id }
                         decoders.add(d)
                     }
                 }
+            "Version" ->
+                if (json.has("decoderType") && decoderId != null) {
+                    val decoder = decoders.find { it.id == decoderId }
+                    decoder?.let { d ->
+                        d.decoderType = json.get("decoderType") as? String
+                        decoders.removeIf { it.id == d.id }
+                        decoders.add(d)
+                    }
+
+                }
         }
-        Log.i(TAG,"Decoders: $decoders")
+        Log.i(TAG, "Decoders: $decoders")
         sendBroadcast()
     }
 
+    private fun sendVersionRequest() {
+        sendBroadcastMessage("{\"recordType\":\"Version\",\"emptyFields\":[\"decoderType\"],\"VERSION\":\"2\"}")
+    }
+
     private fun sendNetworkRequest() {
+        sendBroadcastMessage("{\"recordType\":\"NetworkSettings\",\"emptyFields\":[\"activeIPAddress\"],\"VERSION\":\"2\"}")
+    }
+
+    private fun sendBroadcastMessage(msg: String) {
         var socket: DatagramSocket? = null
         try {
             socket = DatagramSocket(5403)
             socket.broadcast = true
             socket.connect(InetAddress.getByName("255.255.255.255"), 5403)
-            val bytes = Parser.encode("{\"recordType\":\"NetworkSettings\",\"emptyFields\":[\"activeIPAddress\"],\"VERSION\":\"2\"}")
+            val bytes = Parser.encode(msg)
             Log.w(TAG, "Bytes size ${bytes.size}")
             socket.send(DatagramPacket(bytes, bytes.size))
         } catch (e: Exception) {

@@ -3,19 +3,18 @@ package com.skoky.fragment
 import android.content.IntentFilter
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.TextView
 import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.fragment.content.StartupContent.DummyItem
 import com.skoky.services.DecodeBroadcastReceiver
-import com.skoky.services.DecoderService
-import eu.plib.Parser
+import kotlinx.android.synthetic.main.main_content.*
 import org.jetbrains.anko.find
-import org.json.JSONObject
 
 class StartupFragment : Fragment() {
 
@@ -23,9 +22,8 @@ class StartupFragment : Fragment() {
     private var columnCount = 1
     private var listener: OnListFragmentInteractionListener? = null
 
-    var lastMessageFromDecoder: ByteArray? = null
-    var ds: TextView? = null
-    var df: TextView? = null
+    private var lastMessageFromDecoder: ByteArray? = null
+    private var decoderFound: TextView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,17 +37,39 @@ class StartupFragment : Fragment() {
         receiver.setHandler { data ->
             app.decoderService?.let {
 
-                val decodersSize = it.getDecoders().size
-                lastMessageFromDecoder = data
-                ds?.let { ds -> ds.text = "Decoder: $decodersSize" }
 
-                val d = it.getDecoders().first()
-                df?.let{
-                    it.text = "${d.id} / ${d.ipAddress}"
+                lastMessageFromDecoder = data
+
+                if (it.getDecoders().isNotEmpty()) {
+                    val d = it.getDecoders().first()
+                    val name = if (d.decoderType != null) d.decoderType else d.id
+                    if (!d.ipAddress.isNullOrEmpty()) {
+                        decoderFound!!.text = "${name} / ${d.ipAddress}"
+                    } else {
+                        decoderFound!!.text = "${name}"
+                    }
+                    progressBar2.visibility = INVISIBLE
+                    connectButton.visibility = VISIBLE
+                    moreDecodersButton.visibility = INVISIBLE
+
+                    if (d.connection != null) {
+                        connectButton.text = getString(R.string.disconnect)
+                    } else {
+                        connectButton.text = getString(R.string.connect)
+                    }
+
+                } else {
+                    decoderFound!!.text = getString(R.string.querying_decoders)
+                    progressBar2.visibility = VISIBLE
+                    connectButton.visibility = INVISIBLE
+                    moreDecodersButton.visibility = INVISIBLE
+                }
+
+                if (it.getDecoders().size > 1) {
+                    moreDecodersButton.visibility = VISIBLE
                 }
 
             }
-
         }
         context!!.registerReceiver(receiver, IntentFilter("com.skoky.decoder.broadcast"))
     }
@@ -58,8 +78,7 @@ class StartupFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
 
         val view = inflater.inflate(R.layout.main_content, container, false)
-        ds = view.findViewById<TextView>(R.id.decodersFound)
-        df = view.find<TextView>(R.id.firstDecoderId)
+        decoderFound = view.find<TextView>(R.id.firstDecoderId)
         return view
     }
 

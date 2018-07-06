@@ -99,6 +99,13 @@ class MainActivity : AppCompatActivity(), StartupFragment.OnListFragmentInteract
 //        tryReconnect()
     }
 
+    fun connectOrDisconnect(view: View) {
+        app.decoderService!!.connectOrDisconnectFirstDecoder()
+    }
+
+    fun showMoreDecoders(view: View) {
+        Log.i(TAG, "TBD")
+    }
 
     private val decoderServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName,
@@ -189,7 +196,7 @@ class MainActivity : AppCompatActivity(), StartupFragment.OnListFragmentInteract
 //    private fun connectToTcpIp(c: ConnTypeEnum) {
 //        val dialog: Dialog = Dialog(this)
 //        dialog.setContentView(R.layout.tcpipdialog)
-//        dialog.setTitle("TCP/IP address to connect")
+//        dialog.setTitle("TCP/IP address to connectOrDisconnect")
 //        dialog.findViewById<Button>(R.id.cancelConnectTcpip).setOnClickListener { dialog.dismiss() }
 //
 //        val d = dialog.findViewById<Button>(R.id.connectTcpip)

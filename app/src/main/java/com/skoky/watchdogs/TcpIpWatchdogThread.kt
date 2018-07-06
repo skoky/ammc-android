@@ -103,7 +103,7 @@ class TcpIpWatchdogThread(var a: MainActivity, addressMaybeLong: String?, privat
 //            Log.d(TAG, "AI $ai")
 //        } catch (se: SocketException) {
 //            Log.d(TAG, "Socket exception $se")
-//            msg = Message.obtain(handler, Watchdog.CONNECTION_ERROR, "Unable to connect")
+//            msg = Message.obtain(handler, Watchdog.CONNECTION_ERROR, "Unable to connectOrDisconnect")
 //            if (canRun) handler.dispatchMessage(msg)
 //        } catch (x: SocketTimeoutException) {
 //            Log.d(TAG, "Disconnected")
