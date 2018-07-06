@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:id="@id/android:list" android:background="#f8f8ff">
+
+    <TextView android:layout_height="wrap_content" android:layout_width="wrap_content"
+        android:text="Driver name:" android:id="@+id/driver_editor_name_label"
+        android:textSize="20dp" android:layout_marginTop="25dp"/>
+    <EditText android:layout_height="wrap_content" android:layout_width="fill_parent"
+        android:id="@+id/driver_editor_name" android:layout_toRightOf="@id/driver_editor_name_label"
+        android:textSize="20dp" android:maxLines="1" android:layout_marginLeft="20dp"
+        android:layout_marginTop="20dp"/>
+
+
+    <TextView android:layout_height="wrap_content" android:layout_width="wrap_content"
+        android:text="Transponder Id:" android:id="@+id/driver_editor_tid_label"
+        android:textSize="20dp" android:layout_below="@id/driver_editor_name"
+        android:layout_marginTop="20dp"/>
+    <EditText android:layout_height="wrap_content" android:layout_width="fill_parent"
+        android:id="@+id/driver_editor_tid" android:layout_toRightOf="@id/driver_editor_tid_label"
+        android:layout_below="@id/driver_editor_name" android:layout_marginTop="10dp"
+        android:textSize="20dp" android:maxLines="1" android:layout_marginLeft="20dp"/>
+
+    <Button android:layout_height="wrap_content" android:layout_width="wrap_content"
+        android:text="Add driver" android:onClick="addDriver"  android:layout_marginTop="30dp"
+        android:layout_below="@id/driver_editor_tid" android:layout_alignRight="@id/driver_editor_tid"
+        android:textSize="20dp" android:id="@+id/editOkButton" />
+
+    <Button android:layout_height="wrap_content" android:layout_width="wrap_content"  android:id="@+id/cancelEditButton"
+        android:text="Cancel editor" android:onClick="cancelEdit"  android:layout_marginTop="30dp"
+        android:layout_below="@id/driver_editor_tid" android:layout_toLeftOf="@id/editOkButton"
+        android:textSize="20dp" android:layout_marginRight="30dp"/>
+
+    <Button android:layout_height="wrap_content" android:layout_width="wrap_content"
+            android:text="Delete driver" android:onClick="deleteDriver"  android:layout_marginTop="30dp"
+            android:layout_below="@id/cancelEditButton" android:layout_alignLeft="@id/cancelEditButton"
+            android:textSize="20dp" android:layout_marginRight="30dp"/>
+
+</RelativeLayout>
+

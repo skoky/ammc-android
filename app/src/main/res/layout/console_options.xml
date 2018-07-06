@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent" android:background="#f8f8ff" >
+    <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent" android:orientation="vertical"
+            android:background="#f8f8ff" android:padding="10dp">
+
+        <Button android:layout_width="wrap_content" android:id="@+id/sendCommandButton"
+                android:layout_height="wrap_content" android:text="Send command to AMB"
+                android:paddingBottom="2dip" android:paddingTop="2dip" android:onClick="sendCommandAction"/>
+
+        <Button android:layout_width="wrap_content" android:id="@+id/sendGetAllInfoButton"
+                android:layout_height="wrap_content" android:text="Get All info from AMB"
+                android:paddingBottom="2dip" android:paddingTop="2dip" android:onClick="sendGetInfoAction"
+            android:layout_marginTop="10dp"/>
+
+        <View android:layout_width="fill_parent" android:layout_height="1dip" android:background="#FFAFDE"
+              android:paddingBottom="2dip" android:paddingTop="2dip" android:layout_marginTop="10dp"/>
+
+        <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content"
+                      android:orientation="horizontal" android:layout_marginTop="10dp">
+            <TextView android:layout_width="wrap_content" android:layout_gravity="center"
+                      android:layout_height="wrap_content" android:text="Two beeps hold off:"/>
+            <EditText android:text="" android:id="@+id/beepHoldOffText" android:layout_width="wrap_content"
+                      android:layout_height="wrap_content" android:width="100dip" android:maxLines="1"
+                      android:maxWidth="150dip" android:singleLine="true"
+                      android:layout_gravity="center" android:numeric="integer"
+                android:layout_marginLeft="10dp"></EditText>
+            <TextView android:layout_width="wrap_content" android:layout_gravity="center"
+                      android:layout_height="wrap_content" android:text="milliseconds" android:layout_marginLeft="10dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content"
+                      android:orientation="horizontal" android:layout_gravity="right" >
+
+            <Button android:layout_width="wrap_content" android:id="@+id/sendBeepCommand"
+                    android:layout_height="wrap_content" android:text="Set beep values"
+                    android:paddingBottom="2dip" android:paddingTop="2dip" android:layout_marginTop="10dp"/>
+        </LinearLayout>
+
+        <View android:layout_width="fill_parent" android:layout_height="1dip" android:background="#FFAFDE"
+              android:paddingBottom="2dip" android:paddingTop="2dip" android:layout_marginTop="10dp"/>
+
+        <include layout="@layout/setinfo"/>
+
+
+    </LinearLayout>
+</ScrollView>

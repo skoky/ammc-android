@@ -1,0 +1,13 @@
+<resources>
+
+    <style name="amm" parent="Theme.AppCompat.NoActionBar" >
+        <item name="colorPrimary">@color/amm_grey</item>
+    </style>
+
+    <style name="amm_text_white">
+        <item name="android:textColor">@color/amm_white</item>
+        <item name="android:textSize">20dp</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+</resources>

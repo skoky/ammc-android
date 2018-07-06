@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_single"
+            android:icon="@drawable/baseline_person_24px"
+            android:title="Single user timing" />
+        <item
+            android:id="@+id/nav_timing"
+            android:icon="@drawable/baseline_supervisor_account_24px"
+            android:title="Race timing" />
+        <item
+            android:id="@+id/nav_console"
+            android:icon="@drawable/baseline_view_headline_24px"
+            android:title="Decoder console mode" />
+    </group>
+</menu>
