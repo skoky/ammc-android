@@ -14,6 +14,7 @@ import com.skoky.fragment.content.StartupContent.DummyItem
 import com.skoky.services.DecodeBroadcastReceiver
 import com.skoky.services.DecoderService
 import eu.plib.Parser
+import org.jetbrains.anko.find
 import org.json.JSONObject
 
 class StartupFragment : Fragment() {
@@ -24,6 +25,7 @@ class StartupFragment : Fragment() {
 
     var lastMessageFromDecoder: ByteArray? = null
     var ds: TextView? = null
+    var df: TextView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +43,11 @@ class StartupFragment : Fragment() {
                 lastMessageFromDecoder = data
                 ds?.let { ds -> ds.text = "Decoder: $decodersSize" }
 
+                val d = it.getDecoders().first()
+                df?.let{
+                    it.text = "${d.id} / ${d.ipAddress}"
+                }
+
             }
 
         }
@@ -52,7 +59,7 @@ class StartupFragment : Fragment() {
 
         val view = inflater.inflate(R.layout.main_content, container, false)
         ds = view.findViewById<TextView>(R.id.decodersFound)
-
+        df = view.find<TextView>(R.id.firstDecoderId)
         return view
     }
 

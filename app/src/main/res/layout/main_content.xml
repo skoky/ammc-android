@@ -17,14 +17,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/decodersFound"
-            style="@style/amm_text_white"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:text="Decoders: 0" />
-
         <ProgressBar
             android:layout_width="61dp"
             android:layout_height="41dp"
@@ -34,6 +26,25 @@
             android:indeterminate="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/decodersFound"
+            style="@style/amm_text_white"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="Decoders: 0" />
+
+        <TextView
+            android:id="@+id/firstDecoderId"
+            style="@style/amm_text_white"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:padding="10dp"
+            android:text=".........................."
+            app:layout_constraintTop_toBottomOf="@+id/decodersFound" />
+
 
     </android.support.constraint.ConstraintLayout>
 

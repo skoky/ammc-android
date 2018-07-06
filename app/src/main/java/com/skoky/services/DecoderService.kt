@@ -3,14 +3,20 @@ package com.skoky.services
 import android.app.Service
 import android.content.Intent
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
+import android.support.annotation.RequiresApi
 import android.util.Log
 import com.skoky.NetworkBroadcastHandler
 import eu.plib.Parser
 import org.jetbrains.anko.doAsync
 import org.json.JSONObject
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
+import javax.sql.DataSource
 
-data class Decoder(val id: String) {
+data class Decoder(val id: String, var ipAddress : String? = null) {
     override fun equals(other: Any?): Boolean {
         return id == (other as? Decoder)?.id
     }
@@ -28,7 +34,7 @@ class DecoderService : Service() {
     fun listenOnDecodersBroadcasts() {
 
         doAsync {
-            NetworkBroadcastHandler.receiveBroadcastData(applicationContext) { processMsg(it) }
+            NetworkBroadcastHandler.receiveBroadcastData() { processMsg(it) }
         }
     }
 
@@ -36,15 +42,49 @@ class DecoderService : Service() {
         return decoders.toList()
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     private fun processMsg(msgB: ByteArray) {
-        Log.w(TAG,"Data received: ${msgB.size}")
+        Log.w(TAG, "Data received: ${msgB.size}")
         val msg = Parser.decode(msgB)
         val json = JSONObject(msg)
+
+        var decoderId: String? = null
         if (json.has("decoderId")) {
-            val decoderId = json.get("decoderId") as String
+            decoderId = json.get("decoderId") as String
             val d = Decoder(decoderId)
             if (!decoders.contains(d)) decoders.add(d)
-            sendBroadcast()
+        }
+
+        if (json.has("recordType") && decoderId != null) when (json.get("recordType")) {
+            "Status" ->
+                sendNetworkRequest()
+            "NetworkSettings" ->
+                if (json.has("activeIPAddress") && decoderId != null) {
+                    val decoder = decoders.find { it.id == decoderId }
+                    decoder?.let { d->
+                        d.ipAddress = json.get("activeIPAddress") as? String
+                        decoders.removeIf { it.id == d.id }
+                        decoders.add(d)
+                    }
+                }
+        }
+        Log.i(TAG,"Decoders: $decoders")
+        sendBroadcast()
+    }
+
+    private fun sendNetworkRequest() {
+        var socket: DatagramSocket? = null
+        try {
+            socket = DatagramSocket(5403)
+            socket.broadcast = true
+            socket.connect(InetAddress.getByName("255.255.255.255"), 5403)
+            val bytes = Parser.encode("{\"recordType\":\"NetworkSettings\",\"emptyFields\":[\"activeIPAddress\"],\"VERSION\":\"2\"}")
+            Log.w(TAG, "Bytes size ${bytes.size}")
+            socket.send(DatagramPacket(bytes, bytes.size))
+        } catch (e: Exception) {
+            Log.w(TAG, "Error $e", e)
+        } finally {
+            socket?.close()
         }
     }
 
@@ -52,7 +92,7 @@ class DecoderService : Service() {
         val intent = Intent()
         intent.action = "com.skoky.decoder.broadcast"
         applicationContext.sendBroadcast(intent)
-        Log.w(TAG,"Broadcast sent $intent")
+        Log.w(TAG, "Broadcast sent $intent")
 
     }
 

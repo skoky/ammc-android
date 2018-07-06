@@ -12,7 +12,7 @@ object NetworkBroadcastHandler {
     private const val TAG = "NetworkBroadcastHandler"
     private const val INCOMING_PORT = 5303
 
-    fun receiveBroadcastData(c: Context, handler: (ByteArray) -> Unit) {
+    fun receiveBroadcastData(handler: (ByteArray) -> Unit) {
 
         Log.w(TAG, "Starting broadcast listener")
         val incomingBuffer = ByteArray(1024)
