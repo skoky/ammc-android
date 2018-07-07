@@ -4,4 +4,10 @@
     <string name="show_more_decoders">More decoders >>></string>
     <string name="connect">Connect</string>
     <string name="disconnect">Disconnect</string>
+    <string name="decoder_console_mode">Decoder console mode</string>
+    <string name="racing_mode">Racing mode</string>
+    <string name="training_mode">Training mode</string>
+    <string name="training_mode_text">Tracks your transponder times from decoder during training</string>
+    <string name="label_open"><![CDATA[Open >>>]]></string>
+    <string name="racing_mode_text">Tracks all racers from decoders and show results in timing table</string>
 </resources>

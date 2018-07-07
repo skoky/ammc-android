@@ -4,14 +4,29 @@
         <item
             android:id="@+id/nav_single"
             android:icon="@drawable/baseline_person_24px"
-            android:title="Single user timing" />
+            android:title="@string/training_mode" />
         <item
             android:id="@+id/nav_timing"
             android:icon="@drawable/baseline_supervisor_account_24px"
-            android:title="Race timing" />
+            android:title="@string/racing_mode" />
         <item
             android:id="@+id/nav_console"
             android:icon="@drawable/baseline_view_headline_24px"
-            android:title="Decoder console mode" />
+            android:title="@string/decoder_console_mode" />
+
+    </group>
+
+
+    <group android:id="@+id/grp1" android:checkableBehavior="single" >
+        <item
+            android:id="@+id/nav_connect"
+            android:icon="@drawable/baseline_compare_arrows_24px"
+            android:title="Connect decoder" />
+
+        <item
+            android:id="@+id/nav_connection_help"
+            android:icon="@drawable/baseline_help_outline_24px"
+            android:title="Help connecting" />
+
     </group>
 </menu>

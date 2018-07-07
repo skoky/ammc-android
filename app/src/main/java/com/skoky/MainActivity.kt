@@ -107,6 +107,14 @@ class MainActivity : AppCompatActivity(), StartupFragment.OnListFragmentInteract
         Log.i(TAG, "TBD")
     }
 
+    fun openRacingMode(view: View) {
+
+    }
+
+    fun openTrainingMode(view: View) {
+
+    }
+
     private val decoderServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName,
                                         service: IBinder) {
