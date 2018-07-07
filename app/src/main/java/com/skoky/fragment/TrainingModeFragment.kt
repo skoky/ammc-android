@@ -11,6 +11,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.skoky.R
 import com.skoky.fragment.content.TrainingModeModel
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 
 
 class TrainingModeFragment : Fragment() {
@@ -32,8 +34,22 @@ class TrainingModeFragment : Fragment() {
                     else -> GridLayoutManager(context, columnCount)
                 }
                 adapter = TrainingModeRecyclerViewAdapter(TrainingModeModel.ITEMS, listener)
+
+                doAsync {
+                    var i = 0
+                    while(i<10) {
+                        uiThread {
+                            (adapter as TrainingModeRecyclerViewAdapter).addRecord(TrainingModeModel.Lap(i,2L,3, 4f))
+                            adapter.notifyDataSetChanged()
+                        }
+                        Thread.sleep(2000)
+                        i++
+                    }
+                }
             }
         }
+
+
         return view
     }
 

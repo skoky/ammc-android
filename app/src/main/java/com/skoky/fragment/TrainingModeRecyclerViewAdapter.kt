@@ -12,12 +12,13 @@ import com.skoky.fragment.content.TrainingModeModel
 
 import kotlinx.android.synthetic.main.fragment_trainingmode.view.*
 
-class TrainingModeRecyclerViewAdapter(private val mValues: List<TrainingModeModel.Lap>, private val mListener: OnListFragmentInteractionListener?)
+class TrainingModeRecyclerViewAdapter(private val mValues: MutableList<TrainingModeModel.Lap>, private val mListener: OnListFragmentInteractionListener?)
     : RecyclerView.Adapter<TrainingModeRecyclerViewAdapter.ViewHolder>() {
 
     private val mOnClickListener: View.OnClickListener
 
     init {
+        mValues.sortByDescending { it.number }
         mOnClickListener = View.OnClickListener { v ->
             val item = v.tag as TrainingModeModel.Lap
             // Notify the active callbacks interface (the activity, if the fragment is attached to
@@ -59,5 +60,10 @@ class TrainingModeRecyclerViewAdapter(private val mValues: List<TrainingModeMode
         val mLapTime: TextView = mView.item_time
         val mDiff: TextView = mView.item_diff
 
+    }
+
+    fun addRecord(lap: TrainingModeModel.Lap) {
+        mValues.add(lap)
+        mValues.sortByDescending { it.number }
     }
 }
