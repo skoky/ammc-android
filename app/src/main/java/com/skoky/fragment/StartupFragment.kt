@@ -11,7 +11,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.skoky.MyApp
 import com.skoky.R
-import com.skoky.services.DecodeBroadcastReceiver
+import com.skoky.services.DecoderBroadcastReceiver
 import kotlinx.android.synthetic.main.startup_content.*
 import org.jetbrains.anko.find
 
@@ -22,7 +22,7 @@ class StartupFragment : Fragment() {
 
     private var lastMessageFromDecoder: ByteArray? = null
     private var decoderFound: TextView? = null
-    private lateinit var receiver : DecodeBroadcastReceiver
+    private lateinit var receiver : DecoderBroadcastReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,7 +32,7 @@ class StartupFragment : Fragment() {
             columnCount = it.getInt(ARG_COLUMN_COUNT)
         }
 
-        receiver = DecodeBroadcastReceiver()
+        receiver = DecoderBroadcastReceiver()
         receiver.setHandler { data ->
             app.decoderService?.let {
 

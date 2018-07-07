@@ -1,18 +1,20 @@
 package com.skoky.fragment
 
 import android.content.Context
+import android.content.IntentFilter
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.skoky.R
-import com.skoky.fragment.content.TrainingModeModel
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
+import com.skoky.fragment.content.Lap
+import com.skoky.services.PassingBroadcastReceiver
+import org.json.JSONObject
 
 
 class TrainingModeFragment : Fragment() {
@@ -20,6 +22,7 @@ class TrainingModeFragment : Fragment() {
     private var columnCount = 1
 
     private var listener: OnListFragmentInteractionListener? = null
+    private lateinit var receiver: PassingBroadcastReceiver
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -33,19 +36,30 @@ class TrainingModeFragment : Fragment() {
                     columnCount <= 1 -> LinearLayoutManager(context)
                     else -> GridLayoutManager(context, columnCount)
                 }
-                adapter = TrainingModeRecyclerViewAdapter(TrainingModeModel.ITEMS, listener)
+                adapter = TrainingModeRecyclerViewAdapter(mutableListOf(), listener)
 
-                doAsync {
-                    var i = 0
-                    while(i<10) {
-                        uiThread {
-                            (adapter as TrainingModeRecyclerViewAdapter).addRecord(TrainingModeModel.Lap(i,2L,3, 4f))
-                            adapter.notifyDataSetChanged()
-                        }
-                        Thread.sleep(2000)
-                        i++
-                    }
+                receiver = PassingBroadcastReceiver()
+                receiver.setHandler { data ->
+                    val json = JSONObject(data)
+                    Log.i(TAG, "Received passing $data")
+                    val transponder = json.get("transponder") as Int
+                    val time = (json.get("RTC_Time") as String).toLong()
+                    (adapter as TrainingModeRecyclerViewAdapter).addRecord(transponder, time)
+                    adapter.notifyDataSetChanged()
                 }
+                context!!.registerReceiver(receiver, IntentFilter("com.skoky.decoder.broadcast.passing"))
+
+//                doAsync {
+//                    var i = 0
+//                    while(i<10) {
+//                        uiThread {
+//                            (adapter as TrainingModeRecyclerViewAdapter).addRecord(TrainingModeModel.Lap(i,2L,3, 4f))
+//                            adapter.notifyDataSetChanged()
+//                        }
+//                        Thread.sleep(2000)
+//                        i++
+//                    }
+//                }
             }
         }
 
@@ -64,32 +78,21 @@ class TrainingModeFragment : Fragment() {
 
     override fun onDetach() {
         super.onDetach()
-        listener = null
+        context?.unregisterReceiver(receiver)
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     *
-     *
-     * See the Android Training lesson
-     * [Communicating with Other Fragments](http://developer.android.com/training/basics/fragments/communicating.html)
-     * for more information.
-     */
+
     interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        fun onListFragmentInteraction(item: TrainingModeModel.Lap?)
+        fun onListFragmentInteraction(item: Lap?)
     }
 
 
     companion object {
 
-        // TODO: Customize parameter argument names
         const val ARG_COLUMN_COUNT = "column-count"
+        const val TAG = "TrainingModeFragment"
 
-        // TODO: Customize parameter initialization
         @JvmStatic
         fun newInstance(columnCount: Int) =
                 TrainingModeFragment().apply {

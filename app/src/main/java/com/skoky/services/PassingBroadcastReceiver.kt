@@ -5,25 +5,25 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 
-class DecodeBroadcastReceiver() : BroadcastReceiver() {
+class PassingBroadcastReceiver() : BroadcastReceiver() {
 
-    private var handler: (ByteArray) -> Unit = {}
+    private var handler: (String) -> Unit = {}
 
-    fun setHandler(h: (ByteArray) -> Unit) {
+    fun setHandler(h: (String) -> Unit) {
         this.handler = h
     }
     override fun onReceive(context: Context?, intent: Intent?) {
         intent?.let { i ->
-            val data = i.getByteArrayExtra("data")
+            val data = i.getStringExtra("Passing")
+
             data?.let { d ->
-                Log.w(TAG, "Received something ${d.size}")
+                Log.w(TAG, "Received passing ")
                 handler(d)
             }
-            handler(ByteArray(0))
         }
     }
 
     companion object {
-        private const val TAG = "DecodeBroadcastReceiver"
+        private const val TAG = "PassingBroadcastReceiver"
     }
 }

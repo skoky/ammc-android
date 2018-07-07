@@ -93,12 +93,17 @@ class DecoderService : Service() {
 
     private fun listenOnConnection(socket: Socket, decoder: Decoder) {
         val buffer = ByteArray(1024)
+
         try {
             var read = 0
             while (socket.isBound && read != -1 ) {
                 socket.getInputStream()?.let {
                     read = it.read(buffer)
                     Log.i(TAG, "Received $read bytes")
+                    val json = JSONObject(Parser.decode(buffer.copyOf(read)))
+                    when(json.get("recordType")) {
+                        "Passing" -> sendBroadcastPassing(json.toString())
+                    }
                 }
                 sendBroadcast()
             }
@@ -186,7 +191,14 @@ class DecoderService : Service() {
         intent.action = "com.skoky.decoder.broadcast"
         applicationContext.sendBroadcast(intent)
         Log.w(TAG, "Broadcast sent $intent")
+    }
 
+    private fun sendBroadcastPassing(jsonData: String) {
+        val intent = Intent()
+        intent.action = "com.skoky.decoder.broadcast.passing"
+        intent.putExtra("Passing",jsonData)
+        applicationContext.sendBroadcast(intent)
+        Log.w(TAG, "Broadcast passing sent $intent")
     }
 
     private val myBinder = MyLocalBinder()

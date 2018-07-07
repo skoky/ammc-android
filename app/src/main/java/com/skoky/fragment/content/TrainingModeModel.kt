@@ -1,27 +1,45 @@
 package com.skoky.fragment.content
 
-object TrainingModeModel {
+
+data class Lap(val number: Int, val time: Long, val lapTimeMs: Int, val diff: Float)
+
+class TrainingModeModel {
+
+    var lastTime = 0
+    private val allTransponders = mutableSetOf<Int>()
+    private var myTransponder: Int? = null
+
+    fun newPassing(values: List<Lap>, transponder: Int, time: Long): MutableList<Lap> {
+
+        if (allTransponders.size == 0) myTransponder = transponder
+        if (!allTransponders.contains(transponder)) allTransponders.add(transponder)
+
+        if (transponder != myTransponder) return values.toMutableList()
+
+        return if (values.isEmpty())
+            mutableListOf(Lap(1, time, 0, 0f))
+        else {
+            val sorted = values.sortedByDescending { it.number }
+
+            val lastLap = sorted.first()
+
+            val newLastTime = Lap(lastLap.number, lastLap.time,
+                    ((time - lastLap.time) / 1000).toInt(), 1f)
+
+            val nowLastLap = Lap(lastLap.number + 1, time, 0, 0f)
 
 
-    data class Lap(val number: Int, val time: Long, val lapTimeMs: Int, val diff: Float)
-
-    val ITEMS: MutableList<Lap> = mutableListOf()
-
-//    val ITEM_MAP: MutableMap<String, Lap> = HashMap()
-
-    private val COUNT = 5
-
-    init {
-        ITEMS.sortedWith(compareByDescending { it.number })
-        // Add some sample items.
-        for (i in 1..COUNT) {
-            addItem(Lap(i, i.toLong(), i*1000+i, i.toFloat()/10))
+            val x = mutableListOf<Lap>(nowLastLap, newLastTime)
+            val rest = values.drop(1)
+            x.addAll(rest)
+            return if (x.size > MAX_SIZE)
+                x.dropLast(x.size - MAX_SIZE).toMutableList()
+            else
+                x
         }
     }
 
-    private fun addItem(item: Lap) {
-        ITEMS.add(item)
-  //      ITEM_MAP.put(item.number.toString(), item)
+    companion object {
+        private const val MAX_SIZE = 5
     }
-
 }

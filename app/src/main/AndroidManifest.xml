@@ -39,7 +39,7 @@
             android:exported="true" >
         </service>
 
-        <receiver android:name=".services.DecodeBroadcastReceiver">
+        <receiver android:name=".services.DecoderBroadcastReceiver">
             <intent-filter>
                 <action android:name="com.skoky.decoder.broadcast"/>
             </intent-filter>

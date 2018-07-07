@@ -25,18 +25,17 @@ import android.widget.Toast
 import com.skoky.config.ConfigTool
 import com.skoky.fragment.StartupFragment
 import com.skoky.fragment.TrainingModeFragment
-import com.skoky.fragment.content.TrainingModeModel
+import com.skoky.fragment.content.Lap
 import com.skoky.services.DecoderService
 import com.skoky.timing.data.DatabaseHelper
 
 
 class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInteractionListener {
-    override fun onListFragmentInteraction(item: TrainingModeModel.Lap?) {
+
+    override fun onListFragmentInteraction(item: Lap?) {
         Log.w(TAG, "Interaction $item")
     }
 
-
-    private var ambToConnectTcpIp: String? = null
     private lateinit var app: MyApp
     private lateinit var mDrawerLayout: DrawerLayout
 
