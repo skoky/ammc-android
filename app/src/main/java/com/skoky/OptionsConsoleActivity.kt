@@ -75,8 +75,7 @@ class OptionsConsoleActivity : Activity() {
     }
 
     private fun send(cmd: String): Boolean {
-        val wb = (application as MyApp).wb
-        return wb?.send(cmd) ?: false
+        return false
     }
 
     private fun createDialog() {

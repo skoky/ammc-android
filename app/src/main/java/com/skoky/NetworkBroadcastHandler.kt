@@ -22,6 +22,8 @@ object NetworkBroadcastHandler {
                 socket = DatagramSocket(INCOMING_PORT)
             } catch (e: Exception) {
                 Log.i(TAG, "Unable to listen in port $INCOMING_PORT, error $e")
+                socket?.close()
+                socket = null
             }
             socket?.let { s ->
 
@@ -37,6 +39,9 @@ object NetworkBroadcastHandler {
                     }
                 } catch (e: Exception) {
                     Log.w(TAG, "Broadcast socket closed $e")
+                    socket?.close()
+                    socket = null
+
                 } finally {
                     s.let { s.close() }
                     Thread.sleep(1000)

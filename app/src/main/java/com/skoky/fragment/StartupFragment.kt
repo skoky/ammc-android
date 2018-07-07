@@ -11,19 +11,18 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.skoky.MyApp
 import com.skoky.R
-import com.skoky.fragment.content.StartupContent.DummyItem
 import com.skoky.services.DecodeBroadcastReceiver
-import kotlinx.android.synthetic.main.main_content.*
+import kotlinx.android.synthetic.main.startup_content.*
 import org.jetbrains.anko.find
 
 class StartupFragment : Fragment() {
 
     private val TAG = "StartupFragment"
     private var columnCount = 1
-    private var listener: OnListFragmentInteractionListener? = null
 
     private var lastMessageFromDecoder: ByteArray? = null
     private var decoderFound: TextView? = null
+    private lateinit var receiver : DecodeBroadcastReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +32,7 @@ class StartupFragment : Fragment() {
             columnCount = it.getInt(ARG_COLUMN_COUNT)
         }
 
-        val receiver = DecodeBroadcastReceiver()
+        receiver = DecodeBroadcastReceiver()
         receiver.setHandler { data ->
             app.decoderService?.let {
 
@@ -77,19 +76,14 @@ class StartupFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
 
-        val view = inflater.inflate(R.layout.main_content, container, false)
+        val view = inflater.inflate(R.layout.startup_content, container, false)
         decoderFound = view.find<TextView>(R.id.firstDecoderId)
         return view
     }
 
     override fun onDetach() {
         super.onDetach()
-        listener = null
-    }
-
-    interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
-        fun onListFragmentInteraction(item: DummyItem?)
+        context?.unregisterReceiver(receiver)
     }
 
     companion object {

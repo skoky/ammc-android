@@ -16,8 +16,6 @@ class MyApp : Application() {
 
     var decoderService : DecoderService? = null
 
-    var wb: Watchdog? = null
-    var isRaceRunning = false
     lateinit var dbHelper: DatabaseHelper
 
     companion object {
