@@ -13,17 +13,23 @@
     tools:listitem="@layout/fragment_trainingmode">
 
     <TextView
-        android:id="@+id/label1"
+        android:id="@+id/trainingTimeLabel"
         style="@style/amm_text_white"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
-        android:text="@string/training_mode"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="8dp"
+        android:text="0:00.000"
+        app:layout_constraintEnd_toStartOf="@+id/startStopButton"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/startStopButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="@string/start"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/training_content"
@@ -34,8 +40,23 @@
         android:layout_marginTop="8dp"
         android:scrollbars="vertical"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/label1">
+        app:layout_constraintTop_toBottomOf="@+id/startStopButton">
 
     </android.support.v7.widget.RecyclerView>
+
+    <Spinner
+        android:id="@+id/decoderIdSpinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:paddingBottom="8dp"
+        android:background="@color/amm_grey"
+        app:layout_constraintEnd_toStartOf="@+id/trainingTimeLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </android.support.constraint.ConstraintLayout>

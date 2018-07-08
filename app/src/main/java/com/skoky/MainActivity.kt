@@ -116,15 +116,15 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
     }
 
     fun openRacingMode(view: View) {
-
+        Log.i(TAG, "TBD")
     }
 
+    private lateinit var trainingFragment : TrainingModeFragment
     fun openTrainingMode(view: View) {
-        val fr: Fragment = TrainingModeFragment.newInstance(1)
+        trainingFragment = TrainingModeFragment.newInstance(1)
         val fragmentTransaction = supportFragmentManager.beginTransaction()
-        fragmentTransaction.replace(R.id.screen_container, fr)
+        fragmentTransaction.replace(R.id.screen_container, trainingFragment)
         fragmentTransaction.commit()
-
     }
 
     private val decoderServiceConnection = object : ServiceConnection {
@@ -143,23 +143,9 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
 
         override fun onServiceDisconnected(name: ComponentName) {
             app.decoderService = null
+            Log.w(TAG,"Service disconnected?")
+            finish()
         }
-    }
-
-
-    @Suppress("UNUSED_PARAMETER")
-    fun connectDialog(src: View) {
-        Log.d(TAG, "onClick: status")
-//
-//        val b = findViewById<ToggleButton>(R.id.buttonConnect)
-//        if (app.wb != null) {
-//            b.isChecked = true
-//            app.wb?.let { it.disconnect() }
-//            app.wb = null
-//        } else {
-//            b.isChecked = false
-//            openConnectDialog()
-//        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

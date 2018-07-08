@@ -10,4 +10,8 @@
         <item name="android:fontFamily">sans-serif</item>
     </style>
 
+    <style name="amm_spinner">
+        <item name="android:colorBackground">@color/amm_grey</item>
+    </style>
+
 </resources>

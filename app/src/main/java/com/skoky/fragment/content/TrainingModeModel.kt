@@ -9,7 +9,8 @@ class TrainingModeModel {
     private val allTransponders = mutableSetOf<Int>()
     private var myTransponder: Int? = null
 
-    fun newPassing(values: List<Lap>, transponder: Int, time: Long): MutableList<Lap> {
+    fun newPassing(values: List<Lap>, transponder: Int, time: Long): List<Lap> {
+
 
         if (allTransponders.size == 0) myTransponder = transponder
         if (!allTransponders.contains(transponder)) allTransponders.add(transponder)
@@ -17,25 +18,21 @@ class TrainingModeModel {
         if (transponder != myTransponder) return values.toMutableList()
 
         return if (values.isEmpty())
-            mutableListOf(Lap(1, time, 0, 0f))
+            mutableListOf(Lap(1, time, -1, 0f))
         else {
-            val sorted = values.sortedByDescending { it.number }
+            val sorted = values.sortedByDescending { it.number }.toMutableList()
 
             val lastLap = sorted.first()
 
-            val newLastTime = Lap(lastLap.number, lastLap.time,
-                    ((time - lastLap.time) / 1000).toInt(), 1f)
+            val lapTime = ((time - lastLap.time).toInt())/1000
+            val veryLastLap = Lap(lastLap.number + 1, time, lapTime, 0f)
 
-            val nowLastLap = Lap(lastLap.number + 1, time, 0, 0f)
-
-
-            val x = mutableListOf<Lap>(nowLastLap, newLastTime)
-            val rest = values.drop(1)
-            x.addAll(rest)
-            return if (x.size > MAX_SIZE)
-                x.dropLast(x.size - MAX_SIZE).toMutableList()
+            sorted.add(veryLastLap)
+            val newV =  if (sorted.size > MAX_SIZE)
+                sorted.dropLast(sorted.size - MAX_SIZE).toMutableList()
             else
-                x
+                sorted
+            return newV.sortedByDescending { it.number }
         }
     }
 

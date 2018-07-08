@@ -29,7 +29,7 @@ data class Decoder(val id: String, var ipAddress: String? = null, var decoderTyp
 
 class DecoderService : Service() {
 
-    private var decoders = mutableListOf<Decoder>(Decoder(id = "1111", decoderType = "TranX", ipAddress = "192.168.0.231"))
+    private var decoders = mutableListOf<Decoder>(Decoder(id = "1111", decoderType = "TranX", ipAddress = "192.168.0.100"))
 
     override fun onCreate() {
         super.onCreate()

@@ -4,13 +4,15 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import android.widget.TextView
 import com.skoky.R
+import com.skoky.R.id.decoderIdSpinner
 import com.skoky.fragment.TrainingModeFragment.OnListFragmentInteractionListener
 import com.skoky.fragment.content.Lap
 import com.skoky.fragment.content.TrainingModeModel
 import kotlinx.android.synthetic.main.fragment_trainingmode.view.*
-import java.text.SimpleDateFormat
 import java.util.*
 
 class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<Lap>, private val mListener: OnListFragmentInteractionListener?)
@@ -31,6 +33,7 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<Lap>, pri
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.fragment_trainingmode, parent, false)
+
         return ViewHolder(view)
     }
 
@@ -46,12 +49,14 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<Lap>, pri
             val item = mValues[position - 1]
             holder.mIdView.text = item.number.toString()
 
-            if (item.lapTimeMs==0) {
+            if (item.lapTimeMs == -1) {
                 holder.mLapTime.text = Date(item.time).toString()
+                holder.mDiff.text = ""
             } else {
                 holder.mLapTime.text = timeToText(item.lapTimeMs)
+                holder.mDiff.text = item.diff.toString()
             }
-            holder.mDiff.text = item.diff.toString()
+
 
             with(holder.mView) {
                 tag = item
@@ -65,7 +70,7 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<Lap>, pri
         val second = lapTimeMs / 1000 % 60
         val minute = lapTimeMs / (1000 * 60) // % 60
 //        val hour = lapTimeMs / (1000 * 60 * 60) % 24
-        return String.format("%d:%d.%d",minute,second,millis)
+        return String.format("%d:%d.%d", minute, second, millis)
     }
 
     override fun getItemCount(): Int = (mValues.size + 1)
@@ -76,8 +81,9 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<Lap>, pri
         val mDiff: TextView = mView.item_diff
 
     }
+
     val tmm = TrainingModeModel()
     fun addRecord(transponder: Int, time: Long) {
-        mValues = tmm.newPassing(mValues.toList(),transponder,time)
+        mValues = tmm.newPassing(mValues.toList(), transponder, time).toMutableList()
     }
 }
