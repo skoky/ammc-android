@@ -1,5 +1,6 @@
 package com.skoky.fragment
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.IntentFilter
 import android.os.Bundle
@@ -11,15 +12,18 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.Spinner
+import android.widget.TextView
 import com.skoky.R
+import com.skoky.Tools
 import com.skoky.fragment.content.Lap
 import com.skoky.fragment.content.TrainingModeModel
+import com.skoky.services.DecoderBroadcastReceiver
 import com.skoky.services.PassingBroadcastReceiver
-import kotlinx.android.synthetic.main.fragment_trainingmode_list.*
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 import org.json.JSONObject
+import java.util.concurrent.Future
 
 
 class TrainingModeFragment : Fragment() {
@@ -31,23 +35,29 @@ class TrainingModeFragment : Fragment() {
 
     private var startStopButtonM: Button? = null
 
-    private lateinit var tmm: TrainingModeModel
+    private var tmm: TrainingModeModel = TrainingModeModel()    // a dummy model with no transponder
+    val transponders = mutableListOf<String>()
+
+    private lateinit var timingContentView: RecyclerView
+
+    private lateinit var clockViewX: TextView
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_trainingmode_list, container, false)
-        val transponders = mutableListOf<String>()
 
-        val viewContent = view.findViewById<RecyclerView>(R.id.training_content)
+        clockViewX = view.findViewById<TextView>(R.id.clockView)
+        timingContentView = view.findViewById<RecyclerView>(R.id.training_content)
         // Set the adapter
-        if (viewContent is RecyclerView) {
-            with(viewContent) {
+        if (timingContentView is RecyclerView) {
+            with(timingContentView) {
                 layoutManager = when {
                     columnCount <= 1 -> LinearLayoutManager(context)
                     else -> GridLayoutManager(context, columnCount)
                 }
                 adapter = TrainingModeRecyclerViewAdapter(mutableListOf(), listener)
 
+                // view.findViewById<Spinner>(R.id.decoderIdSpinner)
                 receiver = PassingBroadcastReceiver()
                 receiver.setHandler { data ->
                     val json = JSONObject(data)
@@ -63,26 +73,77 @@ class TrainingModeFragment : Fragment() {
 
                     if (!transponders.contains(transponder.toString())) {
                         transponders.add(transponder.toString())
-                        view.findViewById<Spinner>(R.id.decoderIdSpinner).adapter = ArrayAdapter(view.context,
-                                android.R.layout.simple_list_item_1, transponders)
                     }
                 }
                 context!!.registerReceiver(receiver, IntentFilter("com.skoky.decoder.broadcast.passing"))
             }
         }
         startStopButtonM = view.findViewById<Button>(R.id.startStopButton)
-        startStopButtonM!!.setOnClickListener { doStartStop()}
+        startStopButtonM!!.setOnClickListener { doStartStop() }
+
+        val disconnectReceiver = DecoderBroadcastReceiver()
+        disconnectReceiver.setHandler { _ ->
+            AlertDialog.Builder(context).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
+
+        }
+        context!!.registerReceiver(disconnectReceiver, IntentFilter("com.skoky.decoder.broadcast.disconnected"))
 
         return view
     }
 
+    fun setSelectedTransponder(transponder: String) {
+        tmm.setSelectedTransponder(transponder)
+    }
+
     private var running = false
-    fun doStartStop() {
-        running = !running
+    private fun doStartStop() {
+
+        if (tmm.getSelectedTransponder() == null) {
+            AlertDialog.Builder(context).setMessage("Select transponder to watch").setCancelable(true)
+                    .create().show()
+            return
+        }
+
         if (running) {
-            startStopButtonM?.text = getText(R.string.stop)
-        } else {
+            running = false
+            clock.cancel(true)      // TODO calculate exaxt training time
             startStopButtonM?.text = getText(R.string.start)
+        } else {    // not running
+
+            if (timingContentView.adapter.itemCount == 1) {     // just a label, nothing to clear
+                doStart()
+            } else {
+                AlertDialog.Builder(context).setTitle("Clear results and start new training?")
+                        .setPositiveButton("Yes") { dialog, x ->
+                            dialog.cancel()
+                            doStart()
+                        }
+                        .setNegativeButton("No") { dialog, which -> dialog.cancel() }
+                        .create().show()
+            }
+        }
+
+    }
+
+    private lateinit var clock: Future<Unit>
+
+    private var trainingStartTime: Long? = null
+
+    private fun doStart() {
+        (timingContentView.adapter as TrainingModeRecyclerViewAdapter).clearResults()
+        running = true
+        startStopButtonM?.text = getText(R.string.stop)
+        trainingStartTime = System.currentTimeMillis()
+
+        clock = doAsync {
+            while (true) {
+                val timeMs = System.currentTimeMillis() - trainingStartTime!!
+                val str = Tools.millisToTimeWithMillis(timeMs)
+                uiThread {
+                    clockViewX.text = str
+                }
+                Thread.sleep(30)
+            }
         }
 
     }
@@ -109,7 +170,7 @@ class TrainingModeFragment : Fragment() {
 
     companion object {
 
-        const val ARG_COLUMN_COUNT = "column-count"
+        private const val ARG_COLUMN_COUNT = "column-count"
         const val TAG = "TrainingModeFragment"
 
         @JvmStatic

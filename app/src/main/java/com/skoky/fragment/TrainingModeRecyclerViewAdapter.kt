@@ -4,16 +4,15 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.Spinner
 import android.widget.TextView
 import com.skoky.R
-import com.skoky.R.id.decoderIdSpinner
 import com.skoky.fragment.TrainingModeFragment.OnListFragmentInteractionListener
 import com.skoky.fragment.content.Lap
 import com.skoky.fragment.content.TrainingModeModel
 import kotlinx.android.synthetic.main.fragment_trainingmode.view.*
+import org.jetbrains.anko.doAsync
 import java.util.*
+import kotlin.coroutines.experimental.coroutineContext
 
 class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<Lap>, private val mListener: OnListFragmentInteractionListener?)
     : RecyclerView.Adapter<TrainingModeRecyclerViewAdapter.ViewHolder>() {
@@ -55,6 +54,7 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<Lap>, pri
             } else {
                 holder.mLapTime.text = timeToText(item.lapTimeMs)
                 holder.mDiff.text = item.diff.toString()
+                // TODO set background color to red or green
             }
 
 
@@ -68,8 +68,7 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<Lap>, pri
     private fun timeToText(lapTimeMs: Int): String {
         val millis = lapTimeMs % 1000
         val second = lapTimeMs / 1000 % 60
-        val minute = lapTimeMs / (1000 * 60) // % 60
-//        val hour = lapTimeMs / (1000 * 60 * 60) % 24
+        val minute = lapTimeMs / (1000 * 60)
         return String.format("%d:%d.%d", minute, second, millis)
     }
 
@@ -86,4 +85,9 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<Lap>, pri
     fun addRecord(transponder: Int, time: Long) {
         mValues = tmm.newPassing(mValues.toList(), transponder, time).toMutableList()
     }
+
+    fun clearResults() {
+        mValues = mutableListOf()
+    }
+
 }

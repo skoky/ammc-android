@@ -1,5 +1,7 @@
 package com.skoky.fragment
 
+import android.app.AlertDialog
+import android.content.BroadcastReceiver
 import android.content.IntentFilter
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -13,6 +15,7 @@ import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.services.DecoderBroadcastReceiver
 import kotlinx.android.synthetic.main.startup_content.*
+import org.jetbrains.anko.AlertBuilder
 import org.jetbrains.anko.find
 
 class StartupFragment : Fragment() {
@@ -36,16 +39,15 @@ class StartupFragment : Fragment() {
         receiver.setHandler { data ->
             app.decoderService?.let {
 
-
                 lastMessageFromDecoder = data
 
                 if (it.getDecoders().isNotEmpty()) {
                     val d = it.getDecoders().first()
                     val name = if (d.decoderType != null) d.decoderType else d.id
                     if (!d.ipAddress.isNullOrEmpty()) {
-                        decoderFound!!.text = "${name} / ${d.ipAddress}"
+                        decoderFound!!.text = "$name / ${d.ipAddress}"
                     } else {
-                        decoderFound!!.text = "${name}"
+                        decoderFound!!.text = "$name"
                     }
                     progressBar2.visibility = INVISIBLE
                     connectButton.visibility = VISIBLE

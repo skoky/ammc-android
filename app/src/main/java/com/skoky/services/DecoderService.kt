@@ -29,7 +29,7 @@ data class Decoder(val id: String, var ipAddress: String? = null, var decoderTyp
 
 class DecoderService : Service() {
 
-    private var decoders = mutableListOf<Decoder>(Decoder(id = "1111", decoderType = "TranX", ipAddress = "192.168.0.100"))
+    private var decoders = mutableListOf<Decoder>(Decoder(id = "1111", decoderType = "TranX", ipAddress = "10.0.0.10"))
 
     override fun onCreate() {
         super.onCreate()
@@ -52,6 +52,9 @@ class DecoderService : Service() {
         return decoders.toList()
     }
 
+    fun isDecoderConnected(): Boolean {
+        return decoders.any { it.connection != null }
+    }
     fun connectOrDisconnectFirstDecoder() {
         if (decoders.isEmpty()) return
 
@@ -109,6 +112,7 @@ class DecoderService : Service() {
             }
         } catch (e: Exception) {
             Log.w(TAG,"Decoder connection error $decoder", e)
+            sendBroadcastDisconnected()
         }
 
         decoder.connection=null
@@ -189,6 +193,13 @@ class DecoderService : Service() {
     private fun sendBroadcast() {
         val intent = Intent()
         intent.action = "com.skoky.decoder.broadcast"
+        applicationContext.sendBroadcast(intent)
+        Log.w(TAG, "Broadcast sent $intent")
+    }
+
+    private fun sendBroadcastDisconnected() {
+        val intent = Intent()
+        intent.action = "com.skoky.decoder.broadcast.disconnected"
         applicationContext.sendBroadcast(intent)
         Log.w(TAG, "Broadcast sent $intent")
     }

@@ -12,4 +12,5 @@
     <string name="training_mode_text">Tracks your transponder times from decoder during training</string>
     <string name="label_open"><![CDATA[Open >>>]]></string>
     <string name="racing_mode_text">Tracks all racers from decoders and show results in timing table</string>
+    <string name="decoder_not_connected">Decoder not connected</string>
 </resources>

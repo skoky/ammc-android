@@ -3,10 +3,7 @@ package com.skoky
 //import eu.plib.P3tools.MsgProcessor
 //import eu.plib.Ptools.Bytes
 //import eu.plib.Ptools.ProtocolsEnum
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.IBinder
@@ -15,6 +12,7 @@ import android.support.v4.app.Fragment
 import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBar
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.util.Log
@@ -28,6 +26,8 @@ import com.skoky.fragment.TrainingModeFragment
 import com.skoky.fragment.content.Lap
 import com.skoky.services.DecoderService
 import com.skoky.timing.data.DatabaseHelper
+import kotlinx.android.synthetic.main.fragment_trainingmode_list.*
+import org.jetbrains.anko.AlertBuilder
 
 
 class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInteractionListener {
@@ -119,12 +119,33 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
         Log.i(TAG, "TBD")
     }
 
+
+    fun openTransponderDialog(view: View) {
+        val trs = trainingFragment.transponders.toTypedArray()
+        AlertDialog.Builder(this@MainActivity)
+                .setTitle("Select transponder to watch")
+                .setSingleChoiceItems(trs,0) { dialog, i ->
+                    Log.w(TAG,"Selected $i")
+                    trainingFragment.setSelectedTransponder(trs[i])
+                    decoderIdSelector.text = trs[i]
+                    dialog.cancel()
+                }.create().show()
+    }
+
     private lateinit var trainingFragment : TrainingModeFragment
     fun openTrainingMode(view: View) {
-        trainingFragment = TrainingModeFragment.newInstance(1)
-        val fragmentTransaction = supportFragmentManager.beginTransaction()
-        fragmentTransaction.replace(R.id.screen_container, trainingFragment)
-        fragmentTransaction.commit()
+
+        app.decoderService?.let {
+            if (it.isDecoderConnected()) {
+                trainingFragment = TrainingModeFragment.newInstance(1)
+                val fragmentTransaction = supportFragmentManager.beginTransaction()
+                fragmentTransaction.replace(R.id.screen_container, trainingFragment)
+                fragmentTransaction.commit()
+            } else {
+                AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
+            }
+        }
+
     }
 
     private val decoderServiceConnection = object : ServiceConnection {

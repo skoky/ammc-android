@@ -7,7 +7,7 @@ import android.util.Log
 
 class DecoderBroadcastReceiver() : BroadcastReceiver() {
 
-    private var handler: (ByteArray) -> Unit = {}
+    private lateinit var handler: (ByteArray) -> Unit
 
     fun setHandler(h: (ByteArray) -> Unit) {
         this.handler = h

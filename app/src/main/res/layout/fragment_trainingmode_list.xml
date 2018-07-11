@@ -13,7 +13,7 @@
     tools:listitem="@layout/fragment_trainingmode">
 
     <TextView
-        android:id="@+id/trainingTimeLabel"
+        android:id="@+id/clockView"
         style="@style/amm_text_white"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -46,17 +46,20 @@
 
     </android.support.v7.widget.RecyclerView>
 
-    <Spinner
-        android:id="@+id/decoderIdSpinner"
+    <TextView
+        android:id="@+id/decoderIdSelector"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:paddingBottom="8dp"
+        android:padding="5dp"
         android:background="@color/amm_grey"
         app:layout_constraintEnd_toStartOf="@+id/trainingTimeLabel"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:text="tap to select transponder"
+        android:onClick="openTransponderDialog"/>
 
 </android.support.constraint.ConstraintLayout>
