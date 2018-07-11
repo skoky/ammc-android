@@ -55,6 +55,7 @@ class DecoderService : Service() {
     fun isDecoderConnected(): Boolean {
         return decoders.any { it.connection != null }
     }
+
     fun connectOrDisconnectFirstDecoder() {
         if (decoders.isEmpty()) return
 
@@ -99,23 +100,23 @@ class DecoderService : Service() {
 
         try {
             var read = 0
-            while (socket.isBound && read != -1 ) {
+            while (socket.isBound && read != -1) {
                 socket.getInputStream()?.let {
                     read = it.read(buffer)
                     Log.i(TAG, "Received $read bytes")
                     val json = JSONObject(Parser.decode(buffer.copyOf(read)))
-                    when(json.get("recordType")) {
+                    when (json.get("recordType")) {
                         "Passing" -> sendBroadcastPassing(json.toString())
                     }
                 }
                 sendBroadcast()
             }
         } catch (e: Exception) {
-            Log.w(TAG,"Decoder connection error $decoder", e)
+            Log.w(TAG, "Decoder connection error $decoder", e)
             sendBroadcastDisconnected()
         }
 
-        decoder.connection=null
+        decoder.connection = null
         decoders.remove(decoder)
         decoders.add(decoder)
 
@@ -192,22 +193,22 @@ class DecoderService : Service() {
 
     private fun sendBroadcast() {
         val intent = Intent()
-        intent.action = "com.skoky.decoder.broadcast"
+        intent.action = DECODER_REFRESH
         applicationContext.sendBroadcast(intent)
         Log.w(TAG, "Broadcast sent $intent")
     }
 
     private fun sendBroadcastDisconnected() {
         val intent = Intent()
-        intent.action = "com.skoky.decoder.broadcast.disconnected"
+        intent.action = DECODER_DISCONNECTED
         applicationContext.sendBroadcast(intent)
         Log.w(TAG, "Broadcast sent $intent")
     }
 
     private fun sendBroadcastPassing(jsonData: String) {
         val intent = Intent()
-        intent.action = "com.skoky.decoder.broadcast.passing"
-        intent.putExtra("Passing",jsonData)
+        intent.action = DECODER_PASSING
+        intent.putExtra("Passing", jsonData)
         applicationContext.sendBroadcast(intent)
         Log.w(TAG, "Broadcast passing sent $intent")
     }
@@ -240,5 +241,8 @@ class DecoderService : Service() {
 
     companion object {
         private const val TAG = "DecoderService"
+        val DECODER_REFRESH = "com.skoky.decoder.broadcast"
+        val DECODER_PASSING = "com.skoky.decoder.broadcast.passing"
+        val DECODER_DISCONNECTED = "com.skoky.decoder.broadcast.disconnected"
     }
 }

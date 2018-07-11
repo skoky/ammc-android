@@ -19,6 +19,8 @@ import com.skoky.Tools
 import com.skoky.fragment.content.Lap
 import com.skoky.fragment.content.TrainingModeModel
 import com.skoky.services.DecoderBroadcastReceiver
+import com.skoky.services.DecoderService.Companion.DECODER_DISCONNECTED
+import com.skoky.services.DecoderService.Companion.DECODER_PASSING
 import com.skoky.services.PassingBroadcastReceiver
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -75,7 +77,7 @@ class TrainingModeFragment : Fragment() {
                         transponders.add(transponder.toString())
                     }
                 }
-                context!!.registerReceiver(receiver, IntentFilter("com.skoky.decoder.broadcast.passing"))
+                context!!.registerReceiver(receiver, IntentFilter(DECODER_PASSING))
             }
         }
         startStopButtonM = view.findViewById<Button>(R.id.startStopButton)
@@ -86,7 +88,7 @@ class TrainingModeFragment : Fragment() {
             AlertDialog.Builder(context).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
 
         }
-        context!!.registerReceiver(disconnectReceiver, IntentFilter("com.skoky.decoder.broadcast.disconnected"))
+        context!!.registerReceiver(disconnectReceiver, IntentFilter(DECODER_DISCONNECTED))
 
         return view
     }

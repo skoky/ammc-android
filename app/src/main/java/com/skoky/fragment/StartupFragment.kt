@@ -14,6 +14,7 @@ import android.widget.TextView
 import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.services.DecoderBroadcastReceiver
+import com.skoky.services.DecoderService.Companion.DECODER_REFRESH
 import kotlinx.android.synthetic.main.startup_content.*
 import org.jetbrains.anko.AlertBuilder
 import org.jetbrains.anko.find
@@ -72,7 +73,7 @@ class StartupFragment : Fragment() {
 
             }
         }
-        context!!.registerReceiver(receiver, IntentFilter("com.skoky.decoder.broadcast"))
+        context!!.registerReceiver(receiver, IntentFilter(DECODER_REFRESH))
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
