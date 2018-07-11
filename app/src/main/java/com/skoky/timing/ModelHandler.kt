@@ -74,7 +74,7 @@ class ModelHandler(a: Activity) {
 
         val lapTime = countLapTime(detail, tr!!)
         if (lapTime < minLapTime * 1000) {
-            Log.e(TAG, "Lap time lower than min. lap time - " + lapTime + "ms")
+            Log.e(TAG, "Lap timeUs lower than min. lap timeUs - " + lapTime + "ms")
             return false
         }
 
@@ -88,7 +88,7 @@ class ModelHandler(a: Activity) {
 //        } else if (record.rtcTime > dr!!.lastRTCTime!!) {
 //            dr.lastTimeMs = lapTime
 //        } else {
-//            Log.e(TAG, "Invalid lap time < 0$lapTime")
+//            Log.e(TAG, "Invalid lap timeUs < 0$lapTime")
 //            return null
 //        }
 //        if (lapTime < dr.bestTimeMs || dr.bestTimeMs == 0L)

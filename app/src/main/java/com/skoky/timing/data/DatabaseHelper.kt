@@ -75,7 +75,7 @@ class DatabaseHelper(context: Context) : OrmLiteSqliteOpenHelper(context, DATABA
 
         // name of the database file for your application -- change to something appropriate for your app
         private val DATABASE_NAME = "mylaps.db"
-        // any time you make changes to your database objects, you may have to increase the database version
+        // any timeUs you make changes to your database objects, you may have to increase the database version
         private val DATABASE_VERSION = 1
     }
 }

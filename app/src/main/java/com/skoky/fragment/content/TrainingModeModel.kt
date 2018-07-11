@@ -1,6 +1,6 @@
 package com.skoky.fragment.content
 
-data class Lap(val number: Int, val time: Long, val lapTimeMs: Int, val diff: Float)
+data class Lap(val number: Int, val timeUs: Long, val lapTimeMs: Int, val diffMs: Int?)
 
 class TrainingModeModel {
 
@@ -15,19 +15,19 @@ class TrainingModeModel {
         if (transponder != myTransponder) return values.toMutableList()
 
         return if (values.isEmpty())
-            mutableListOf(Lap(1, time, -1, 0f))
+            mutableListOf(Lap(0, time, 0, null))
         else {
             val sorted = values.sortedByDescending { it.number }.toMutableList()
 
             val lastLap = sorted.first()
 
-            val lapTime = ((time - lastLap.time).toInt()) / 1000
-            val diff = (lapTime - lastLap.lapTimeMs).toFloat() / 1000
+            val lapTime = ((time - lastLap.timeUs).toInt()) / 1000
+            val diff = (lapTime - lastLap.lapTimeMs)
             val veryLastLap = Lap(lastLap.number + 1, time, lapTime, diff)
 
             sorted.add(veryLastLap)
             val newV = if (sorted.size > MAX_SIZE)
-                sorted.dropLast(sorted.size - MAX_SIZE).toMutableList()
+                sorted.drop(sorted.size - MAX_SIZE).toMutableList()
             else
                 sorted
             return newV.sortedByDescending { it.number }
@@ -44,6 +44,6 @@ class TrainingModeModel {
 
     companion object {
         private const val TAG = "TrainingModeModel"
-        private const val MAX_SIZE = 5
+        private const val MAX_SIZE = 5000
     }
 }

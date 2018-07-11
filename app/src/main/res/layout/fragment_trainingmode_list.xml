@@ -48,18 +48,18 @@
 
     <TextView
         android:id="@+id/decoderIdSelector"
+        style="@style/amm_text_white"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:paddingBottom="8dp"
-        android:padding="5dp"
         android:background="@color/amm_grey"
-        app:layout_constraintEnd_toStartOf="@+id/trainingTimeLabel"
+        android:lines="1"
+        android:onClick="openTransponderDialog"
+        android:padding="5dp"
+        android:paddingBottom="8dp"
+        android:text="@string/tap"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:text="tap to select transponder"
-        android:onClick="openTransponderDialog"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

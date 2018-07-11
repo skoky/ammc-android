@@ -14,4 +14,11 @@
         <item name="android:colorBackground">@color/amm_grey</item>
     </style>
 
+    <style name="amm_text_red_background" parent="amm_text_white">
+        <item name="android:colorBackground">@color/amm_red</item>
+    </style>
+
+    <style name="amm_edit_text" parent="amm_text_white">
+        <item name="android:editTextBackground">@color/amm_light_grey</item>
+    </style>
 </resources>

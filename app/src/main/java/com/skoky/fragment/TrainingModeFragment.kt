@@ -85,7 +85,9 @@ class TrainingModeFragment : Fragment() {
 
         val disconnectReceiver = DecoderBroadcastReceiver()
         disconnectReceiver.setHandler { _ ->
-            AlertDialog.Builder(context).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
+            context?.let {
+                AlertDialog.Builder(it).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
+            }
 
         }
         context!!.registerReceiver(disconnectReceiver, IntentFilter(DECODER_DISCONNECTED))
@@ -97,7 +99,7 @@ class TrainingModeFragment : Fragment() {
         tmm.setSelectedTransponder(transponder)
     }
 
-    private var running = false
+    var running = false
     private fun doStartStop() {
 
         if (tmm.getSelectedTransponder() == null) {
@@ -108,7 +110,7 @@ class TrainingModeFragment : Fragment() {
 
         if (running) {
             running = false
-            clock.cancel(true)      // TODO calculate exaxt training time
+            clock.cancel(true)      // TODO calculate exact training timeUs
             startStopButtonM?.text = getText(R.string.start)
         } else {    // not running
 

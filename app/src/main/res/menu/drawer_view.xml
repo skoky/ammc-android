@@ -2,11 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_single"
+            android:id="@+id/nav_training"
             android:icon="@drawable/baseline_person_24px"
             android:title="@string/training_mode" />
         <item
-            android:id="@+id/nav_timing"
+            android:id="@+id/nav_racing"
             android:icon="@drawable/baseline_supervisor_account_24px"
             android:title="@string/racing_mode" />
         <item

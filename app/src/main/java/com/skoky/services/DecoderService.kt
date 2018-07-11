@@ -230,6 +230,7 @@ class DecoderService : Service() {
 
     fun connectDecoder(address: String): Boolean {
         Log.d(TAG, "Connecting to $address")
+        // FIXME connect decoder (not just first)!
         return true
     }
 

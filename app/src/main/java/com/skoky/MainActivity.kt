@@ -3,11 +3,13 @@ package com.skoky
 //import eu.plib.P3tools.MsgProcessor
 //import eu.plib.Ptools.Bytes
 //import eu.plib.Ptools.ProtocolsEnum
+import android.app.Dialog
 import android.content.*
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.IBinder
 import android.support.design.widget.NavigationView
+import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
 import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
@@ -19,6 +21,9 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.Button
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.Toast
 import com.skoky.config.ConfigTool
 import com.skoky.fragment.StartupFragment
@@ -27,7 +32,7 @@ import com.skoky.fragment.content.Lap
 import com.skoky.services.DecoderService
 import com.skoky.timing.data.DatabaseHelper
 import kotlinx.android.synthetic.main.fragment_trainingmode_list.*
-import org.jetbrains.anko.AlertBuilder
+import kotlinx.android.synthetic.main.select_decoder.*
 
 
 class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInteractionListener {
@@ -39,37 +44,28 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
     private lateinit var app: MyApp
     private lateinit var mDrawerLayout: DrawerLayout
 
-    //    private var timerThread: TimerThread? = null
-
-    private val initialIPAddress: String
-        get() {
-            val address = ConfigTool.storedAddress
-
-            Log.d(TAG, "Stored address is $address")
-            return address
-        }
-
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         app = application as MyApp
         MyApp.setCachedApplicationContext(this)
         app.dbHelper = DatabaseHelper(this)
-//        setContentView(R.layout.main)
 
         setContentView(R.layout.main)
         mDrawerLayout = findViewById(R.id.drawer_layout)
 
         val navigationView: NavigationView = this.findViewById(R.id.nav_view)
         navigationView.setNavigationItemSelectedListener { menuItem ->
-            // set item as selected to persist highlight
-            menuItem.isChecked = true
-            // close drawer when item is tapped
             mDrawerLayout.closeDrawers()
 
-            // Add code here to update the UI based on the item selected
-            // For example, swap UI fragments here
-
-            Toast.makeText(applicationContext, "Item: $menuItem", Toast.LENGTH_SHORT).show()
+            when (menuItem.itemId) {
+                R.id.nav_training -> menuItem.isChecked = openTrainingMode(null)
+                R.id.nav_racing -> menuItem.isChecked = openRacingMode(null)
+                R.id.nav_console -> menuItem.isChecked = openConsoleMode(null)
+                else -> {
+                    menuItem.isChecked = false
+                    Log.w(TAG, "Unknown mode $menuItem")
+                }
+            }
             true
         }
 
@@ -88,10 +84,6 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
         val intent = Intent(this, DecoderService::class.java)
         bindService(intent, decoderServiceConnection, Context.BIND_AUTO_CREATE)
 
-
-//        screenHandler = screeHandler
-//        screenHandler!!.updateScreenForMode(ConfigTool.mode)
-//        tryReconnect()
     }
 
     private fun openStartupFragment() {
@@ -112,28 +104,68 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
     }
 
     fun showMoreDecoders(view: View) {
-        Log.i(TAG, "TBD")
+
+        val d = Dialog(this)
+        d.setContentView(R.layout.select_decoder)
+
+        val decodersCopy = app.decoderService!!.getDecoders()
+
+        decodersCopy.forEach {
+            if (it.ipAddress != null) {
+                val b = RadioButton(this)
+                b.text = "${it.decoderType} / ${it.ipAddress}"
+                b.isChecked = false
+                b.id = it.id.hashCode()
+                d.findViewById<RadioGroup>(R.id.known_decoders).addView(b)
+            }
+        }
+
+        d.findViewById<Button>(R.id.decoder_select_ok_button).setOnClickListener {
+            val checkDecoder = d.findViewById<RadioGroup>(R.id.known_decoders).checkedRadioButtonId
+            val foundDecoder = decodersCopy.find { it.id.hashCode() == checkDecoder }
+            Log.i(TAG, "decoder $foundDecoder")
+            foundDecoder?.let { app.decoderService!!.connectDecoder(it.ipAddress!!) }
+
+            d.cancel()
+        }
+        d.setCancelable(true)
+        d.setOnCancelListener { it.cancel() }
+        d.show()
     }
 
-    fun openRacingMode(view: View) {
+    fun openRacingMode(view: View?): Boolean {
         Log.i(TAG, "TBD")
+        return false
+    }
+
+    fun openConsoleMode(view: View?): Boolean {
+        Log.i(TAG, "TBD")
+        return false
     }
 
 
-    fun openTransponderDialog(view: View) {
-        val trs = trainingFragment.transponders.toTypedArray()
-        AlertDialog.Builder(this@MainActivity)
-                .setTitle("Select transponder to watch")
-                .setSingleChoiceItems(trs,0) { dialog, i ->
-                    Log.w(TAG,"Selected $i")
+    fun openTransponderDialog(view: View?) {
+        if (!trainingFragment.running) {
+            val trs = trainingFragment.transponders.toTypedArray()
+
+            val b = AlertDialog.Builder(this@MainActivity)
+                    .setTitle(getString(R.string.select_label))
+            if (trs.isEmpty()) {
+                b.setMessage(getString(R.string.no_transponder))
+            } else {
+                b.setSingleChoiceItems(trs, 0) { dialog, i ->
+                    Log.w(TAG, "Selected $i")
                     trainingFragment.setSelectedTransponder(trs[i])
                     decoderIdSelector.text = trs[i]
                     dialog.cancel()
-                }.create().show()
+                }
+            }
+            b.create().show()
+        }
     }
 
-    private lateinit var trainingFragment : TrainingModeFragment
-    fun openTrainingMode(view: View) {
+    private lateinit var trainingFragment: TrainingModeFragment
+    fun openTrainingMode(view: View?): Boolean {
 
         app.decoderService?.let {
             if (it.isDecoderConnected()) {
@@ -141,11 +173,13 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
                 val fragmentTransaction = supportFragmentManager.beginTransaction()
                 fragmentTransaction.replace(R.id.screen_container, trainingFragment)
                 fragmentTransaction.commit()
+                return true
             } else {
                 AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
+                return false
             }
         }
-
+        return false
     }
 
     private val decoderServiceConnection = object : ServiceConnection {
@@ -164,13 +198,13 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
 
         override fun onServiceDisconnected(name: ComponentName) {
             app.decoderService = null
-            Log.w(TAG,"Service disconnected?")
+            Log.w(TAG, "Service disconnected?")
             finish()
         }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        Log.i(TAG,"Option menu ${item.itemId}")
+        Log.i(TAG, "Option menu ${item.itemId}")
         return when (item.itemId) {
             com.skoky.R.id.miHome -> {
                 openStartupFragment()

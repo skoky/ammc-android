@@ -52,7 +52,7 @@ class StartupFragment : Fragment() {
                     }
                     progressBar2.visibility = INVISIBLE
                     connectButton.visibility = VISIBLE
-                    moreDecodersButton.visibility = INVISIBLE
+//                    moreDecodersButton.visibility = INVISIBLE
 
                     if (d.connection != null) {
                         connectButton.text = getString(R.string.disconnect)
@@ -64,11 +64,11 @@ class StartupFragment : Fragment() {
                     decoderFound!!.text = getString(R.string.querying_decoders)
                     progressBar2.visibility = VISIBLE
                     connectButton.visibility = INVISIBLE
-                    moreDecodersButton.visibility = INVISIBLE
+//                    moreDecodersButton.visibility = INVISIBLE
                 }
 
                 if (it.getDecoders().size > 1) {
-                    moreDecodersButton.visibility = VISIBLE
+//                    moreDecodersButton.visibility = VISIBLE
                 }
 
             }

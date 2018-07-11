@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:minWidth="100dp"
+    android:layout_margin="10dp"
+    android:padding="10dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/amm_text_white"
+        android:text="@string/select_decoder_label"/>
+    <RadioGroup
+        android:id="@+id/known_decoders"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/amm_text_white">
+
+    </RadioGroup>
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/amm_text_white"
+        android:paddingTop="10dp"
+        android:text="@string/or_connect_directly_to_decoder_by_ip_address"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/amm_edit_text"
+        android:minWidth="150dp"
+        android:lines="1"
+        android:text=""/>
+    <Button
+        android:id="@+id/decoder_select_ok_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ok"
+        />
+</LinearLayout>

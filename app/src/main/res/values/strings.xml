@@ -13,4 +13,9 @@
     <string name="label_open"><![CDATA[Open >>>]]></string>
     <string name="racing_mode_text">Tracks all racers from decoders and show results in timing table</string>
     <string name="decoder_not_connected">Decoder not connected</string>
+    <string name="tap"><![CDATA[<transponder>]]></string>
+    <string name="select_label">Select transponder to watch</string>
+    <string name="select_decoder_label">Select decoder</string>
+    <string name="no_transponder">No transponder visible from decoders so far. Pass loop at least once to register transponder</string>
+    <string name="or_connect_directly_to_decoder_by_ip_address">Or connect directly to decoder by IP address</string>
 </resources>
