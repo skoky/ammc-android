@@ -21,12 +21,12 @@
         <item
             android:id="@+id/nav_connect"
             android:icon="@drawable/baseline_compare_arrows_24px"
-            android:title="Connect decoder" />
+            android:title="@string/connect_decoder" />
 
         <item
             android:id="@+id/nav_connection_help"
             android:icon="@drawable/baseline_help_outline_24px"
-            android:title="Help connecting" />
+            android:title="@string/help_connecting" />
 
     </group>
 </menu>

@@ -6,7 +6,6 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.support.annotation.RequiresApi
-import android.support.v7.util.SortedList
 import android.util.Log
 import com.skoky.NetworkBroadcastHandler
 import eu.plib.Parser
@@ -18,8 +17,6 @@ import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
 import java.net.Socket
-import java.nio.ByteBuffer
-import javax.sql.DataSource
 
 data class Decoder(val id: String, var ipAddress: String? = null, var decoderType: String? = null, var connection: Socket? = null) {
     override fun equals(other: Any?): Boolean {
@@ -104,9 +101,11 @@ class DecoderService : Service() {
                 socket.getInputStream()?.let {
                     read = it.read(buffer)
                     Log.i(TAG, "Received $read bytes")
-                    val json = JSONObject(Parser.decode(buffer.copyOf(read)))
-                    when (json.get("recordType")) {
-                        "Passing" -> sendBroadcastPassing(json.toString())
+                    if (read > 0 ) {
+                        val json = JSONObject(Parser.decode(buffer.copyOf(read)))
+                        when (json.get("recordType")) {
+                            "Passing" -> sendBroadcastPassing(json.toString())
+                        }
                     }
                 }
                 sendBroadcast()
@@ -242,8 +241,8 @@ class DecoderService : Service() {
 
     companion object {
         private const val TAG = "DecoderService"
-        val DECODER_REFRESH = "com.skoky.decoder.broadcast"
-        val DECODER_PASSING = "com.skoky.decoder.broadcast.passing"
-        val DECODER_DISCONNECTED = "com.skoky.decoder.broadcast.disconnected"
+        const val DECODER_REFRESH = "com.skoky.decoder.broadcast"
+        const val DECODER_PASSING = "com.skoky.decoder.broadcast.passing"
+        const val DECODER_DISCONNECTED = "com.skoky.decoder.broadcast.disconnected"
     }
 }

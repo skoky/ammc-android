@@ -27,7 +27,6 @@
         <activity
                 android:name=".menu.About"
                 android:label="AMBTester About"/>
-        <activity android:name=".OptionsActivity" android:label="AMBTester Timing Options"/>
         <activity
                 android:name=".OptionsConsoleActivity"
                 android:label="AMBTester Console Options"/>

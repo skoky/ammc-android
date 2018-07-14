@@ -15,7 +15,9 @@
     <string name="decoder_not_connected">Decoder not connected</string>
     <string name="tap"><![CDATA[<transponder>]]></string>
     <string name="select_label">Select transponder to watch</string>
-    <string name="select_decoder_label">Select decoder</string>
+    <string name="select_decoder_label">Select decoder to connect</string>
     <string name="no_transponder">No transponder visible from decoders so far. Pass loop at least once to register transponder</string>
     <string name="or_connect_directly_to_decoder_by_ip_address">Or connect directly to decoder by IP address</string>
+    <string name="connect_decoder">Connect decoder</string>
+    <string name="help_connecting">Help connecting</string>
 </resources>

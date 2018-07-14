@@ -1,38 +1,31 @@
 package com.skoky
 
-//import eu.plib.P3tools.MsgProcessor
-//import eu.plib.Ptools.Bytes
-//import eu.plib.Ptools.ProtocolsEnum
 import android.app.Dialog
-import android.content.*
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.IBinder
-import android.support.design.widget.NavigationView
-import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
 import android.support.v4.view.GravityCompat
-import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBar
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Button
-import android.widget.RadioButton
-import android.widget.RadioGroup
-import android.widget.Toast
-import com.skoky.config.ConfigTool
+import android.widget.*
 import com.skoky.fragment.StartupFragment
 import com.skoky.fragment.TrainingModeFragment
 import com.skoky.fragment.content.Lap
 import com.skoky.services.DecoderService
-import com.skoky.timing.data.DatabaseHelper
 import kotlinx.android.synthetic.main.fragment_trainingmode_list.*
-import kotlinx.android.synthetic.main.select_decoder.*
+import kotlinx.android.synthetic.main.main.*
 
 
 class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInteractionListener {
@@ -42,20 +35,17 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
     }
 
     private lateinit var app: MyApp
-    private lateinit var mDrawerLayout: DrawerLayout
+//    private lateinit var mDrawerLayout: DrawerLayout
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         app = application as MyApp
         MyApp.setCachedApplicationContext(this)
-        app.dbHelper = DatabaseHelper(this)
 
         setContentView(R.layout.main)
-        mDrawerLayout = findViewById(R.id.drawer_layout)
 
-        val navigationView: NavigationView = this.findViewById(R.id.nav_view)
-        navigationView.setNavigationItemSelectedListener { menuItem ->
-            mDrawerLayout.closeDrawers()
+        nav_view.setNavigationItemSelectedListener { menuItem ->
+            drawer_layout.closeDrawers()
 
             when (menuItem.itemId) {
                 R.id.nav_training -> menuItem.isChecked = openTrainingMode(null)
@@ -69,7 +59,7 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
             true
         }
 
-        val toolbar: Toolbar = findViewById(R.id.toolbar)
+
         setSupportActionBar(toolbar)
 
         val actionbar: ActionBar? = supportActionBar
@@ -110,15 +100,25 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
 
         val decodersCopy = app.decoderService!!.getDecoders()
 
+        val decoderText = d.findViewById<EditText>(R.id.decoder_address_edittext)
+        val dd = d.findViewById<RadioGroup>(R.id.known_decoders)
+
         decodersCopy.forEach {
             if (it.ipAddress != null) {
                 val b = RadioButton(this)
                 b.text = "${it.decoderType} / ${it.ipAddress}"
                 b.isChecked = false
                 b.id = it.id.hashCode()
-                d.findViewById<RadioGroup>(R.id.known_decoders).addView(b)
+                b.setOnCheckedChangeListener { view, checked ->
+                    Log.d(TAG,"Checked $view $checked")
+                    decoderText.text = null
+                }
+                dd.addView(b)
             }
         }
+
+
+        decoderText.addTextChangedListener(SimpleTextWatcher(dd))
 
         d.findViewById<Button>(R.id.decoder_select_ok_button).setOnClickListener {
             val checkDecoder = d.findViewById<RadioGroup>(R.id.known_decoders).checkedRadioButtonId
@@ -128,9 +128,25 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
 
             d.cancel()
         }
+
+
         d.setCancelable(true)
         d.setOnCancelListener { it.cancel() }
         d.show()
+    }
+
+    class SimpleTextWatcher(dd: RadioGroup) : TextWatcher {
+        val ddd = dd
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            ddd.clearCheck()
+        }
+
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+        }
+
+        override fun afterTextChanged(s: Editable?) {
+        }
+
     }
 
     fun openRacingMode(view: View?): Boolean {
@@ -211,7 +227,7 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
                 true
             }
             android.R.id.home -> {
-                mDrawerLayout.openDrawer(GravityCompat.START)
+                drawer_layout.openDrawer(GravityCompat.START)
                 true
             }
             else -> super.onOptionsItemSelected(item)

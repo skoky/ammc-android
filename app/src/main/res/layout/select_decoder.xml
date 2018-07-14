@@ -29,16 +29,18 @@
         android:text="@string/or_connect_directly_to_decoder_by_ip_address"/>
 
     <EditText
+        android:id="@+id/decoder_address_edittext"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         style="@style/amm_edit_text"
         android:minWidth="150dp"
         android:lines="1"
         android:text=""/>
+
     <Button
         android:id="@+id/decoder_select_ok_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Ok"
+        android:text="@string/connect"
         />
 </LinearLayout>

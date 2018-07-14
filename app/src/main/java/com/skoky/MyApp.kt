@@ -2,11 +2,7 @@ package com.skoky
 
 import android.app.Application
 import android.os.PowerManager
-import com.skoky.MyApp.Companion.cachedApplicationContext
 import com.skoky.services.DecoderService
-import com.skoky.timing.data.DatabaseHelper
-import com.skoky.watchdogs.Watchdog
-
 import java.lang.ref.WeakReference
 
 /**
@@ -15,8 +11,6 @@ import java.lang.ref.WeakReference
 class MyApp : Application() {
 
     var decoderService : DecoderService? = null
-
-    lateinit var dbHelper: DatabaseHelper
 
     companion object {
         var wakeLock: PowerManager.WakeLock? = null
