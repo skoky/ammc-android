@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import com.skoky.MainActivity
 import com.skoky.R
 import com.skoky.Tools
 import com.skoky.fragment.content.Lap
@@ -22,6 +23,7 @@ import com.skoky.services.DecoderBroadcastReceiver
 import com.skoky.services.DecoderService.Companion.DECODER_DISCONNECTED
 import com.skoky.services.DecoderService.Companion.DECODER_PASSING
 import com.skoky.services.PassingBroadcastReceiver
+import kotlinx.android.synthetic.main.fragment_trainingmode_list.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import org.json.JSONObject
@@ -81,7 +83,7 @@ class TrainingModeFragment : Fragment() {
             }
         }
         startStopButtonM = view.findViewById<Button>(R.id.startStopButton)
-        startStopButtonM!!.setOnClickListener { doStartStop() }
+        startStopButtonM!!.setOnClickListener { doStartStopDialog() }
 
         val disconnectReceiver = DecoderBroadcastReceiver()
         disconnectReceiver.setHandler { _ ->
@@ -95,18 +97,40 @@ class TrainingModeFragment : Fragment() {
         return view
     }
 
+    fun openTransponderDialog(startRace: Boolean) {
+
+        val trs = transponders.toTypedArray()
+
+        val b = android.support.v7.app.AlertDialog.Builder(this!!.context!!)
+                .setTitle(getString(R.string.select_label))
+        if (trs.isEmpty()) {
+            b.setMessage(getString(R.string.no_transponder))
+        } else {
+            b.setSingleChoiceItems(trs, 0) { dialog, i ->
+                Log.w(TAG, "Selected $i")
+                setSelectedTransponder(trs[i])
+                decoderIdSelector.text = trs[i]
+                if (startRace) doStartStop()
+                dialog.cancel()
+            }
+        }
+        b.create().show()
+    }
+
     fun setSelectedTransponder(transponder: String) {
         tmm.setSelectedTransponder(transponder)
     }
 
     var running = false
-    private fun doStartStop() {
+    private fun doStartStopDialog() {
 
         if (tmm.getSelectedTransponder() == null) {
-            AlertDialog.Builder(context).setMessage("Select transponder to watch").setCancelable(true)
-                    .create().show()
+            openTransponderDialog(true)
             return
         }
+        doStartStop()
+    }
+    private fun doStartStop() {
 
         if (running) {
             running = false

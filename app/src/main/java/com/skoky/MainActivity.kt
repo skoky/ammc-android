@@ -23,6 +23,7 @@ import android.widget.*
 import com.skoky.fragment.StartupFragment
 import com.skoky.fragment.TrainingModeFragment
 import com.skoky.fragment.content.Lap
+import com.skoky.services.Decoder
 import com.skoky.services.DecoderService
 import kotlinx.android.synthetic.main.fragment_trainingmode_list.*
 import kotlinx.android.synthetic.main.main.*
@@ -106,7 +107,7 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
         decodersCopy.forEach {
             if (it.ipAddress != null) {
                 val b = RadioButton(this)
-                b.text = "${it.decoderType} / ${it.ipAddress}"
+                b.text = decoderLabel(it)
                 b.isChecked = false
                 b.id = it.id.hashCode()
                 b.setOnCheckedChangeListener { view, checked ->
@@ -166,21 +167,7 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
 
     fun openTransponderDialog(view: View?) {
         if (!trainingFragment.running) {
-            val trs = trainingFragment.transponders.toTypedArray()
-
-            val b = AlertDialog.Builder(this@MainActivity)
-                    .setTitle(getString(R.string.select_label))
-            if (trs.isEmpty()) {
-                b.setMessage(getString(R.string.no_transponder))
-            } else {
-                b.setSingleChoiceItems(trs, 0) { dialog, i ->
-                    Log.w(TAG, "Selected $i")
-                    trainingFragment.setSelectedTransponder(trs[i])
-                    decoderIdSelector.text = trs[i]
-                    dialog.cancel()
-                }
-            }
-            b.create().show()
+            trainingFragment.openTransponderDialog(false)
         }
     }
 
@@ -258,14 +245,13 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
     }
 
 
-    override fun onDestroy() {
-        super.onDestroy()
-
-    }
-
     companion object {
         private val TAG = "MainActivity"
+
+
+        fun decoderLabel(d: Decoder): String {
+            val type: String = d.decoderType ?: d.id
+            return if (d.ipAddress != null) "$type / ${d.ipAddress}" else type
+        }
     }
-
-
 }

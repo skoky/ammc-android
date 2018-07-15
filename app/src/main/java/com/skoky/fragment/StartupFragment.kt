@@ -11,6 +11,7 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.TextView
+import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.services.DecoderBroadcastReceiver
@@ -44,12 +45,8 @@ class StartupFragment : Fragment() {
 
                 if (it.getDecoders().isNotEmpty()) {
                     val d = it.getDecoders().first()
-                    val name = if (d.decoderType != null) d.decoderType else d.id
-                    if (!d.ipAddress.isNullOrEmpty()) {
-                        decoderFound!!.text = "$name / ${d.ipAddress}"
-                    } else {
-                        decoderFound!!.text = "$name"
-                    }
+                    decoderFound!!.text = MainActivity.decoderLabel(d)
+
                     progressBar2.visibility = INVISIBLE
                     connectButton.visibility = VISIBLE
 //                    moreDecodersButton.visibility = INVISIBLE
