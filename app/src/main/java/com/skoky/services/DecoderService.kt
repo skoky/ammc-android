@@ -13,12 +13,9 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
 import org.json.JSONObject
-import java.net.DatagramPacket
-import java.net.DatagramSocket
-import java.net.InetAddress
-import java.net.Socket
+import java.net.*
 
-data class Decoder(val id: String, var ipAddress: String? = null, var decoderType: String? = null, var connection: Socket? = null) {
+data class Decoder(var id: String, var ipAddress: String? = null, var decoderType: String? = null, var connection: Socket? = null) {
     override fun equals(other: Any?): Boolean {
         return id == (other as? Decoder)?.id
     }
@@ -26,7 +23,7 @@ data class Decoder(val id: String, var ipAddress: String? = null, var decoderTyp
 
 class DecoderService : Service() {
 
-    private var decoders = mutableListOf<Decoder>(Decoder(id = "1111", decoderType = "TranX", ipAddress = "10.0.0.10"))
+    private var decoders = mutableListOf<Decoder>() // Decoder(id = "1111", decoderType = "TranX", ipAddress = "10.0.0.10"))
 
     override fun onCreate() {
         super.onCreate()
@@ -54,14 +51,20 @@ class DecoderService : Service() {
     }
 
     fun connectOrDisconnectFirstDecoder() {
-        if (decoders.isEmpty()) return
+        if (decoders.isEmpty()) {
+            Log.w(TAG, "No decoders, no connection...")
+            return
+        }
+        connectOrDisconnectDecoder(decoders.first())
+    }
 
-        val decoder = decoders.first()
+    fun connectOrDisconnectDecoder(decoder: Decoder) {
 
         if (decoder.connection == null) {
             doAsync {
+                val socket = Socket()
                 try {
-                    val socket = Socket(decoder.ipAddress, 5403)
+                    socket.connect(InetSocketAddress(decoder.ipAddress, 5403),5000)
                     decoder.connection = socket
                     decoders.remove(decoder)
                     decoders.add(decoder)
@@ -73,6 +76,7 @@ class DecoderService : Service() {
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error connecting decoder", e)
+                    socket.close()
                     uiThread {
                         toast("Connection not possible")
                     }
@@ -92,6 +96,8 @@ class DecoderService : Service() {
         }
     }
 
+    // TODO clean decoders list with non-active decoders
+
     private fun listenOnConnection(socket: Socket, decoder: Decoder) {
         val buffer = ByteArray(1024)
 
@@ -101,11 +107,12 @@ class DecoderService : Service() {
                 socket.getInputStream()?.let {
                     read = it.read(buffer)
                     Log.i(TAG, "Received $read bytes")
-                    if (read > 0 ) {
+                    if (read > 0) {
                         val json = JSONObject(Parser.decode(buffer.copyOf(read)))
                         when (json.get("recordType")) {
                             "Passing" -> sendBroadcastPassing(json.toString())
                         }
+                        if (decoder.id == "?" && json.has("decoderId")) decoder.id = json.get("decoderId") as String
                     }
                 }
                 sendBroadcast()
@@ -229,7 +236,9 @@ class DecoderService : Service() {
 
     fun connectDecoder(address: String): Boolean {
         Log.d(TAG, "Connecting to $address")
-        // FIXME connect decoder (not just first)!
+
+        val probablyDecoder = Decoder("?", address)
+        connectOrDisconnectDecoder(probablyDecoder)
         return true
     }
 

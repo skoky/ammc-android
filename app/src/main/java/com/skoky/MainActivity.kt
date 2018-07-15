@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
                 b.isChecked = false
                 b.id = it.id.hashCode()
                 b.setOnCheckedChangeListener { view, checked ->
-                    Log.d(TAG,"Checked $view $checked")
+                    Log.d(TAG, "Checked $view $checked")
                     decoderText.text = null
                 }
                 dd.addView(b)
@@ -124,7 +124,11 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
             val checkDecoder = d.findViewById<RadioGroup>(R.id.known_decoders).checkedRadioButtonId
             val foundDecoder = decodersCopy.find { it.id.hashCode() == checkDecoder }
             Log.i(TAG, "decoder $foundDecoder")
-            foundDecoder?.let { app.decoderService!!.connectDecoder(it.ipAddress!!) }
+
+            if (decoderText.text.isNotEmpty()) {
+                app.decoderService!!.connectDecoder(decoderText.text.toString())
+            } else
+                foundDecoder?.let { app.decoderService!!.connectOrDisconnectDecoder(it) }
 
             d.cancel()
         }
