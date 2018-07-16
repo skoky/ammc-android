@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
     }
 
     fun connectOrDisconnect(view: View) {
-        app.decoderService!!.connectOrDisconnectFirstDecoder()
+        app.decoderService?.let { it.connectOrDisconnectFirstDecoder() }
     }
 
     fun showMoreDecoders(view: View) {
@@ -107,7 +107,7 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
         decodersCopy.forEach {
             if (it.ipAddress != null) {
                 val b = RadioButton(this)
-                b.text = decoderLabel(it)
+                b.text = MainActivity.decoderLabel(it)
                 b.isChecked = false
                 b.id = it.id.hashCode()
                 b.setOnCheckedChangeListener { view, checked ->
@@ -127,9 +127,9 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
             Log.i(TAG, "decoder $foundDecoder")
 
             if (decoderText.text.isNotEmpty()) {
-                app.decoderService!!.connectDecoder(decoderText.text.toString())
+                app.decoderService?.let { it.connectDecoder(decoderText.text.toString()) }
             } else
-                foundDecoder?.let { app.decoderService!!.connectOrDisconnectDecoder(it) }
+                foundDecoder?.let { app.decoderService?.let{ s -> s.connectOrDisconnectDecoder(it) } }
 
             d.cancel()
         }
@@ -198,8 +198,7 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
 
             app.decoderService?.let {
                 Log.w(TAG, "Decoder service bound")
-                Log.d(TAG, "Service -> " + it.connectDecoder("aDecoder"))
-                it.listenOnDecodersBroadcasts()
+                // FIXME connect last decoder Log.d(TAG, "Service -> " + it.connectDecoder("aDecoder"))
             }
         }
 

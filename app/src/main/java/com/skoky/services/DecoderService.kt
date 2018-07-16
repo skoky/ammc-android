@@ -14,8 +14,11 @@ import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
 import org.json.JSONObject
 import java.net.*
+import java.util.*
+import kotlin.concurrent.schedule
 
-data class Decoder(var id: String, var ipAddress: String? = null, var decoderType: String? = null, var connection: Socket? = null) {
+data class Decoder(var id: String, var ipAddress: String? = null, var decoderType: String? = null,
+                   var connection: Socket? = null, var lastSeen: Long? = null) {
     override fun equals(other: Any?): Boolean {
         return id == (other as? Decoder)?.id
     }
@@ -30,16 +33,28 @@ class DecoderService : Service() {
         Log.d(TAG, "Created")
 
         decoders.sortedWith(compareBy({ it.id }, { it.id }))
-    }
 
-    fun listenOnDecodersBroadcasts() {
+        Timer().schedule(1000, 1000) {
+            // removes inactive decoders
+            decoders.removeIf {
+                if (it.lastSeen != null) {
+                    Log.i(TAG, "Decoder $it diff: ${System.currentTimeMillis() - it.lastSeen!!}")
+                    val toRemove  = (System.currentTimeMillis()-it.lastSeen!!)  > INACTIVE_DECODER_TIMEOUT
+                    if (toRemove) {
+                        Log.i(TAG,"Removing decoder $it, current decoders $decoders")
+                        it.connection?.let { it.close() }
+                    }
+                    toRemove
+                } else {
+                    false
+                }
+            }
+        }
 
         doAsync {
-            Thread.sleep(2000)
-            sendBroadcast()
-
             NetworkBroadcastHandler.receiveBroadcastData() { processMsg(it) }
         }
+
     }
 
     fun getDecoders(): List<Decoder> {
@@ -64,7 +79,7 @@ class DecoderService : Service() {
             doAsync {
                 val socket = Socket()
                 try {
-                    socket.connect(InetSocketAddress(decoder.ipAddress, 5403),5000)
+                    socket.connect(InetSocketAddress(decoder.ipAddress, 5403), 5000)
                     decoder.connection = socket
                     decoders.remove(decoder)
                     decoders.add(decoder)
@@ -72,7 +87,7 @@ class DecoderService : Service() {
                     sendBroadcast()
 
                     doAsync {
-                        listenOnConnection(socket, decoder)
+                        listenOnSocketConnection(socket, decoder)
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error connecting decoder", e)
@@ -98,7 +113,7 @@ class DecoderService : Service() {
 
     // TODO clean decoders list with non-active decoders
 
-    private fun listenOnConnection(socket: Socket, decoder: Decoder) {
+    private fun listenOnSocketConnection(socket: Socket, decoder: Decoder) {
         val buffer = ByteArray(1024)
 
         try {
@@ -113,6 +128,7 @@ class DecoderService : Service() {
                             "Passing" -> sendBroadcastPassing(json.toString())
                         }
                         if (decoder.id == "?" && json.has("decoderId")) decoder.id = json.get("decoderId") as String
+                        decoders.forEach { if (it.id == decoder.id) it.lastSeen = System.currentTimeMillis() }
                     }
                 }
                 sendBroadcast()
@@ -137,40 +153,42 @@ class DecoderService : Service() {
         val msg = Parser.decode(msgB)
         val json = JSONObject(msg)
 
-        var decoderId: String? = null
+        var decoder: Decoder? = null
         if (json.has("decoderId")) {
-            decoderId = json.get("decoderId") as String
-            val d = Decoder(decoderId)
-            if (!decoders.contains(d)) decoders.add(d)
+            val decoderId = json.get("decoderId") as String
+            decoder = Decoder(decoderId)
+            if (!decoders.contains(decoder)) decoders.add(decoder)
         }
 
-        if (json.has("recordType") && decoderId != null) when (json.get("recordType")) {
-            "Status" -> {
-                sendNetworkRequest()
-                sendVersionRequest()
+        decoder?.let {
+
+            if (json.has("recordType")) when (json.get("recordType")) {
+                "Status" -> {
+                    sendNetworkRequest()
+                    sendVersionRequest()
+                }
+                "NetworkSettings" ->
+                    if (json.has("activeIPAddress")) {
+                        val decoder = decoders.find { it.id == decoder.id }
+                        decoder?.let { d ->
+                            d.ipAddress = json.get("activeIPAddress") as? String
+                            decoders.removeIf { it.id == d.id }
+                            decoders.add(d)
+                        }
+                    }
+                "Version" ->
+                    if (json.has("decoderType")) {
+                        val decoder = decoders.find { it.id == decoder.id }
+                        decoder?.let { d ->
+                            d.decoderType = json.get("decoderType") as? String
+                            decoders.removeIf { it.id == d.id }
+                            decoders.add(d)
+                        }
+                    }
             }
-            "NetworkSettings" ->
-                if (json.has("activeIPAddress") && decoderId != null) {
-                    val decoder = decoders.find { it.id == decoderId }
-                    decoder?.let { d ->
-                        d.ipAddress = json.get("activeIPAddress") as? String
-                        decoders.removeIf { it.id == d.id }
-                        decoders.add(d)
-                    }
-                }
-            "Version" ->
-                if (json.has("decoderType") && decoderId != null) {
-                    val decoder = decoders.find { it.id == decoderId }
-                    decoder?.let { d ->
-                        d.decoderType = json.get("decoderType") as? String
-                        decoders.removeIf { it.id == d.id }
-                        decoders.add(d)
-                    }
-
-                }
+            Log.i(TAG, "Decoders: $decoders")
+            sendBroadcast()
         }
-        Log.i(TAG, "Decoders: $decoders")
-        sendBroadcast()
     }
 
     private fun sendVersionRequest() {
@@ -253,5 +271,6 @@ class DecoderService : Service() {
         const val DECODER_REFRESH = "com.skoky.decoder.broadcast"
         const val DECODER_PASSING = "com.skoky.decoder.broadcast.passing"
         const val DECODER_DISCONNECTED = "com.skoky.decoder.broadcast.disconnected"
+        private const val INACTIVE_DECODER_TIMEOUT: Long = 30000  // 10secs
     }
 }

@@ -24,16 +24,6 @@ class MyApp : Application() {
             cachedApplicationContext = WeakReference(app)
         }
 
-        /**
-         * @return Refference to the ApplicationContext cached in the singleton instance
-         */
-        @Synchronized
-        fun getCachedApplicationContext(): MainActivity {
-            if (cachedApplicationContext == null)
-                throw IllegalStateException("Application context not available. Initialize the AngApplication using init(Context)")
-            return cachedApplicationContext!!.get()
-                    ?: throw IllegalStateException("Context reference was garbage collected")
-        }
     }
 
 

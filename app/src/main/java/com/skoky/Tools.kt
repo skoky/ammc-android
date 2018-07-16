@@ -127,9 +127,9 @@ object Tools {
             wl.acquire()
             MyApp.wakeLock = wl
         } else {
-            if (MyApp.wakeLock != null)
-                if (MyApp!!.wakeLock!!.isHeld)
-                    MyApp!!.wakeLock!!.release()
+            MyApp.wakeLock?.let { lock ->
+                if (lock.isHeld) lock.release()
+            }
         }
     }
 

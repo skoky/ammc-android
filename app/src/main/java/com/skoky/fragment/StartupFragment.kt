@@ -1,10 +1,9 @@
 package com.skoky.fragment
 
-import android.app.AlertDialog
-import android.content.BroadcastReceiver
 import android.content.IntentFilter
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.INVISIBLE
@@ -17,7 +16,6 @@ import com.skoky.R
 import com.skoky.services.DecoderBroadcastReceiver
 import com.skoky.services.DecoderService.Companion.DECODER_REFRESH
 import kotlinx.android.synthetic.main.startup_content.*
-import org.jetbrains.anko.AlertBuilder
 import org.jetbrains.anko.find
 
 class StartupFragment : Fragment() {
@@ -26,7 +24,7 @@ class StartupFragment : Fragment() {
     private var columnCount = 1
 
     private var lastMessageFromDecoder: ByteArray? = null
-    private var decoderFound: TextView? = null
+    private var decoderFoundText: TextView? = null
     private lateinit var receiver : DecoderBroadcastReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,11 +43,11 @@ class StartupFragment : Fragment() {
 
                 if (it.getDecoders().isNotEmpty()) {
                     val d = it.getDecoders().first()
-                    decoderFound!!.text = MainActivity.decoderLabel(d)
+                    Log.i(TAG,"Decoder found $d")
+                    decoderFoundText?.let { it.text = MainActivity.decoderLabel(d) }
 
                     progressBar2.visibility = INVISIBLE
                     connectButton.visibility = VISIBLE
-//                    moreDecodersButton.visibility = INVISIBLE
 
                     if (d.connection != null) {
                         connectButton.text = getString(R.string.disconnect)
@@ -58,16 +56,10 @@ class StartupFragment : Fragment() {
                     }
 
                 } else {
-                    decoderFound!!.text = getString(R.string.querying_decoders)
+                    decoderFoundText?.let { it.text = getString(R.string.querying_decoders) }
                     progressBar2.visibility = VISIBLE
                     connectButton.visibility = INVISIBLE
-//                    moreDecodersButton.visibility = INVISIBLE
                 }
-
-                if (it.getDecoders().size > 1) {
-//                    moreDecodersButton.visibility = VISIBLE
-                }
-
             }
         }
         context!!.registerReceiver(receiver, IntentFilter(DECODER_REFRESH))
@@ -77,7 +69,7 @@ class StartupFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
 
         val view = inflater.inflate(R.layout.startup_content, container, false)
-        decoderFound = view.find<TextView>(R.id.firstDecoderId)
+        decoderFoundText = view.find<TextView>(R.id.firstDecoderId)
         return view
     }
 

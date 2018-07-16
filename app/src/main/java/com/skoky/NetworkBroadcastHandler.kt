@@ -18,12 +18,12 @@ object NetworkBroadcastHandler {
         val incomingBuffer = ByteArray(1024)
         var socket: DatagramSocket? = null
         while (true) {
-            try {
-                socket = DatagramSocket(INCOMING_PORT)
+            socket = try {
+                DatagramSocket(INCOMING_PORT)
             } catch (e: Exception) {
                 Log.i(TAG, "Unable to listen in port $INCOMING_PORT, error $e")
                 socket?.close()
-                socket = null
+                null
             }
             socket?.let { s ->
 
