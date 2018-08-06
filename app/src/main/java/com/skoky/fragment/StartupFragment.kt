@@ -20,9 +20,6 @@ import org.jetbrains.anko.find
 
 class StartupFragment : Fragment() {
 
-    private val TAG = "StartupFragment"
-    private var columnCount = 1
-
     private var lastMessageFromDecoder: ByteArray? = null
     private var decoderFoundText: TextView? = null
     private lateinit var receiver : DecoderBroadcastReceiver
@@ -30,10 +27,6 @@ class StartupFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val app = activity!!.application as MyApp
-
-        arguments?.let {
-            columnCount = it.getInt(ARG_COLUMN_COUNT)
-        }
 
         receiver = DecoderBroadcastReceiver()
         receiver.setHandler { data ->
@@ -79,17 +72,6 @@ class StartupFragment : Fragment() {
     }
 
     companion object {
-
-        // TODO: Customize parameter argument names
-        const val ARG_COLUMN_COUNT = "column-count"
-
-        // TODO: Customize parameter initialization
-        @JvmStatic
-        fun newInstance(columnCount: Int) =
-                StartupFragment().apply {
-                    arguments = Bundle().apply {
-                        putInt(ARG_COLUMN_COUNT, columnCount)
-                    }
-                }
+        private const val TAG = "StartupFragment"
     }
 }

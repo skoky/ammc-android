@@ -27,6 +27,8 @@ import com.skoky.services.Decoder
 import com.skoky.services.DecoderService
 import kotlinx.android.synthetic.main.fragment_trainingmode_list.*
 import kotlinx.android.synthetic.main.main.*
+import kotlinx.android.synthetic.main.select_decoder.*
+import kotlinx.android.synthetic.main.select_decoder.view.*
 
 
 class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInteractionListener {
@@ -78,9 +80,8 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
     }
 
     private fun openStartupFragment() {
-        val fr: Fragment = StartupFragment.newInstance(1)
         val fragmentTransaction = supportFragmentManager.beginTransaction()
-        fragmentTransaction.replace(R.id.screen_container, fr)
+        fragmentTransaction.replace(R.id.screen_container, StartupFragment())
         fragmentTransaction.commit()
     }
 
@@ -101,8 +102,8 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
 
         val decodersCopy = app.decoderService!!.getDecoders()
 
-        val decoderText = d.findViewById<EditText>(R.id.decoder_address_edittext)
-        val dd = d.findViewById<RadioGroup>(R.id.known_decoders)
+        val decoderText = d.decoder_address_edittext
+        val dd = d.known_decoders
 
         decodersCopy.forEach {
             if (it.ipAddress != null) {
@@ -121,8 +122,8 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
 
         decoderText.addTextChangedListener(SimpleTextWatcher(dd))
 
-        d.findViewById<Button>(R.id.decoder_select_ok_button).setOnClickListener {
-            val checkDecoder = d.findViewById<RadioGroup>(R.id.known_decoders).checkedRadioButtonId
+        d.decoder_select_ok_button.setOnClickListener {
+            val checkDecoder = d.known_decoders.checkedRadioButtonId
             val foundDecoder = decodersCopy.find { it.id.hashCode() == checkDecoder }
             Log.i(TAG, "decoder $foundDecoder")
 

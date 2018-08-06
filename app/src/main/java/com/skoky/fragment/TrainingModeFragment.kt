@@ -24,6 +24,7 @@ import com.skoky.services.DecoderService.Companion.DECODER_DISCONNECTED
 import com.skoky.services.DecoderService.Companion.DECODER_PASSING
 import com.skoky.services.PassingBroadcastReceiver
 import kotlinx.android.synthetic.main.fragment_trainingmode_list.*
+import kotlinx.android.synthetic.main.fragment_trainingmode_list.view.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import org.json.JSONObject
@@ -40,7 +41,7 @@ class TrainingModeFragment : Fragment() {
     private var startStopButtonM: Button? = null
 
     private var tmm: TrainingModeModel = TrainingModeModel()    // a dummy model with no transponder
-    val transponders = mutableListOf<String>()
+    private val transponders = mutableListOf<String>()
 
     private lateinit var timingContentView: RecyclerView
 
@@ -50,8 +51,8 @@ class TrainingModeFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_trainingmode_list, container, false)
 
-        clockViewX = view.findViewById<TextView>(R.id.clockView)
-        timingContentView = view.findViewById<RecyclerView>(R.id.training_content)
+        clockViewX = view.clockView
+        timingContentView = view.training_content
         // Set the adapter
         if (timingContentView is RecyclerView) {
             with(timingContentView) {
@@ -61,7 +62,6 @@ class TrainingModeFragment : Fragment() {
                 }
                 adapter = TrainingModeRecyclerViewAdapter(mutableListOf(), listener)
 
-                // view.findViewById<Spinner>(R.id.decoderIdSpinner)
                 receiver = PassingBroadcastReceiver()
                 receiver.setHandler { data ->
                     val json = JSONObject(data)
@@ -82,7 +82,7 @@ class TrainingModeFragment : Fragment() {
                 context!!.registerReceiver(receiver, IntentFilter(DECODER_PASSING))
             }
         }
-        startStopButtonM = view.findViewById<Button>(R.id.startStopButton)
+        startStopButtonM = view.startStopButton
         startStopButtonM!!.setOnClickListener { doStartStopDialog() }
 
         val disconnectReceiver = DecoderBroadcastReceiver()
