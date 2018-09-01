@@ -130,7 +130,7 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
             if (decoderText.text.isNotEmpty()) {
                 app.decoderService?.let { it.connectDecoder(decoderText.text.toString()) }
             } else
-                foundDecoder?.let { app.decoderService?.let{ s -> s.connectOrDisconnectDecoder(it) } }
+                foundDecoder?.let { app.decoderService?.let{ s -> s.connectDecoder2(it) } }
 
             d.cancel()
         }
@@ -246,8 +246,7 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
 
 
     companion object {
-        private val TAG = "MainActivity"
-
+        private const val TAG = "MainActivity"
 
         fun decoderLabel(d: Decoder): String {
             val type: String = d.decoderType ?: d.id
