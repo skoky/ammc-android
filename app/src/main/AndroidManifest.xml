@@ -21,16 +21,6 @@
             </intent-filter>
 
         </activity>
-        <activity android:name=".timing.DriverDatabaseActivity"
-            android:label="@string/app_name" android:configChanges="orientation|keyboardHidden"/>
-
-        <activity
-                android:name=".menu.About"
-                android:label="AMBTester About"/>
-        <activity
-                android:name=".OptionsConsoleActivity"
-                android:label="AMBTester Console Options"/>
-        <!--        <service android:enabled="true" android:name="MyService"/>  -->
 
         <service
             android:name=".services.DecoderService"
@@ -38,15 +28,7 @@
             android:exported="true" >
         </service>
 
-        <receiver android:name=".services.DecoderBroadcastReceiver">
-            <intent-filter>
-                <action android:name="com.skoky.decoder.broadcast"/>
-            </intent-filter>
-        </receiver>
-
     </application>
-    <!--    <supports-screens android:normalScreens="true"
-android:largeScreens="true"/>    -->
     <uses-sdk
             android:minSdkVersion="11"
             android:targetSdkVersion="15"/>

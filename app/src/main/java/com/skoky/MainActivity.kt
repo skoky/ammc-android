@@ -94,6 +94,8 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
         app.decoderService?.let { ds ->
             if (ds.isDecoderConnected()) {
                 ds.disconnectDecoderByIpUUID(firstDecoderId.tag as String)
+            } else {
+                ds.connectDecoderByUUID(firstDecoderId.tag as String)
             }
 
         }

@@ -1,12 +1,14 @@
 package com.skoky.services
 
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.support.annotation.RequiresApi
 import android.util.Log
+import com.skoky.MyApp
 import com.skoky.NetworkBroadcastHandler
 import eu.plib.Parser
 import org.jetbrains.anko.doAsync
@@ -25,6 +27,13 @@ data class Decoder(val uuid: UUID, var decoderId: String? = null, var ipAddress:
 
     override fun hashCode(): Int {
         return uuid.hashCode()
+    }
+
+    companion object {
+        fun newDecoder(ipAddress: String? = null, decoderId: String? = null): Decoder {
+            return Decoder(UUID.randomUUID(), ipAddress = ipAddress, decoderId = decoderId, lastSeen = System.currentTimeMillis())
+        }
+
     }
 }
 
@@ -60,20 +69,20 @@ class DecoderService : Service() {
         Timer().schedule(1000, 1000) {
             // removes inactive decoders
             decoders.removeIf { d ->
-                    Log.i(TAG, "Decoder $d diff: ${System.currentTimeMillis() - d.lastSeen}")
-                    val toRemove = (System.currentTimeMillis() - d.lastSeen) > INACTIVE_DECODER_TIMEOUT
-                    if (toRemove) {
-                        Log.i(TAG, "Removing decoder $d, current decoders $decoders")
-                        d.connection?.close()
-                        true
-                    } else {
-                        false
-                    }
+                Log.i(TAG, "Decoder $d diff: ${System.currentTimeMillis() - d.lastSeen}")
+                val toRemove = (System.currentTimeMillis() - d.lastSeen) > INACTIVE_DECODER_TIMEOUT
+                if (toRemove) {
+                    Log.i(TAG, "Removing decoder $d, current decoders $decoders")
+                    d.connection?.close()
+                    true
+                } else {
+                    false
+                }
             }
         }
 
         doAsync {
-            NetworkBroadcastHandler.receiveBroadcastData { processMsg(it) }
+            NetworkBroadcastHandler.receiveBroadcastData { processUdpMsg(it) }
         }
 
     }
@@ -86,18 +95,20 @@ class DecoderService : Service() {
         return decoders.any { it.connection != null }
     }
 
-    fun disconnectDecoderByIpUUID(decoderUUID : String) {
+    fun disconnectDecoderByIpUUID(decoderUUID: String) {
         val uuid = UUID.fromString(decoderUUID)
         val found = decoders.find { it.uuid == uuid }
         found?.let { disconnectDecoder2(it) }
     }
 
+    fun connectDecoderByUUID(decoderUUIDString: String) {
+        val uuid = UUID.fromString(decoderUUIDString)
+        val found = decoders.find { it.uuid == uuid }
+        found?.let { connectDecoder2(it) }
+    }
+
     fun connectDecoder2(decoder: Decoder) {
 
-        if (decoders.contains(decoder)) {
-            Log.e(TAG, "Decoder already registered")
-            return
-        }
         if (decoder.connection == null) {
             doAsync {
                 val socket = Socket()
@@ -121,7 +132,7 @@ class DecoderService : Service() {
                 }
             }
         } else {
-            Log.e(TAG, "Decoder connected $decoder")
+            Log.e(TAG, "Decoder already connected $decoder")
         }
     }
 
@@ -155,7 +166,7 @@ class DecoderService : Service() {
                     Log.i(TAG, "Received $read bytes")
                     if (read > 0) {
                         val json = JSONObject(Parser.decode(buffer.copyOf(read)))
-                        if (json.get("recordType").toString().isNotEmpty()) sendBroadcastData(decoder,json.toString())
+                        if (json.get("recordType").toString().isNotEmpty()) sendBroadcastData(decoder, json.toString())
                         when {
                             json.get("recordType").toString() == "Passing" -> sendBroadcastPassing(json.toString())
                             else -> Log.w(TAG, "received unknown data $json")
@@ -166,9 +177,13 @@ class DecoderService : Service() {
                 }
                 decoders.find { it.uuid == decoder.uuid }?.let { decoder = it }
             }
+            Log.i(TAG, "Bound ${socket.isBound}, read $read")
         } catch (e: Exception) {
             Log.w(TAG, "Decoder connection error $decoder", e)
+        } catch (t: Throwable) {
+            Log.e(TAG, "Decoder connection throwable $decoder", t)
         } finally {
+            decoder.connection?.close()
             decoder.connection = null
             decoders.remove(decoder)
             Log.i(TAG, "Decoder disconnected")
@@ -177,7 +192,7 @@ class DecoderService : Service() {
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    private fun processMsg(msgB: ByteArray) {
+    private fun processUdpMsg(msgB: ByteArray) {
         Log.w(TAG, "Data received: ${msgB.size}")
         val msg = Parser.decode(msgB)
         val json = JSONObject(msg)
@@ -191,27 +206,29 @@ class DecoderService : Service() {
             return
         }
 
-        val decoder = decoders.find { it.decoderId == decoderId }
-        decoder?.let {
+        var decoder = decoders.find { it.decoderId == decoderId }
+        if (decoder == null) decoder = Decoder.newDecoder(decoderId = decoderId)
+
+        decoder?.let { d ->
 
             if (json.has("recordType")) when (json.get("recordType")) {
                 "Status" -> {
                     sendUdpNetworkRequest()
                     sendUdpVersionRequest()
-                    sendBroadcastData(it, json.toString())
+                    sendBroadcastData(d, json.toString())
                     decoders.addOrUpdate(decoder)
                 }
                 "NetworkSettings" ->
                     if (json.has("activeIPAddress")) {
                         val ipAddress = json.get("activeIPAddress") as? String
                         decoders.addOrUpdate(decoder.copy(ipAddress = ipAddress))
-                        sendBroadcastData(it, json.toString())
+                        sendBroadcastData(d, json.toString())
                     }
                 "Version" ->
                     if (json.has("decoderType")) {
                         val decoderType = json.get("decoderType") as? String
                         decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
-                        sendBroadcastData(it, json.toString())
+                        sendBroadcastData(d, json.toString())
                     }
             }
             Log.i(TAG, "Decoders: $decoders")
@@ -245,7 +262,7 @@ class DecoderService : Service() {
     private fun sendBroadcastConnect(decoder: Decoder) {
         val intent = Intent()
         intent.action = DECODER_CONNECT
-        intent.putExtra("uuid",decoder.uuid.toString())
+        intent.putExtra("uuid", decoder.uuid.toString())
         applicationContext.sendBroadcast(intent)
         Log.w(TAG, "Broadcast sent $intent")
     }
@@ -253,7 +270,7 @@ class DecoderService : Service() {
     private fun sendBroadcastDisconnected(decoder: Decoder) {
         val intent = Intent()
         intent.action = DECODER_DISCONNECTED
-        intent.putExtra("uuid",decoder.uuid.toString())
+        intent.putExtra("uuid", decoder.uuid.toString())
         // TBD more data as it is not in decoders anymore
         applicationContext.sendBroadcast(intent)
         Log.w(TAG, "Broadcast sent $intent")
@@ -294,8 +311,12 @@ class DecoderService : Service() {
     fun connectDecoder(address: String): Boolean {
         Log.d(TAG, "Connecting to $address")
 
-        val probablyDecoder = Decoder(uuid = UUID.randomUUID(), ipAddress = address, lastSeen = System.currentTimeMillis())
-        connectDecoder2(probablyDecoder)
+        val foundByIp = decoders.find { it.ipAddress == address }
+        if (foundByIp != null)
+            connectDecoder2(foundByIp)
+        else {  // create new decoder
+            connectDecoder2(Decoder.newDecoder(ipAddress = address))
+        }
         return true
     }
 
@@ -307,7 +328,7 @@ class DecoderService : Service() {
 
     companion object {
         private const val TAG = "DecoderService"
-        const val DECODER_CONNECT = "com.skoky.decoder.broadcast.decoder_connect"
+        const val DECODER_CONNECT = "com.skoky.decoder.broadcast.connect"
         const val DECODER_DATA = "com.skoky.decoder.broadcast.data"
         const val DECODER_PASSING = "com.skoky.decoder.broadcast.passing"
         const val DECODER_DISCONNECTED = "com.skoky.decoder.broadcast.disconnected"

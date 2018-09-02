@@ -43,36 +43,50 @@ class StartupFragment : Fragment() {
             val uuid = UUID.fromString(intent?.getStringExtra("uuid")!!)
 
             val foundDecoder = decoders!!.find { it.uuid == uuid }
-            if (foundDecoder == null) {  // disconnect
+
+            if (foundDecoder == null) {  // query
                 bar.visibility = VISIBLE
                 button.visibility = INVISIBLE
                 decoderText.text = app.getString(R.string.querying_decoders)
+                button.text = app.getString(R.string.connect)
 
-            } else {        // connect
-                bar.visibility = INVISIBLE
-                button.visibility = VISIBLE
-                foundDecoder?.let {
-                    decoderText.text = MainActivity.decoderLabel(it)
-                    decoderText.tag = foundDecoder.uuid.toString()
+            } else {
+
+                if (foundDecoder!!.connection == null) { // not connected
+                    bar.visibility = INVISIBLE
+                    button.visibility = VISIBLE
+                    button.text = app.getString(R.string.connect)
+                    foundDecoder?.let {
+                        decoderText.text = MainActivity.decoderLabel(it)
+                        decoderText.tag = foundDecoder.uuid.toString()
+                    }
+                } else if (foundDecoder!!.connection != null && foundDecoder!!.connection!!.isBound) {  // connected
+                    button.text = app.getString(R.string.disconnect)
                 }
             }
         }
     }
 
 
-    class DataReceiver(val app: MyApp, private val decoderText: TextView) : BroadcastReceiver() {
+    class DataReceiver(val app: MyApp, private val bar: ProgressBar, val button: Button,
+                       private val decoderText: TextView) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
 
             val decoders = app.decoderService!!.getDecoders()
             val lastMessageFromDecoder = intent!!.getStringExtra("Data")
 
+            if (lastMessageFromDecoder==null) Log.w(TAG,"No data inside intent")
+
             lastMessageFromDecoder?.let {msg ->
                 Log.d(TAG, "Last msg: $msg")
                 val json = JSONObject(msg)
 
-                json.get("decoderId")?.let { dId ->
+                json.get("decoderId")?.let { dId ->     // update decoder data
                     decoders.find { it.decoderId == dId }?.let { d ->
                         decoderText.text = MainActivity.decoderLabel(d)
+                        decoderText.tag = d.uuid.toString()
+                        bar.visibility = INVISIBLE
+                        button.visibility = VISIBLE
                     }
                 }
 
@@ -94,7 +108,7 @@ class StartupFragment : Fragment() {
         context!!.registerReceiver(connectReceiver, IntentFilter(DECODER_CONNECT))
         context!!.registerReceiver(connectReceiver, IntentFilter(DECODER_DISCONNECTED))
 
-        dataReceiver = DataReceiver(app, firstDecoderId)
+        dataReceiver = DataReceiver(app, progressBar2, connectButton, firstDecoderId)
         context!!.registerReceiver(dataReceiver, IntentFilter(DECODER_DATA))
 
     }
