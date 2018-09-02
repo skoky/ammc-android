@@ -15,37 +15,72 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
+import com.skoky.MainActivity
+import com.skoky.MyApp
+
 
 import com.skoky.R
 import com.skoky.services.DecoderService.Companion.DECODER_DATA
 import com.skoky.services.DecoderService.Companion.DECODER_CONNECT
 import com.skoky.services.DecoderService.Companion.DECODER_DISCONNECTED
+import eu.plib.Parser
+import eu.plib.ParserS
 import kotlinx.android.synthetic.main.startup_content.*
-import org.jetbrains.anko.find
+import org.json.JSONObject
+import java.util.*
 
 class StartupFragment : Fragment() {
 
     //    private var decoderFoundText: TextView? = null
     private lateinit var connectReceiver: BroadcastReceiver
-    private lateinit var disconnectReceiver: BroadcastReceiver
     private lateinit var dataReceiver: BroadcastReceiver
 
-    class ConnectionReceiver(private val bar: ProgressBar, val button: Button,
-                             val text: String, val decoderText: TextView, val decoderLabel: String) : BroadcastReceiver() {
+    class ConnectionReceiver(val app: MyApp, private val bar: ProgressBar, val button: Button,
+                             private val decoderText: TextView) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            bar.visibility = INVISIBLE
-            button.visibility = VISIBLE
-            button.text = text
-            decoderText.text = decoderLabel
+
+            val decoders = app.decoderService?.getDecoders()
+            val uuid = UUID.fromString(intent?.getStringExtra("uuid")!!)
+
+            val foundDecoder = decoders!!.find { it.uuid == uuid }
+            if (foundDecoder == null) {  // disconnect
+                bar.visibility = VISIBLE
+                button.visibility = INVISIBLE
+                decoderText.text = app.getString(R.string.querying_decoders)
+
+            } else {        // connect
+                bar.visibility = INVISIBLE
+                button.visibility = VISIBLE
+                foundDecoder?.let {
+                    decoderText.text = MainActivity.decoderLabel(it)
+                    decoderText.tag = foundDecoder.uuid.toString()
+                }
+            }
         }
     }
 
 
-    class DataReceiver : BroadcastReceiver() {
+    class DataReceiver(val app: MyApp, private val decoderText: TextView) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
 
-            val lastMessageFromDecoder = intent!!.getByteArrayExtra("Data")
-            Log.d(TAG, "Last msg: $lastMessageFromDecoder")
+            val decoders = app.decoderService!!.getDecoders()
+            val lastMessageFromDecoder = intent!!.getStringExtra("Data")
+
+            lastMessageFromDecoder?.let {msg ->
+                Log.d(TAG, "Last msg: $msg")
+                val json = JSONObject(msg)
+
+                json.get("decoderId")?.let { dId ->
+                    decoders.find { it.decoderId == dId }?.let { d ->
+                        decoderText.text = MainActivity.decoderLabel(d)
+                    }
+                }
+
+                if (json.has("recordType")) when (json.get("recordType")) {
+                    "NetworkSettings" -> ""// TBD
+                }
+            }
+
 
         }
     }
@@ -53,13 +88,13 @@ class StartupFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        connectReceiver = ConnectionReceiver(progressBar2, connectButton, getString(R.string.disconnect), firstDecoderId, "xxx")
-        disconnectReceiver = ConnectionReceiver(progressBar2, connectButton, getString(R.string.connect), firstDecoderId, getString(R.string.querying_decoders))
+        val app = activity!!.application as MyApp
+
+        connectReceiver = ConnectionReceiver(app, progressBar2, connectButton, firstDecoderId)
         context!!.registerReceiver(connectReceiver, IntentFilter(DECODER_CONNECT))
-        context!!.registerReceiver(disconnectReceiver, IntentFilter(DECODER_DISCONNECTED))
+        context!!.registerReceiver(connectReceiver, IntentFilter(DECODER_DISCONNECTED))
 
-
-        dataReceiver = DataReceiver()
+        dataReceiver = DataReceiver(app, firstDecoderId)
         context!!.registerReceiver(dataReceiver, IntentFilter(DECODER_DATA))
 
     }
@@ -67,9 +102,7 @@ class StartupFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
 
-        val view = inflater.inflate(R.layout.startup_content, container, false)
-//        decoderFoundText = view.find<TextView>(R.id.firstDecoderId)
-        return view
+        return inflater.inflate(R.layout.startup_content, container, false)
     }
 
     override fun onDetach() {

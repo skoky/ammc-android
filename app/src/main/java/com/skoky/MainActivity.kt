@@ -8,7 +8,6 @@ import android.content.ServiceConnection
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.IBinder
-import android.support.v4.app.Fragment
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBar
 import android.support.v7.app.AlertDialog
@@ -19,16 +18,17 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.*
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.Toast
 import com.skoky.fragment.StartupFragment
 import com.skoky.fragment.TrainingModeFragment
 import com.skoky.fragment.content.Lap
 import com.skoky.services.Decoder
 import com.skoky.services.DecoderService
-import kotlinx.android.synthetic.main.fragment_trainingmode_list.*
 import kotlinx.android.synthetic.main.main.*
 import kotlinx.android.synthetic.main.select_decoder.*
-import kotlinx.android.synthetic.main.select_decoder.view.*
+import kotlinx.android.synthetic.main.startup_content.*
 
 
 class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInteractionListener {
@@ -38,7 +38,6 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
     }
 
     private lateinit var app: MyApp
-//    private lateinit var mDrawerLayout: DrawerLayout
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,7 +91,12 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
     }
 
     fun connectOrDisconnect(view: View) {
-        app.decoderService?.let { it.connectOrDisconnectFirstDecoder() }
+        app.decoderService?.let { ds ->
+            if (ds.isDecoderConnected()) {
+                ds.disconnectDecoderByIpUUID(firstDecoderId.tag as String)
+            }
+
+        }
     }
 
     fun showMoreDecoders(view: View) {
@@ -105,12 +109,12 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
         val decoderText = d.decoder_address_edittext
         val dd = d.known_decoders
 
-        decodersCopy.forEach {
-            if (it.ipAddress != null) {
+        decodersCopy.forEach {d ->
+            if (d.ipAddress != null) {
                 val b = RadioButton(this)
-                b.text = MainActivity.decoderLabel(it)
+                b.text = MainActivity.decoderLabel(d)
                 b.isChecked = false
-                b.id = it.id.hashCode()
+                b.id = d.hashCode()
                 b.setOnCheckedChangeListener { view, checked ->
                     Log.d(TAG, "Checked $view $checked")
                     decoderText.text = null
@@ -124,7 +128,7 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
 
         d.decoder_select_ok_button.setOnClickListener {
             val checkDecoder = d.known_decoders.checkedRadioButtonId
-            val foundDecoder = decodersCopy.find { it.id.hashCode() == checkDecoder }
+            val foundDecoder = decodersCopy.find { it.hashCode() == checkDecoder }
             Log.i(TAG, "decoder $foundDecoder")
 
             if (decoderText.text.isNotEmpty()) {
@@ -134,7 +138,6 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
 
             d.cancel()
         }
-
 
         d.setCancelable(true)
         d.setOnCancelListener { it.cancel() }
@@ -176,15 +179,15 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
     fun openTrainingMode(view: View?): Boolean {
 
         app.decoderService?.let {
-            if (it.isDecoderConnected()) {
+            return if (it.isDecoderConnected()) {
                 trainingFragment = TrainingModeFragment.newInstance(1)
                 val fragmentTransaction = supportFragmentManager.beginTransaction()
                 fragmentTransaction.replace(R.id.screen_container, trainingFragment)
                 fragmentTransaction.commit()
-                return true
+                true
             } else {
                 AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
-                return false
+                false
             }
         }
         return false
@@ -249,8 +252,14 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
         private const val TAG = "MainActivity"
 
         fun decoderLabel(d: Decoder): String {
-            val type: String = d.decoderType ?: d.id
-            return if (d.ipAddress != null) "$type / ${d.ipAddress}" else type
+
+            if (d.decoderType != null && d.ipAddress != null) return "${d.decoderType} / ${d.ipAddress}"
+
+            d.ipAddress?.let { return it }
+
+            d.decoderId?.let { return it }
+
+            return d.uuid.toString()
         }
     }
 }

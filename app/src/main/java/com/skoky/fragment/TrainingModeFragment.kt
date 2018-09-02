@@ -112,7 +112,7 @@ class TrainingModeFragment : Fragment() {
 
         val trs = transponders.toTypedArray()
 
-        val b = android.support.v7.app.AlertDialog.Builder(this!!.context!!)
+        val b = android.support.v7.app.AlertDialog.Builder(this.context!!)
                 .setTitle(getString(R.string.select_label))
         if (trs.isEmpty()) {
             b.setMessage(getString(R.string.no_transponder))
@@ -128,7 +128,7 @@ class TrainingModeFragment : Fragment() {
         b.create().show()
     }
 
-    fun setSelectedTransponder(transponder: String) {
+    private fun setSelectedTransponder(transponder: String) {
         tmm.setSelectedTransponder(transponder)
     }
 
@@ -153,11 +153,11 @@ class TrainingModeFragment : Fragment() {
                 doStart()
             } else {
                 AlertDialog.Builder(context).setTitle("Clear results and start new training?")
-                        .setPositiveButton("Yes") { dialog, x ->
+                        .setPositiveButton("Yes") { dialog, _ ->
                             dialog.cancel()
                             doStart()
                         }
-                        .setNegativeButton("No") { dialog, which -> dialog.cancel() }
+                        .setNegativeButton("No") { dialog, _ -> dialog.cancel() }
                         .create().show()
             }
         }
