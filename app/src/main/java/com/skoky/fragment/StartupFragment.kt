@@ -35,35 +35,10 @@ class StartupFragment : Fragment() {
     private lateinit var connectReceiver: BroadcastReceiver
     private lateinit var dataReceiver: BroadcastReceiver
 
-    class ConnectionReceiver(val app: MyApp, private val bar: ProgressBar, val button: Button,
-                             private val decoderText: TextView) : BroadcastReceiver() {
+    class ConnectionReceiver(val stateHandler: (UUID) -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-
-            val decoders = app.decoderService?.getDecoders()
             val uuid = UUID.fromString(intent?.getStringExtra("uuid")!!)
-
-            val foundDecoder = decoders!!.find { it.uuid == uuid }
-
-            if (foundDecoder == null) {  // query
-                bar.visibility = VISIBLE
-                button.visibility = INVISIBLE
-                decoderText.text = app.getString(R.string.querying_decoders)
-                button.text = app.getString(R.string.connect)
-
-            } else {
-
-                if (foundDecoder!!.connection == null) { // not connected
-                    bar.visibility = INVISIBLE
-                    button.visibility = VISIBLE
-                    button.text = app.getString(R.string.connect)
-                    foundDecoder?.let {
-                        decoderText.text = MainActivity.decoderLabel(it)
-                        decoderText.tag = foundDecoder.uuid.toString()
-                    }
-                } else if (foundDecoder!!.connection != null && foundDecoder!!.connection!!.isBound) {  // connected
-                    button.text = app.getString(R.string.disconnect)
-                }
-            }
+            stateHandler(uuid)
         }
     }
 
@@ -75,13 +50,14 @@ class StartupFragment : Fragment() {
             val decoders = app.decoderService!!.getDecoders()
             val lastMessageFromDecoder = intent!!.getStringExtra("Data")
 
-            if (lastMessageFromDecoder==null) Log.w(TAG,"No data inside intent")
+            if (lastMessageFromDecoder == null) Log.w(TAG, "No data inside intent")
 
-            lastMessageFromDecoder?.let {msg ->
+            lastMessageFromDecoder?.let { msg ->
                 Log.d(TAG, "Last msg: $msg")
                 val json = JSONObject(msg)
 
-                json.get("decoderId")?.let { dId ->     // update decoder data
+                json.get("decoderId")?.let { dId ->
+                    // update decoder data
                     decoders.find { it.decoderId == dId }?.let { d ->
                         decoderText.text = MainActivity.decoderLabel(d)
                         decoderText.tag = d.uuid.toString()
@@ -104,13 +80,46 @@ class StartupFragment : Fragment() {
 
         val app = activity!!.application as MyApp
 
-        connectReceiver = ConnectionReceiver(app, progressBar2, connectButton, firstDecoderId)
+        connectReceiver = ConnectionReceiver(this@StartupFragment::visualStateHandler)
         context!!.registerReceiver(connectReceiver, IntentFilter(DECODER_CONNECT))
         context!!.registerReceiver(connectReceiver, IntentFilter(DECODER_DISCONNECTED))
 
         dataReceiver = DataReceiver(app, progressBar2, connectButton, firstDecoderId)
         context!!.registerReceiver(dataReceiver, IntentFilter(DECODER_DATA))
 
+        app.decoderService?.let {
+            if (it.getDecoders().isNotEmpty())
+                visualStateHandler(it.getDecoders().first().uuid)
+        }
+
+    }
+
+    private fun visualStateHandler(uuid: UUID) {
+
+        val app = activity!!.application as MyApp
+
+        val foundDecoder = app.decoderService!!.getDecoders().find { it.uuid == uuid }
+
+        if (foundDecoder == null) {  // query
+            progressBar2.visibility = VISIBLE
+            connectButton.visibility = INVISIBLE
+            firstDecoderId.text = app.getString(R.string.querying_decoders)
+            connectButton.text = app.getString(R.string.connect)
+
+        } else {
+
+            if (foundDecoder!!.connection == null) { // not connected
+                progressBar2.visibility = INVISIBLE
+                connectButton.visibility = VISIBLE
+                connectButton.text = app.getString(R.string.connect)
+                foundDecoder?.let {
+                    firstDecoderId.text = MainActivity.decoderLabel(it)
+                    firstDecoderId.tag = foundDecoder.uuid.toString()
+                }
+            } else if (foundDecoder!!.connection != null && foundDecoder!!.connection!!.isBound) {  // connected
+                connectButton.text = app.getString(R.string.disconnect)
+            }
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,

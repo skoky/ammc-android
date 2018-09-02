@@ -74,7 +74,9 @@ class DecoderService : Service() {
                 if (toRemove) {
                     Log.i(TAG, "Removing decoder $d, current decoders $decoders")
                     d.connection?.close()
+                    sendBroadcastDisconnected(d)
                     true
+
                 } else {
                     false
                 }
@@ -125,7 +127,6 @@ class DecoderService : Service() {
                 } catch (e: Exception) {
                     Log.e(TAG, "Error connecting decoder", e)
                     socket.close()
-                    decoders.remove(decoder)
                     uiThread {
                         toast("Connection not possible to ${decoder.ipAddress}:5403")
                     }
@@ -144,7 +145,6 @@ class DecoderService : Service() {
             }
             // cleanup
             decoder.connection = null
-            decoders.remove(decoder)
             sendBroadcastDisconnected(decoder)
 
         } catch (e: Exception) {
@@ -185,7 +185,6 @@ class DecoderService : Service() {
         } finally {
             decoder.connection?.close()
             decoder.connection = null
-            decoders.remove(decoder)
             Log.i(TAG, "Decoder disconnected")
             sendBroadcastDisconnected(decoder)
         }
@@ -332,6 +331,6 @@ class DecoderService : Service() {
         const val DECODER_DATA = "com.skoky.decoder.broadcast.data"
         const val DECODER_PASSING = "com.skoky.decoder.broadcast.passing"
         const val DECODER_DISCONNECTED = "com.skoky.decoder.broadcast.disconnected"
-        private const val INACTIVE_DECODER_TIMEOUT: Long = 30000  // 10secs
+        private const val INACTIVE_DECODER_TIMEOUT: Long = 10000  // 10secs
     }
 }
