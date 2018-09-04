@@ -33,7 +33,6 @@ data class Decoder(val uuid: UUID, var decoderId: String? = null, var ipAddress:
         fun newDecoder(ipAddress: String? = null, decoderId: String? = null): Decoder {
             return Decoder(UUID.randomUUID(), ipAddress = ipAddress, decoderId = decoderId, lastSeen = System.currentTimeMillis())
         }
-
     }
 }
 
@@ -124,6 +123,9 @@ class DecoderService : Service() {
                     doAsync {
                         listenOnSocketConnection(socket, decoder)
                     }
+
+                    val versionRequest = Parser.encode("{\"recordType\":\"Version\",\"emptyFields\":[\"decoderType\"],\"VERSION\":\"2\"}")
+                    socket.getOutputStream().write(versionRequest)
                 } catch (e: Exception) {
                     Log.e(TAG, "Error connecting decoder", e)
                     socket.close()
@@ -169,6 +171,11 @@ class DecoderService : Service() {
                         if (json.get("recordType").toString().isNotEmpty()) sendBroadcastData(decoder, json.toString())
                         when {
                             json.get("recordType").toString() == "Passing" -> sendBroadcastPassing(json.toString())
+                            json.get("recordType").toString() == "Version" -> {
+                                val decoderType = json.get("decoderType-text") as? String
+                                decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
+                                sendBroadcastData(decoder, json.toString())
+                            }
                             else -> Log.w(TAG, "received unknown data $json")
                         }
                         json.get("decoderId")?.let { id -> decoders.addOrUpdate(decoder.copy(decoderId = id as String)) }
@@ -225,7 +232,7 @@ class DecoderService : Service() {
                     }
                 "Version" ->
                     if (json.has("decoderType")) {
-                        val decoderType = json.get("decoderType") as? String
+                        val decoderType = json.get("decoderType-text") as? String
                         decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
                         sendBroadcastData(d, json.toString())
                     }
