@@ -1,21 +1,19 @@
 package com.skoky.fragment.content
 
-data class TrainingLap(val number: Int, val timeUs: Long, val lapTimeMs: Int, val diffMs: Int?)
+data class RacingLap(val number: Int, val timeUs: Long, val lapTimeMs: Int, val diffMs: Int?)
 
-class TrainingModeModel {
+class RacingModeModel {
 
     private val allTransponders = mutableSetOf<Int>()
-    private var myTransponder: Int? = null
 
-    fun newPassing(values: List<TrainingLap>, transponder: Int, time: Long): List<TrainingLap> {
+    fun newPassing(values: List<RacingLap>, transponder: Int, time: Long): List<RacingLap> {
 
-        if (allTransponders.size == 0) myTransponder = transponder
         if (!allTransponders.contains(transponder)) allTransponders.add(transponder)
 
-        if (transponder != myTransponder) return values.toMutableList()
+//        if (transponder != myTransponder) return values.toMutableList()
 
         return if (values.isEmpty())
-            mutableListOf(TrainingLap(0, time, 0, null))
+            mutableListOf(RacingLap(0, time, 0, null))
         else {
             val sorted = values.sortedByDescending { it.number }.toMutableList()
 
@@ -23,7 +21,7 @@ class TrainingModeModel {
 
             val lapTime = ((time - lastLap.timeUs).toInt()) / 1000
             val diff = (lapTime - lastLap.lapTimeMs)
-            val veryLastLap = TrainingLap(lastLap.number + 1, time, lapTime, diff)
+            val veryLastLap = RacingLap(lastLap.number + 1, time, lapTime, diff)
 
             sorted.add(veryLastLap)
             val newV = if (sorted.size > MAX_SIZE)
@@ -34,16 +32,9 @@ class TrainingModeModel {
         }
     }
 
-    fun setSelectedTransponder(transponder: String) {
-        myTransponder = transponder.toInt()
-    }
-
-    fun getSelectedTransponder(): Int? {
-        return myTransponder
-    }
 
     companion object {
-        private const val TAG = "TrainingModeModel"
+        private const val TAG = "RacingModeModel"
         private const val MAX_SIZE = 5000
     }
 }

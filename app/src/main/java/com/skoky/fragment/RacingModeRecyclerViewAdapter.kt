@@ -6,22 +6,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.skoky.R
-import com.skoky.fragment.TrainingModeFragment.OnListFragmentInteractionListener
-import com.skoky.fragment.content.TrainingLap
-import com.skoky.fragment.content.TrainingModeModel
-import kotlinx.android.synthetic.main.fragment_trainingmode.view.*
+import com.skoky.fragment.RacingModeFragment.OnListFragmentInteractionListener
+import com.skoky.fragment.content.RacingLap
+import com.skoky.fragment.content.RacingModeModel
+import kotlinx.android.synthetic.main.fragment_racingmode.view.*
 import java.text.SimpleDateFormat
 import java.util.*
 
-class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingLap>, private val mListener: OnListFragmentInteractionListener?)
-    : RecyclerView.Adapter<TrainingModeRecyclerViewAdapter.ViewHolder>() {
+class RacingModeRecyclerViewAdapter(private var mValues: MutableList<RacingLap>, private val mListener: OnListFragmentInteractionListener?)
+    : RecyclerView.Adapter<RacingModeRecyclerViewAdapter.ViewHolder>() {
 
     private val mOnClickListener: View.OnClickListener
 
     init {
         mValues.sortByDescending { it.number }
         mOnClickListener = View.OnClickListener { v ->
-            val item = v.tag as TrainingLap
+            val item = v.tag as RacingLap
             // Notify the active callbacks interface (the activity, if the fragment is attached to
             // one) that an item has been selected.
             mListener?.onListFragmentInteraction(item)
@@ -30,7 +30,7 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingL
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.fragment_trainingmode, parent, false)
+                .inflate(R.layout.fragment_racingmode, parent, false)
 
         return ViewHolder(view)
     }
@@ -91,7 +91,7 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingL
 
     }
 
-    val tmm = TrainingModeModel()
+    val tmm = RacingModeModel()
     fun addRecord(transponder: Int, time: Long) {
         mValues = tmm.newPassing(mValues.toList(), transponder, time).toMutableList()
     }

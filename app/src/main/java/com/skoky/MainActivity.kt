@@ -24,9 +24,11 @@ import android.view.View.INVISIBLE
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
+import com.skoky.fragment.RacingModeFragment
 import com.skoky.fragment.StartupFragment
 import com.skoky.fragment.TrainingModeFragment
-import com.skoky.fragment.content.Lap
+import com.skoky.fragment.content.RacingLap
+import com.skoky.fragment.content.TrainingLap
 import com.skoky.services.Decoder
 import com.skoky.services.DecoderService
 import kotlinx.android.synthetic.main.main.*
@@ -34,9 +36,12 @@ import kotlinx.android.synthetic.main.select_decoder.*
 import kotlinx.android.synthetic.main.startup_content.*
 
 
-class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInteractionListener {
+class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInteractionListener, RacingModeFragment.OnListFragmentInteractionListener {
+    override fun onListFragmentInteraction(item: RacingLap?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
-    override fun onListFragmentInteraction(item: Lap?) {
+    override fun onListFragmentInteraction(item: TrainingLap?) {
         Log.w(TAG, "Interaction $item")
     }
 
@@ -103,7 +108,7 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
         }
     }
 
-    fun doMakeAWish(view:View) {
+    fun doMakeAWish(view: View) {
 
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "plain/text"
@@ -123,7 +128,7 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
         val decoderText = d.decoder_address_edittext
         val dd = d.known_decoders
 
-        decodersCopy.forEach {d ->
+        decodersCopy.forEach { d ->
             if (d.ipAddress != null) {
                 val b = RadioButton(this)
                 b.text = MainActivity.decoderLabel(d)
@@ -148,7 +153,7 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
             if (decoderText.text.isNotEmpty()) {
                 app.decoderService?.let { it.connectDecoder(decoderText.text.toString().trim()) }
             } else
-                foundDecoder?.let { app.decoderService?.let{ s -> s.connectDecoder2(it) } }
+                foundDecoder?.let { app.decoderService?.let { s -> s.connectDecoder2(it) } }
 
             d.cancel()
         }
@@ -172,12 +177,7 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
 
     }
 
-    fun openRacingMode(view: View?): Boolean {
-        Log.i(TAG, "TBD")
-        return false
-    }
-
-    fun openConsoleMode(view: View?): Boolean {
+    private fun openConsoleMode(view: View?): Boolean {
         Log.i(TAG, "TBD")
         return false
     }
@@ -187,6 +187,24 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
         if (!trainingFragment.running) {
             trainingFragment.openTransponderDialog(false)
         }
+    }
+
+    private lateinit var racingFragment: RacingModeFragment
+    fun openRacingMode(view: View?): Boolean {
+        app.decoderService?.let {
+            return if (it.isDecoderConnected()) {
+                racingFragment = RacingModeFragment.newInstance(1)
+                val fragmentTransaction = supportFragmentManager.beginTransaction()
+                fragmentTransaction.replace(R.id.screen_container, racingFragment)
+                fragmentTransaction.commit()
+                true
+            } else {
+                AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
+                false
+            }
+        }
+        return false
+
     }
 
     private lateinit var trainingFragment: TrainingModeFragment

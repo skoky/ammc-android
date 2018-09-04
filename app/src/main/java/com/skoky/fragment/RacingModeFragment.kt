@@ -1,10 +1,7 @@
 package com.skoky.fragment
 
 import android.app.AlertDialog
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.GridLayoutManager
@@ -19,19 +16,19 @@ import android.widget.Button
 import android.widget.TextView
 import com.skoky.R
 import com.skoky.Tools
-import com.skoky.fragment.content.TrainingLap
-import com.skoky.fragment.content.TrainingModeModel
+import com.skoky.fragment.content.RacingLap
+import com.skoky.fragment.content.RacingModeModel
 import com.skoky.services.DecoderService.Companion.DECODER_DISCONNECTED
 import com.skoky.services.DecoderService.Companion.DECODER_PASSING
-import kotlinx.android.synthetic.main.fragment_trainingmode_list.*
-import kotlinx.android.synthetic.main.fragment_trainingmode_list.view.*
+import kotlinx.android.synthetic.main.fragment_racingmode.view.*
+import kotlinx.android.synthetic.main.fragment_racingmode_list.view.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import org.json.JSONObject
 import java.util.concurrent.Future
 
 
-class TrainingModeFragment : Fragment() {
+class RacingModeFragment : Fragment() {
 
     private var columnCount = 1
 
@@ -40,7 +37,7 @@ class TrainingModeFragment : Fragment() {
 
     private var startStopButtonM: Button? = null
 
-    private var tmm: TrainingModeModel = TrainingModeModel()    // a dummy model with no transponder
+    private var tmm: RacingModeModel = RacingModeModel()    // a dummy model with no transponder
     private val transponders = mutableListOf<String>()
 
     private lateinit var timingContentView: RecyclerView
@@ -61,7 +58,7 @@ class TrainingModeFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_trainingmode_list, container, false)
+        val view = inflater.inflate(R.layout.fragment_racingmode_list, container, false)
 
         clockViewX = view.clockView
         timingContentView = view.training_content
@@ -72,7 +69,7 @@ class TrainingModeFragment : Fragment() {
                 columnCount <= 1 -> LinearLayoutManager(context)
                 else -> GridLayoutManager(context, columnCount)
             }
-            adapter = TrainingModeRecyclerViewAdapter(mutableListOf(), listener)
+            adapter = RacingModeRecyclerViewAdapter(mutableListOf(), listener)
 
             receiver = PassingDataReceiver { data ->
                 val json = JSONObject(data)
@@ -81,10 +78,10 @@ class TrainingModeFragment : Fragment() {
                 val time = (json.get("RTC_Time") as String).toLong()
 
                 if (running) {
-                    (adapter as TrainingModeRecyclerViewAdapter).addRecord(transponder, time)
+                    (adapter as RacingModeRecyclerViewAdapter).addRecord(transponder, time)
                     adapter.notifyDataSetChanged()
                 }
-                tmm = (adapter as TrainingModeRecyclerViewAdapter).tmm
+                tmm = (adapter as RacingModeRecyclerViewAdapter).tmm
 
                 if (!transponders.contains(transponder.toString())) {
                     transponders.add(transponder.toString())
@@ -109,37 +106,9 @@ class TrainingModeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         activity!!.findViewById<View>(R.id.miHome).visibility = VISIBLE     // FIXME does not work :(
     }
-    fun openTransponderDialog(startRace: Boolean) {
-
-        val trs = transponders.toTypedArray()
-
-        val b = android.support.v7.app.AlertDialog.Builder(this.context!!)
-                .setTitle(getString(R.string.select_label))
-        if (trs.isEmpty()) {
-            b.setMessage(getString(R.string.no_transponder))
-        } else {
-            b.setSingleChoiceItems(trs, 0) { dialog, i ->
-                Log.w(TAG, "Selected $i")
-                setSelectedTransponder(trs[i])
-                decoderIdSelector.text = trs[i]
-                if (startRace) doStartStop()
-                dialog.cancel()
-            }
-        }
-        b.create().show()
-    }
-
-    private fun setSelectedTransponder(transponder: String) {
-        tmm.setSelectedTransponder(transponder)
-    }
 
     var running = false
     private fun doStartStopDialog() {
-
-        if (tmm.getSelectedTransponder() == null) {
-            openTransponderDialog(true)
-            return
-        }
         doStartStop()
     }
 
@@ -168,17 +137,17 @@ class TrainingModeFragment : Fragment() {
 
     private lateinit var clock: Future<Unit>
 
-    private var trainingStartTime: Long? = null
+    private var racingStartTime: Long? = null
 
     private fun doStart() {
-        (timingContentView.adapter as TrainingModeRecyclerViewAdapter).clearResults()
+        (timingContentView.adapter as RacingModeRecyclerViewAdapter).clearResults()
         running = true
         startStopButtonM?.text = getText(R.string.stop)
-        trainingStartTime = System.currentTimeMillis()
+        racingStartTime = System.currentTimeMillis()
 
         clock = doAsync {
             while (true) {
-                val timeMs = System.currentTimeMillis() - trainingStartTime!!
+                val timeMs = System.currentTimeMillis() - racingStartTime!!
                 val str = Tools.millisToTimeWithMillis(timeMs)
                 uiThread {
                     clockViewX.text = str
@@ -206,17 +175,17 @@ class TrainingModeFragment : Fragment() {
 
     interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        fun onListFragmentInteraction(item: TrainingLap?)
+        fun onListFragmentInteraction(item: RacingLap?)
     }
 
     companion object {
 
         private const val ARG_COLUMN_COUNT = "column-count"
-        const val TAG = "TrainingModeFragment"
+        const val TAG = "RacingModeFragment"
 
         @JvmStatic
         fun newInstance(columnCount: Int) =
-                TrainingModeFragment().apply {
+                RacingModeFragment().apply {
                     arguments = Bundle().apply {
                         putInt(ARG_COLUMN_COUNT, columnCount)
                     }
