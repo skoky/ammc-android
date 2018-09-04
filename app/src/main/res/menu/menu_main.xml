@@ -1,6 +1,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/miBall"
+        android:icon="@drawable/baseline_compare_arrows_24px"
+        app:showAsAction="ifRoom"
+        android:visible="false"
+        android:title="Connect">
+    </item>
+    <item
         android:id="@+id/miHome"
         android:icon="@drawable/outline_home_24px"
         app:showAsAction="ifRoom"

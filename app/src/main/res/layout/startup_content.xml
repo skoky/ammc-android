@@ -171,4 +171,15 @@
 
     </android.support.constraint.ConstraintLayout>
 
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/make_a_wish"
+        android:onClick="doMakeAWish"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout2" />
+
 </android.support.constraint.ConstraintLayout>

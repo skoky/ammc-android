@@ -18,10 +18,6 @@
 
 
     <group android:id="@+id/grp1" android:checkableBehavior="single" >
-        <item
-            android:id="@+id/nav_connect"
-            android:icon="@drawable/baseline_compare_arrows_24px"
-            android:title="@string/connect_decoder" />
 
         <item
             android:id="@+id/nav_connection_help"

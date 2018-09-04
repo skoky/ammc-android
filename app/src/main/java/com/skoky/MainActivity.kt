@@ -8,16 +8,19 @@ import android.content.ServiceConnection
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.IBinder
+import android.os.PersistableBundle
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBar
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.view.menu.MenuView
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.View.INVISIBLE
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
@@ -75,7 +78,6 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
         Log.w(TAG, "Binding service")
         val intent = Intent(this, DecoderService::class.java)
         bindService(intent, decoderServiceConnection, Context.BIND_AUTO_CREATE)
-
     }
 
     private fun openStartupFragment() {
@@ -99,6 +101,16 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
             }
 
         }
+    }
+
+    fun doMakeAWish(view:View) {
+
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "plain/text"
+        intent.putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf<String>("skokys@gmail.com"))
+        intent.putExtra(android.content.Intent.EXTRA_SUBJECT, "AMM wish from Android")
+        intent.putExtra(android.content.Intent.EXTRA_TEXT, "I wish....")
+        startActivity(Intent.createChooser(intent, "Send"))
     }
 
     fun showMoreDecoders(view: View) {
@@ -134,7 +146,7 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
             Log.i(TAG, "decoder $foundDecoder")
 
             if (decoderText.text.isNotEmpty()) {
-                app.decoderService?.let { it.connectDecoder(decoderText.text.toString()) }
+                app.decoderService?.let { it.connectDecoder(decoderText.text.toString().trim()) }
             } else
                 foundDecoder?.let { app.decoderService?.let{ s -> s.connectDecoder2(it) } }
 
@@ -147,7 +159,7 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
     }
 
     class SimpleTextWatcher(dd: RadioGroup) : TextWatcher {
-        val ddd = dd
+        private val ddd = dd
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             ddd.clearCheck()
         }

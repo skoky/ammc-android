@@ -1,10 +1,7 @@
 package com.skoky.fragment
 
 import android.app.AlertDialog
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.GridLayoutManager
@@ -13,10 +10,13 @@ import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import com.skoky.R
+import com.skoky.R.id.miHome
 import com.skoky.Tools
 import com.skoky.fragment.content.Lap
 import com.skoky.fragment.content.TrainingModeModel
@@ -96,13 +96,18 @@ class TrainingModeFragment : Fragment() {
         startStopButtonM!!.setOnClickListener { doStartStopDialog() }
 
         val disconnectReceiver = ConnectionReceiver {
-            AlertDialog.Builder(context).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
+            Log.i(TAG,"Disconnected")
+            //AlertDialog.Builder(context).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
         }
         context!!.registerReceiver(disconnectReceiver, IntentFilter(DECODER_DISCONNECTED))
 
         return view
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        activity!!.findViewById<View>(R.id.miHome).visibility = VISIBLE     // FIXME does not work :(
+    }
     fun openTransponderDialog(startRace: Boolean) {
 
         val trs = transponders.toTypedArray()
