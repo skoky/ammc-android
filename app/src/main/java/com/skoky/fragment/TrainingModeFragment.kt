@@ -46,15 +46,15 @@ class TrainingModeFragment : Fragment() {
 
     private lateinit var clockViewX: TextView
 
-    class ConnectionReceiver : BroadcastReceiver() {
+    class ConnectionReceiver(val handler: () -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            Log.d(TAG,"Received!")
+            handler()
         }
     }
 
-    class DataReceiver : BroadcastReceiver() {
+    class PassingDataReceiver(val handler: (String) -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            Log.d(TAG,"Received!")
+            handler(intent!!.getStringExtra("Passing")!!)
         }
     }
 
@@ -65,44 +65,39 @@ class TrainingModeFragment : Fragment() {
         clockViewX = view.clockView
         timingContentView = view.training_content
         // Set the adapter
-        if (timingContentView is RecyclerView) {
-            with(timingContentView) {
-                layoutManager = when {
-                    columnCount <= 1 -> LinearLayoutManager(context)
-                    else -> GridLayoutManager(context, columnCount)
-                }
-                adapter = TrainingModeRecyclerViewAdapter(mutableListOf(), listener)
 
-                receiver = DataReceiver()
-//                receiver.setHandler { data ->
-//                    val json = JSONObject(data)
-//                    Log.i(TAG, "Received passing $data")
-//                    val transponder = json.get("transponder") as Int
-//                    val time = (json.get("RTC_Time") as String).toLong()
-//
-//                    if (running) {
-//                        (adapter as TrainingModeRecyclerViewAdapter).addRecord(transponder, time)
-//                        adapter.notifyDataSetChanged()
-//                    }
-//                    tmm = (adapter as TrainingModeRecyclerViewAdapter).tmm
-//
-//                    if (!transponders.contains(transponder.toString())) {
-//                        transponders.add(transponder.toString())
-//                    }
-//                }
-                context!!.registerReceiver(receiver, IntentFilter(DECODER_PASSING))
+        with(timingContentView) {
+            layoutManager = when {
+                columnCount <= 1 -> LinearLayoutManager(context)
+                else -> GridLayoutManager(context, columnCount)
             }
+            adapter = TrainingModeRecyclerViewAdapter(mutableListOf(), listener)
+
+            receiver = PassingDataReceiver { data ->
+                val json = JSONObject(data)
+                Log.i(TAG, "Received passing $data")
+                val transponder = json.get("transponder") as Int
+                val time = (json.get("RTC_Time") as String).toLong()
+
+                if (running) {
+                    (adapter as TrainingModeRecyclerViewAdapter).addRecord(transponder, time)
+                    adapter.notifyDataSetChanged()
+                }
+                tmm = (adapter as TrainingModeRecyclerViewAdapter).tmm
+
+                if (!transponders.contains(transponder.toString())) {
+                    transponders.add(transponder.toString())
+                }
+            }
+            context!!.registerReceiver(receiver, IntentFilter(DECODER_PASSING))
+
         }
         startStopButtonM = view.startStopButton
         startStopButtonM!!.setOnClickListener { doStartStopDialog() }
 
-        val disconnectReceiver = ConnectionReceiver()
-//        disconnectReceiver.setHandler { _ ->
-//            context?.let {
-//                AlertDialog.Builder(it).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
-//            }
-//
-//        }
+        val disconnectReceiver = ConnectionReceiver {
+            AlertDialog.Builder(context).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
+        }
         context!!.registerReceiver(disconnectReceiver, IntentFilter(DECODER_DISCONNECTED))
 
         return view
@@ -141,6 +136,7 @@ class TrainingModeFragment : Fragment() {
         }
         doStartStop()
     }
+
     private fun doStartStop() {
 
         if (running) {

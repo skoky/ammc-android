@@ -154,9 +154,6 @@ class DecoderService : Service() {
         }
     }
 
-
-// TODO clean decoders list with non-active decoders
-
     private fun listenOnSocketConnection(socket: Socket, orgDecoder: Decoder) {
         val buffer = ByteArray(1024)
         var decoder = orgDecoder
