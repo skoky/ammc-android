@@ -43,17 +43,16 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingL
             holder.mDiff.text = "Diff"
 
         } else {
-
             val item = mValues[position - 1]
+
+            holder.mIdView.text = item.number.toString()
+
             if (item.diffMs==null) {
 
-                holder.mIdView.text = item.number.toString()
                 holder.mLapTime.text = df.format(Date(item.timeUs / 1000))
                 holder.mDiff.text = ""
 
             } else {
-
-                holder.mIdView.text = item.number.toString()
 
                 holder.mLapTime.text = timeToText(item.lapTimeMs)
 

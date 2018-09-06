@@ -27,7 +27,7 @@ import android.widget.Toast
 import com.skoky.fragment.RacingModeFragment
 import com.skoky.fragment.StartupFragment
 import com.skoky.fragment.TrainingModeFragment
-import com.skoky.fragment.content.RacingLap
+import com.skoky.fragment.content.Racer
 import com.skoky.fragment.content.TrainingLap
 import com.skoky.services.Decoder
 import com.skoky.services.DecoderService
@@ -37,7 +37,7 @@ import kotlinx.android.synthetic.main.startup_content.*
 
 
 class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInteractionListener, RacingModeFragment.OnListFragmentInteractionListener {
-    override fun onListFragmentInteraction(item: RacingLap?) {
+    override fun onListFragmentInteraction(item: Racer?) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 

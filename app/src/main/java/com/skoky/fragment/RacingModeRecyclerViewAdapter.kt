@@ -7,21 +7,21 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.skoky.R
 import com.skoky.fragment.RacingModeFragment.OnListFragmentInteractionListener
-import com.skoky.fragment.content.RacingLap
+import com.skoky.fragment.content.Racer
 import com.skoky.fragment.content.RacingModeModel
 import kotlinx.android.synthetic.main.fragment_racingmode.view.*
 import java.text.SimpleDateFormat
-import java.util.*
 
-class RacingModeRecyclerViewAdapter(private var mValues: MutableList<RacingLap>, private val mListener: OnListFragmentInteractionListener?)
+
+class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>, private val mListener: OnListFragmentInteractionListener?)
     : RecyclerView.Adapter<RacingModeRecyclerViewAdapter.ViewHolder>() {
 
     private val mOnClickListener: View.OnClickListener
 
     init {
-        mValues.sortByDescending { it.number }
+        mValues.sortByDescending { it.pos }
         mOnClickListener = View.OnClickListener { v ->
-            val item = v.tag as RacingLap
+            val item = v.tag as Racer
             // Notify the active callbacks interface (the activity, if the fragment is attached to
             // one) that an item has been selected.
             mListener?.onListFragmentInteraction(item)
@@ -35,43 +35,29 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<RacingLap>,
         return ViewHolder(view)
     }
 
-    val df = SimpleDateFormat("HH:mm:ss.SSS")
+    //    data class Racer(var pos: Int, var transponder: String, var laps: Int, var lastLapTimeMs: Long, val diffMs: Int)
+    private val df = SimpleDateFormat("HH:mm:ss.SSS")
+
+    private val r = mutableListOf<Racer>()
+
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (position == 0) {  // header
-            holder.mIdView.text = "#"
-            holder.mLapTime.text = "Lap Time"
-            holder.mDiff.text = "Diff"
+            holder.mPosition.text = "#"
+            holder.mTrasView.text = "Tr"
+            holder.mLapCount.text = "C"
+            holder.mLastLapTime.text = "T"
+            holder.mDiff.text = "D"
 
         } else {
 
             val item = mValues[position - 1]
-            if (item.diffMs==null) {
 
-                holder.mIdView.text = item.number.toString()
-                holder.mLapTime.text = df.format(Date(item.timeUs / 1000))
-                holder.mDiff.text = ""
+            holder.mPosition.text = item.pos.toString()
+            holder.mTrasView.text = item.transponder
+            holder.mLapCount.text = item.laps.toString()
+            holder.mLastLapTime.text = timeToText(item.lastLapTimeMs)// df.format(Date(item.lastLapTimeMs / 1000))
+            holder.mDiff.text = "-"
 
-            } else {
-
-                holder.mIdView.text = item.number.toString()
-
-                holder.mLapTime.text = timeToText(item.lapTimeMs)
-
-                if (item.lapTimeMs != (item.diffMs)) {
-                    holder.mDiff.text = String.format("%+.3f", item.diffMs.toFloat() / 1000)
-                    if (item.diffMs < 0 )
-                        holder.mDiff.setBackgroundResource(R.color.amm_green)
-                    else if (item.diffMs > 0)
-                        holder.mDiff.setBackgroundResource(R.color.amm_red)
-                }
-                // TODO set background color to red or green
-
-
-                with(holder.mView) {
-                    tag = item
-                    //    setOnClickListener(mOnClickListener)
-                }
-            }
         }
     }
 
@@ -85,8 +71,10 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<RacingLap>,
     override fun getItemCount(): Int = (mValues.size + 1)
 
     inner class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
-        val mIdView: TextView = mView.item_position
-        val mLapTime: TextView = mView.item_time
+        val mPosition: TextView = mView.item_position
+        val mTrasView: TextView = mView.item_transponder
+        val mLastLapTime: TextView = mView.item_last_lap_time
+        val mLapCount: TextView = mView.item_laps_count
         val mDiff: TextView = mView.item_diff
 
     }

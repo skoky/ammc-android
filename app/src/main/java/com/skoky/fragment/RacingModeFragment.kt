@@ -16,7 +16,7 @@ import android.widget.Button
 import android.widget.TextView
 import com.skoky.R
 import com.skoky.Tools
-import com.skoky.fragment.content.RacingLap
+import com.skoky.fragment.content.Racer
 import com.skoky.fragment.content.RacingModeModel
 import com.skoky.services.DecoderService.Companion.DECODER_DISCONNECTED
 import com.skoky.services.DecoderService.Companion.DECODER_PASSING
@@ -175,7 +175,7 @@ class RacingModeFragment : Fragment() {
 
     interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        fun onListFragmentInteraction(item: RacingLap?)
+        fun onListFragmentInteraction(item: Racer?)
     }
 
     companion object {

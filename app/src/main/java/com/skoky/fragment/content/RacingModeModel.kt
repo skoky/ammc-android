@@ -1,40 +1,40 @@
 package com.skoky.fragment.content
 
-data class RacingLap(val number: Int, val timeUs: Long, val lapTimeMs: Int, val diffMs: Int?)
+import org.jetbrains.anko.collections.forEachWithIndex
+
+data class Racer(var pos: Int, val transponder: String, var laps: Int, var lastTimeMs: Long, var lastLapTimeMs: Int, val diffMs: Int)
 
 class RacingModeModel {
 
-    private val allTransponders = mutableSetOf<Int>()
+    fun newPassing(values: List<Racer>, transponder: Int, time: Long): List<Racer> {
 
-    fun newPassing(values: List<RacingLap>, transponder: Int, time: Long): List<RacingLap> {
+        val found = values.find { it.transponder == transponder.toString() }
+        val m = values.toMutableList()
+        if (found != null) {
+            val i = m.indexOf(found)
+            found.laps = found.laps + 1
+            // TODO add red or green based on better or worse time
+            found.lastLapTimeMs = (time - found.lastTimeMs).toInt()
+            found.lastTimeMs = time
+            m[i] = found
 
-        if (!allTransponders.contains(transponder)) allTransponders.add(transponder)
-
-//        if (transponder != myTransponder) return values.toMutableList()
-
-        return if (values.isEmpty())
-            mutableListOf(RacingLap(0, time, 0, null))
-        else {
-            val sorted = values.sortedByDescending { it.number }.toMutableList()
-
-            val lastLap = sorted.first()
-
-            val lapTime = ((time - lastLap.timeUs).toInt()) / 1000
-            val diff = (lapTime - lastLap.lapTimeMs)
-            val veryLastLap = RacingLap(lastLap.number + 1, time, lapTime, diff)
-
-            sorted.add(veryLastLap)
-            val newV = if (sorted.size > MAX_SIZE)
-                sorted.drop(sorted.size - MAX_SIZE).toMutableList()
-            else
-                sorted
-            return newV.sortedByDescending { it.number }
+        } else {
+            m.add(Racer(values.size + 1, transponder.toString(), 0, time, 0, 0))
         }
+
+        // TODO calculate diff from first
+
+        val sorted = m.sortedWith(compareByDescending<Racer> { it.laps }.thenBy { it.lastLapTimeMs })
+
+        sorted.forEachWithIndex { i, r ->
+            r.pos = i + 1
+        }
+
+        return sorted
     }
 
 
     companion object {
         private const val TAG = "RacingModeModel"
-        private const val MAX_SIZE = 5000
     }
 }
