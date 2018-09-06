@@ -8,25 +8,24 @@ import android.content.ServiceConnection
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.IBinder
-import android.os.PersistableBundle
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBar
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.view.menu.MenuView
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.View.INVISIBLE
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
+import com.skoky.fragment.ConsoleModeFragment
 import com.skoky.fragment.RacingModeFragment
 import com.skoky.fragment.StartupFragment
 import com.skoky.fragment.TrainingModeFragment
+import com.skoky.fragment.content.ConsoleModel
 import com.skoky.fragment.content.Racer
 import com.skoky.fragment.content.TrainingLap
 import com.skoky.services.Decoder
@@ -36,7 +35,14 @@ import kotlinx.android.synthetic.main.select_decoder.*
 import kotlinx.android.synthetic.main.startup_content.*
 
 
-class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInteractionListener, RacingModeFragment.OnListFragmentInteractionListener {
+class MainActivity : AppCompatActivity(),
+        TrainingModeFragment.OnListFragmentInteractionListener,
+        RacingModeFragment.OnListFragmentInteractionListener,
+        ConsoleModeFragment.OnListFragmentInteractionListener {
+    override fun onListFragmentInteraction(item: ConsoleModel?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     override fun onListFragmentInteraction(item: Racer?) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
@@ -177,8 +183,20 @@ class MainActivity : AppCompatActivity(), TrainingModeFragment.OnListFragmentInt
 
     }
 
+    private lateinit var consoleFragment : ConsoleModeFragment
     private fun openConsoleMode(view: View?): Boolean {
-        Log.i(TAG, "TBD")
+        app.decoderService?.let {
+            return if (it.isDecoderConnected()) {
+                consoleFragment = ConsoleModeFragment.newInstance(1)
+                val fragmentTransaction = supportFragmentManager.beginTransaction()
+                fragmentTransaction.replace(R.id.screen_container, consoleFragment)
+                fragmentTransaction.commit()
+                true
+            } else {
+                AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
+                false
+            }
+        }
         return false
     }
 
