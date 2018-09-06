@@ -41,24 +41,23 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>, pri
 
     private val r = mutableListOf<Racer>()
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        if (position == 0) {  // header
-            holder.mPosition.text = "#"
-            holder.mTrasView.text = "Transponder"
-            holder.mLapCount.text = "Laps"
-            holder.mLastLapTime.text = "Time"
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) =
+            if (position == 0) {  // header
+                holder.mPosition.text = "#"
+                holder.mTrasView.text = "Transponder"
+                holder.mLapCount.text = "Laps"
+                holder.mLastLapTime.text = "Time"
 
-        } else {
+            } else {
 
-            val item = mValues[position - 1]
+                val item = mValues[position - 1]
 
-            holder.mPosition.text = item.pos.toString()
-            holder.mTrasView.text = item.transponder
-            holder.mLastLapTime.text = timeToText(item.lastLapTimeMs)
-            holder.mLapCount.text = "  "+item.laps.toString()
+                holder.mPosition.text = item.pos.toString()
+                holder.mTrasView.text = item.transponder
+                holder.mLastLapTime.text = timeToText(item.lastLapTimeMs)
+                holder.mLapCount.text = "     ${item.laps}"
 
-        }
-    }
+            }
 
     private fun timeToText(lapTimeMs: Int): String {
         val millis = lapTimeMs % 1000
