@@ -74,8 +74,8 @@ class RacingModeFragment : Fragment() {
             receiver = PassingDataReceiver { data ->
                 val json = JSONObject(data)
                 Log.i(TAG, "Received passing $data")
-                val transponder = json.get("transponder") as Int
-                val time = (json.get("RTC_Time") as String).toLong()
+                val transponder = FragmentCommon().getTransponderFromPassingJson(json)
+                val time = FragmentCommon().getTimeFromPassingJson(json)
 
                 if (running) {
                     (adapter as RacingModeRecyclerViewAdapter).addRecord(transponder, time)

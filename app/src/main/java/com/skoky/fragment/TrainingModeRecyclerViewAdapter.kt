@@ -49,7 +49,7 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingL
 
             if (item.diffMs==null) {
 
-                holder.mLapTime.text = df.format(Date(item.timeUs / 1000))
+                holder.mLapTime.text = df.format(Date(item.time.us / 1000))
                 holder.mDiff.text = ""
 
             } else {
@@ -91,7 +91,7 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingL
     }
 
     val tmm = TrainingModeModel()
-    fun addRecord(transponder: Int, time: Long) {
+    fun addRecord(transponder: String, time: Time) {
         mValues = tmm.newPassing(mValues.toList(), transponder, time).toMutableList()
     }
 

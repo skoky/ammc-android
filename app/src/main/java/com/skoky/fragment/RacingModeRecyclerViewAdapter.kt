@@ -78,7 +78,7 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>, pri
     }
 
     val tmm = RacingModeModel()
-    fun addRecord(transponder: Int, time: Long) {
+    fun addRecord(transponder: String, time: Time) {
         mValues = tmm.newPassing(mValues.toList(), transponder, time).toMutableList()
     }
 

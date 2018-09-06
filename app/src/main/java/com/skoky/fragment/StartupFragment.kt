@@ -65,13 +65,7 @@ class StartupFragment : Fragment() {
                         button.visibility = VISIBLE
                     }
                 }
-
-//                if (json.has("recordType")) when (json.get("recordType")) {
-//                    "Version" -> decoderText.text = MainActivity.decoderLabel(d)
-//                }
             }
-
-
         }
     }
 

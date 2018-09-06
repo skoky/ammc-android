@@ -1,13 +1,15 @@
 package com.skoky.fragment.content
 
-data class TrainingLap(val number: Int, val timeUs: Long, val lapTimeMs: Int, val diffMs: Int?)
+import com.skoky.fragment.Time
+
+data class TrainingLap(val number: Int, val time: Time, val lapTimeMs: Int, val diffMs: Int?)
 
 class TrainingModeModel {
 
-    private val allTransponders = mutableSetOf<Int>()
-    private var myTransponder: Int? = null
+    private val allTransponders = mutableSetOf<String>()
+    private var myTransponder: String? = null
 
-    fun newPassing(values: List<TrainingLap>, transponder: Int, time: Long): List<TrainingLap> {
+    fun newPassing(values: List<TrainingLap>, transponder: String, time: Time): List<TrainingLap> {
 
         if (allTransponders.size == 0) myTransponder = transponder
         if (!allTransponders.contains(transponder)) allTransponders.add(transponder)
@@ -21,9 +23,9 @@ class TrainingModeModel {
 
             val lastLap = sorted.first()
 
-            val lapTime = ((time - lastLap.timeUs).toInt()) / 1000
-            val diff = (lapTime - lastLap.lapTimeMs)
-            val veryLastLap = TrainingLap(lastLap.number + 1, time, lapTime, diff)
+            val lapTimeMs = ((time.us - lastLap.time.us).toInt()) / 1000
+            val diff = (lapTimeMs - lastLap.lapTimeMs)
+            val veryLastLap = TrainingLap(lastLap.number + 1, time, lapTimeMs, diff)
 
             sorted.add(veryLastLap)
             val newV = if (sorted.size > MAX_SIZE)
@@ -35,10 +37,10 @@ class TrainingModeModel {
     }
 
     fun setSelectedTransponder(transponder: String) {
-        myTransponder = transponder.toInt()
+        myTransponder = transponder
     }
 
-    fun getSelectedTransponder(): Int? {
+    fun getSelectedTransponder(): String? {
         return myTransponder
     }
 

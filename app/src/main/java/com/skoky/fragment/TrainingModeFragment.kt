@@ -77,17 +77,17 @@ class TrainingModeFragment : Fragment() {
             receiver = PassingDataReceiver { data ->
                 val json = JSONObject(data)
                 Log.i(TAG, "Received passing $data")
-                val transponder = json.get("transponder") as Int
-                val time = (json.get("RTC_Time") as String).toLong()
+                val transponder = FragmentCommon().getTransponderFromPassingJson(json)
+                val timeUs = FragmentCommon().getTimeFromPassingJson(json)
 
                 if (running) {
-                    (adapter as TrainingModeRecyclerViewAdapter).addRecord(transponder, time)
+                    (adapter as TrainingModeRecyclerViewAdapter).addRecord(transponder, timeUs)
                     adapter.notifyDataSetChanged()
                 }
                 tmm = (adapter as TrainingModeRecyclerViewAdapter).tmm
 
-                if (!transponders.contains(transponder.toString())) {
-                    transponders.add(transponder.toString())
+                if (!transponders.contains(transponder)) {
+                    transponders.add(transponder)
                 }
             }
             context!!.registerReceiver(receiver, IntentFilter(DECODER_PASSING))
@@ -97,7 +97,7 @@ class TrainingModeFragment : Fragment() {
         startStopButtonM!!.setOnClickListener { doStartStopDialog() }
 
         val disconnectReceiver = ConnectionReceiver {
-            Log.i(TAG,"Disconnected")
+            Log.i(TAG, "Disconnected")
             //AlertDialog.Builder(context).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
         }
         context!!.registerReceiver(disconnectReceiver, IntentFilter(DECODER_DISCONNECTED))
@@ -105,10 +105,12 @@ class TrainingModeFragment : Fragment() {
         return view
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         activity!!.findViewById<View>(R.id.miHome).visibility = VISIBLE     // FIXME does not work :(
     }
+
     fun openTransponderDialog(startRace: Boolean) {
 
         val trs = transponders.toTypedArray()
