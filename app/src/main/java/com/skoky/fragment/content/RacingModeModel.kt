@@ -2,7 +2,7 @@ package com.skoky.fragment.content
 
 import org.jetbrains.anko.collections.forEachWithIndex
 
-data class Racer(var pos: Int, val transponder: String, var laps: Int, var lastTimeMs: Long, var lastLapTimeMs: Int, val diffMs: Int)
+data class Racer(var pos: Int, val transponder: String, var laps: Int, var lastTimeMs: Long, var lastLapTimeMs: Int)
 
 class RacingModeModel {
 
@@ -19,7 +19,7 @@ class RacingModeModel {
             m[i] = found
 
         } else {
-            m.add(Racer(values.size + 1, transponder.toString(), 0, time, 0, 0))
+            m.add(Racer(values.size + 1, transponder.toString(), 0, time, 0))
         }
 
         // TODO calculate diff from first

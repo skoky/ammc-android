@@ -11,6 +11,7 @@ import com.skoky.fragment.content.Racer
 import com.skoky.fragment.content.RacingModeModel
 import kotlinx.android.synthetic.main.fragment_racingmode.view.*
 import java.text.SimpleDateFormat
+import kotlin.math.nextDown
 
 
 class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>, private val mListener: OnListFragmentInteractionListener?)
@@ -43,10 +44,9 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>, pri
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (position == 0) {  // header
             holder.mPosition.text = "#"
-            holder.mTrasView.text = "Tr"
-            holder.mLapCount.text = "C"
-            holder.mLastLapTime.text = "T"
-            holder.mDiff.text = "D"
+            holder.mTrasView.text = "Transponder"
+            holder.mLapCount.text = "Laps"
+            holder.mLastLapTime.text = "Time"
 
         } else {
 
@@ -54,9 +54,8 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>, pri
 
             holder.mPosition.text = item.pos.toString()
             holder.mTrasView.text = item.transponder
-            holder.mLapCount.text = item.laps.toString()
-            holder.mLastLapTime.text = timeToText(item.lastLapTimeMs)// df.format(Date(item.lastLapTimeMs / 1000))
-            holder.mDiff.text = "-"
+            holder.mLastLapTime.text = timeToText(item.lastLapTimeMs)
+            holder.mLapCount.text = "  "+item.laps.toString()
 
         }
     }
@@ -75,7 +74,6 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>, pri
         val mTrasView: TextView = mView.item_transponder
         val mLastLapTime: TextView = mView.item_last_lap_time
         val mLapCount: TextView = mView.item_laps_count
-        val mDiff: TextView = mView.item_diff
 
     }
 

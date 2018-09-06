@@ -20,4 +20,9 @@
     <string name="or_connect_directly_to_decoder_by_ip_address">Or connect directly to decoder by IP address</string>
     <string name="help_connecting">Help connecting</string>
     <string name="make_a_wish">Make a wish</string>
+    <string name="transponder"></string>
+    <string name="pos_hash">#</string>
+    <string name="Laps">Laps</string>
+    <string name="LapTime">Time</string>
+    <string name="Diff">Diff</string>
 </resources>
