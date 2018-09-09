@@ -25,5 +25,5 @@
     <string name="Laps">Laps</string>
     <string name="LapTime">Time</string>
     <string name="Diff">Diff</string>
-    <string name="decoderid">DecoderId:</string>
+    <string name="decoderId">DecoderId:</string>
 </resources>

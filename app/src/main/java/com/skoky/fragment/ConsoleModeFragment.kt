@@ -1,5 +1,6 @@
 package com.skoky.fragment
 
+import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -13,7 +14,11 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import com.skoky.R
 import com.skoky.fragment.content.ConsoleModel
+import com.skoky.services.DecoderService.Companion.DECODER_DATA
 import com.skoky.services.DecoderService.Companion.DECODER_DISCONNECTED
+import kotlinx.android.synthetic.main.fragment_consolemode_list.*
+import org.json.JSONObject
+import java.util.*
 
 
 class ConsoleModeFragment : Fragment() {
@@ -27,7 +32,7 @@ class ConsoleModeFragment : Fragment() {
         }
     }
 
-    class PassingDataReceiver(val handler: (String) -> Unit) : BroadcastReceiver() {
+    class DataReceiver(val handler: (String) -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             handler(intent!!.getStringExtra("Data")!!)
         }
@@ -41,17 +46,27 @@ class ConsoleModeFragment : Fragment() {
 
         val disconnectReceiver = ConnectionReceiver {
             Log.i(TAG, "Disconnected")
-            //AlertDialog.Builder(context).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
+            AlertDialog.Builder(context).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
         }
         context!!.registerReceiver(disconnectReceiver, IntentFilter(DECODER_DISCONNECTED))
+
+        val dataHandler = DataReceiver {
+            val json = JSONObject(it)
+            if (json.has("decoderId")) decoderIdText.text = getString(R.string.decoderId) + json.getString("decoderId")
+        }
+        context!!.registerReceiver(dataHandler, IntentFilter(DECODER_DATA))
 
         return view
     }
 
-
+    var decoderId : UUID? = null
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         activity!!.findViewById<View>(R.id.miHome).visibility = VISIBLE     // FIXME does not work :(
+
+//        decoderId = (firstDecoderId.tag as? String)?.let { UUID.fromString(it) }
+
+        // TODO init screen from data already have
     }
 
     override fun onAttach(context: Context) {

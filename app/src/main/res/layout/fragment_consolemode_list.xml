@@ -13,7 +13,7 @@
     tools:listitem="@layout/fragment_trainingmode">
 
     <TextView
-        android:id="@+id/decoderId"
+        android:id="@+id/decoderIdText"
         style="@style/amm_text_white"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -23,7 +23,7 @@
         android:lines="1"
         android:padding="5dp"
         android:paddingBottom="8dp"
-        android:text="@string/decoderid"
+        android:text="@string/decoderId"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

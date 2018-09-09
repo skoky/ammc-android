@@ -184,20 +184,26 @@ class MainActivity : AppCompatActivity(),
     }
 
     private lateinit var consoleFragment : ConsoleModeFragment
-    private fun openConsoleMode(view: View?): Boolean {
-        app.decoderService?.let {
-            return if (it.isDecoderConnected()) {
-                consoleFragment = ConsoleModeFragment.newInstance(1)
-                val fragmentTransaction = supportFragmentManager.beginTransaction()
-                fragmentTransaction.replace(R.id.screen_container, consoleFragment)
-                fragmentTransaction.commit()
-                true
-            } else {
-                AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
-                false
+    fun openConsoleMode(view: View?): Boolean {
+        val decoderUUID = firstDecoderId.tag as? String
+
+        if (decoderUUID == null)
+            return true
+        else {
+            app.decoderService?.let {
+                return if (it.isDecoderConnected()) {
+                    consoleFragment = ConsoleModeFragment.newInstance(1)
+                    val fragmentTransaction = supportFragmentManager.beginTransaction()
+                    fragmentTransaction.replace(R.id.screen_container, consoleFragment)
+                    fragmentTransaction.commit()
+                    true
+                } else {
+                    AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
+                    false
+                }
             }
+            return false
         }
-        return false
     }
 
 

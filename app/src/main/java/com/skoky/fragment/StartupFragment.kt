@@ -1,5 +1,6 @@
 package com.skoky.fragment
 
+
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -17,14 +18,10 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import com.skoky.MainActivity
 import com.skoky.MyApp
-
-
 import com.skoky.R
-import com.skoky.services.DecoderService.Companion.DECODER_DATA
 import com.skoky.services.DecoderService.Companion.DECODER_CONNECT
+import com.skoky.services.DecoderService.Companion.DECODER_DATA
 import com.skoky.services.DecoderService.Companion.DECODER_DISCONNECTED
-import eu.plib.Parser
-import eu.plib.ParserS
 import kotlinx.android.synthetic.main.startup_content.*
 import org.json.JSONObject
 import java.util.*
@@ -98,6 +95,7 @@ class StartupFragment : Fragment() {
             progressBar2.visibility = VISIBLE
             connectButton.visibility = INVISIBLE
             firstDecoderId.text = app.getString(R.string.querying_decoders)
+            firstDecoderId.tag = null
             connectButton.text = app.getString(R.string.connect)
 
         } else {
