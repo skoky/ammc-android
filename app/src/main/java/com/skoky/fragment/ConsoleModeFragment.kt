@@ -20,6 +20,7 @@ import com.skoky.R
 import com.skoky.fragment.content.ConsoleModel
 import com.skoky.services.DecoderService.Companion.DECODER_DATA
 import com.skoky.services.DecoderService.Companion.DECODER_DISCONNECTED
+import kotlinx.android.synthetic.main.fragment_consolemode_list.*
 import org.jetbrains.anko.childrenSequence
 import org.json.JSONObject
 import java.util.*
@@ -28,6 +29,8 @@ import java.util.*
 class ConsoleModeFragment : Fragment() {
 
     private var listener: OnListFragmentInteractionListener? = null
+    lateinit var disconnectReceiver: BroadcastReceiver
+    lateinit var dataHandler: BroadcastReceiver
 
     class ConnectionReceiver(val handler: () -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -47,30 +50,32 @@ class ConsoleModeFragment : Fragment() {
 
         //adapter = ConsoleModeRecyclerViewAdapter(mutableListOf(), listener)
 
-        val disconnectReceiver = ConnectionReceiver {
+        disconnectReceiver = ConnectionReceiver {
             Log.i(TAG, "Disconnected")
             context?.let { AlertDialog.Builder(it).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show() }
         }
         context!!.registerReceiver(disconnectReceiver, IntentFilter(DECODER_DISCONNECTED))
 
         val ll = (view as ScrollView).childrenSequence().first() as LinearLayout
-        val dataHandler = DataReceiver {
-            val json = JSONObject(it)
-            Log.d(TAG, json.getString("recordType"))
-            if (json.getString("recordType") != "Passing") {
+        dataHandler = DataReceiver {
+            if (!updating) {
+                val json = JSONObject(it)
+                Log.d(TAG, json.getString("recordType"))
+                if (json.getString("recordType") != "Passing") {
 
-                json.keys().forEach { key ->
-                    if (shouldShow(json,key)) {
-                        val newTag = json.getString("recordType").replace("-text","") + "." + key
-                        var found = ll.childrenSequence().find { it.tag == newTag }
+                    json.keys().forEach { key ->
+                        if (shouldShow(json, key)) {
+                            val newTag = json.getString("recordType").replace("-text", "") + "." + key
+                            var found = ll.childrenSequence().find { it.tag == newTag }
 
-                        var newView: TextView
-                        if (found == null) {
-                            newView = inflater.inflate(R.layout.fragment_consolemode_line, container, false) as TextView
-                            ll.addView(newView)
-                        } else newView = found as TextView
-                        newView.text = key.replace("-text","") + ": " + json.get(key).toString()
-                        newView.tag = newTag
+                            var newView: TextView
+                            if (found == null) {
+                                newView = inflater.inflate(R.layout.fragment_consolemode_line, container, false) as TextView
+                                ll.addView(newView)
+                            } else newView = found as TextView
+                            newView.text = key.replace("-text", "") + ": " + json.get(key).toString()
+                            newView.tag = newTag
+                        }
                     }
                 }
             }
@@ -80,10 +85,11 @@ class ConsoleModeFragment : Fragment() {
         return view
     }
 
-    private val skipped = listOf("recordType","SPARE","crcOk","FLAGS","VERSION",
-            "gps","temperature", "decoderType","origin","decoderId","requestId","emptyFields")    // TODO review all messages
+    private val skipped = listOf("recordType", "SPARE", "crcOk", "FLAGS", "VERSION",
+            "gps", "temperature", "decoderType", "origin", "decoderId", "requestId", "emptyFields")    // TODO review all messages
+
     private fun shouldShow(json: JSONObject, key: String?): Boolean {
-        key?.let {k ->
+        key?.let { k ->
             if (k.endsWith("-text")) return true
             if (json.has("$k-text")) return false
             if (skipped.contains(key)) return false
@@ -100,7 +106,22 @@ class ConsoleModeFragment : Fragment() {
         val connectedDecoder = app.decoderService?.getDecoders()?.find { it.connection != null }
 
         app.decoderService?.exploreDecoder(connectedDecoder?.uuid!!)
+        refreshImage.setOnClickListener {
+            doRefresh()
+        }
+    }
 
+    var updating = false
+    private fun doRefresh() {
+        updating = true
+        val ll = (view as ScrollView).childrenSequence().first() as LinearLayout
+        ll.childrenSequence().iterator().withIndex().forEach { i ->
+            if (i.index > 0) (i.value as? TextView)?.text = ""
+        }
+        updating = false
+        val app = activity!!.application as MyApp
+        val connectedDecoder = app.decoderService?.getDecoders()?.find { it.connection != null }
+        app.decoderService?.exploreDecoder(connectedDecoder?.uuid!!)
     }
 
     override fun onAttach(context: Context) {
@@ -115,6 +136,13 @@ class ConsoleModeFragment : Fragment() {
     interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
         fun onListFragmentInteraction(item: ConsoleModel?)
+    }
+
+
+    override fun onDetach() {
+        super.onDetach()
+        context?.unregisterReceiver(dataHandler)
+        context?.unregisterReceiver(disconnectReceiver)
     }
 
     companion object {
