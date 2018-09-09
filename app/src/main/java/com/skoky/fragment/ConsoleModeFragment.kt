@@ -1,12 +1,12 @@
 package com.skoky.fragment
 
-import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -19,10 +19,7 @@ import com.skoky.R
 import com.skoky.fragment.content.ConsoleModel
 import com.skoky.services.DecoderService.Companion.DECODER_DATA
 import com.skoky.services.DecoderService.Companion.DECODER_DISCONNECTED
-import kotlinx.android.synthetic.main.fragment_consolemode_list.*
-import org.jetbrains.anko.applyRecursively
 import org.jetbrains.anko.childrenSequence
-import org.jetbrains.anko.custom.style
 import org.json.JSONObject
 import java.util.*
 
@@ -52,7 +49,7 @@ class ConsoleModeFragment : Fragment() {
 
         val disconnectReceiver = ConnectionReceiver {
             Log.i(TAG, "Disconnected")
-            AlertDialog.Builder(context).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
+            context?.let { AlertDialog.Builder(it).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show() }
         }
         context!!.registerReceiver(disconnectReceiver, IntentFilter(DECODER_DISCONNECTED))
 

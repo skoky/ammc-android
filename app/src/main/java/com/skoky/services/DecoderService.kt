@@ -168,6 +168,7 @@ class DecoderService : Service() {
             }
             // cleanup
             decoder.connection = null
+            cache.clear()
             sendBroadcastDisconnected(decoder)
 
         } catch (e: Exception) {
@@ -186,17 +187,19 @@ class DecoderService : Service() {
                     Log.i(TAG, "Received $read bytes")
                     if (read > 0) {
                         val json = JSONObject(Parser.decode(buffer.copyOf(read)))
-                        if (json.get("recordType").toString().isNotEmpty()) sendBroadcastData(decoder, json.toString())
+                        if (json.get("recordType").toString().isNotEmpty()) sendBroadcastData(decoder, json)
                         when {
                             json.get("recordType").toString() == "Passing" -> sendBroadcastPassing(json.toString())
                             json.get("recordType").toString() == "Version" -> {
                                 val decoderType = json.get("decoderType-text") as? String
                                 decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
-                                sendBroadcastData(decoder, json.toString())
+                                sendBroadcastData(decoder, json)
                             }
                             else -> Log.w(TAG, "received unknown data $json")
                         }
-                        json.get("decoderId")?.let { id -> decoders.addOrUpdate(decoder.copy(decoderId = id as String)) }
+                        if (json.has("decoderId")) {
+                            json.getString("decoderId")?.let { id -> decoders.addOrUpdate(decoder.copy(decoderId = id)) }
+                        }
                         decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis()))
                     }
                 }
@@ -239,20 +242,20 @@ class DecoderService : Service() {
                 "Status" -> {
                     sendUdpNetworkRequest()
                     sendUdpVersionRequest()
-                    sendBroadcastData(d, json.toString())
+                    sendBroadcastData(d, json)
                     decoders.addOrUpdate(decoder)
                 }
                 "NetworkSettings" ->
                     if (json.has("activeIPAddress")) {
                         val ipAddress = json.get("activeIPAddress") as? String
                         decoders.addOrUpdate(decoder.copy(ipAddress = ipAddress))
-                        sendBroadcastData(d, json.toString())
+                        sendBroadcastData(d, json)
                     }
                 "Version" ->
                     if (json.has("decoderType")) {
                         val decoderType = json.get("decoderType-text") as? String
                         decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
-                        sendBroadcastData(d, json.toString())
+                        sendBroadcastData(d, json)
                     }
             }
             Log.i(TAG, "Decoders: $decoders")
@@ -308,10 +311,34 @@ class DecoderService : Service() {
         Log.w(TAG, "Broadcast passing sent $intent")
     }
 
-    private fun sendBroadcastData(decoder: Decoder?, jsonData: String) {
+    private val cache = mutableListOf<JSONObject>()
+    private fun updateCache(json: JSONObject) {
+
+        if (json.has("decoderID")) {
+            // not caching for another decoder or disconnected decoder
+             decoders.find { it.decoderId == json.getString("decoderId") && it.connection != null } ?: return
+        } else {
+            return      // weird
+        }
+
+        val found = cache.find { it.getString("recordType") == json.getString("recordType") }
+
+        if (found == null) {
+            cache.add(json)
+        } else {
+            cache.forEachIndexed { i, j ->
+                if (j.getString("recordType") == found.getString("recordType")) {
+                    cache[i] = found
+                }
+            }
+        }
+    }
+
+    private fun sendBroadcastData(decoder: Decoder?, jsonData: JSONObject) {
+        updateCache(jsonData)
         val intent = Intent()
         intent.action = DECODER_DATA
-        intent.putExtra("Data", jsonData)
+        intent.putExtra("Data", jsonData.toString())
         decoder?.let { intent.putExtra("uuid", it.toString()) }
         applicationContext.sendBroadcast(intent)
         Log.w(TAG, "Broadcast data sent $intent")

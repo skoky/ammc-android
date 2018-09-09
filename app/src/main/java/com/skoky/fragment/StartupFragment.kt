@@ -55,13 +55,15 @@ class StartupFragment : Fragment() {
                 Log.d(TAG, "Last msg: $msg")
                 val json = JSONObject(msg)
 
-                json.get("decoderId")?.let { dId ->
-                    // update decoder data
-                    decoders.find { it.decoderId == dId }?.let { d ->
-                        decoderText.text = MainActivity.decoderLabel(d)
-                        decoderText.tag = d.uuid.toString()
-                        bar.visibility = INVISIBLE
-                        button.visibility = VISIBLE
+                if (json.has("decoderId")) {
+                    json.getString("decoderId")?.let { dId ->
+                        // update decoder data
+                        decoders.find { it.decoderId == dId }?.let { d ->
+                            decoderText.text = MainActivity.decoderLabel(d)
+                            decoderText.tag = d.uuid.toString()
+                            bar.visibility = INVISIBLE
+                            button.visibility = VISIBLE
+                        }
                     }
                 }
             }
