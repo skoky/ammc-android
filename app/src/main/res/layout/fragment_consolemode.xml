@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@color/amm_grey">
+
+    <TextView
+        android:id="@+id/item_position"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/text_margin"
+        style="@style/amm_text_white" />
+
+    <TextView
+        android:id="@+id/item_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/text_margin"
+        style="@style/amm_text_white"
+        android:layout_weight="1"/>
+
+    <TextView
+        android:id="@+id/item_diff"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/text_margin"
+        android:padding="5dp"
+        style="@style/amm_text_white" />
+
+
+</LinearLayout>

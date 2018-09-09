@@ -139,6 +139,27 @@ class DecoderService : Service() {
         }
     }
 
+    fun exploreDecoder(uuid: UUID) {
+        val socket = decoders.find { it.uuid == uuid }?.connection
+
+        doAsync {
+            socket?.let { s ->
+                if (s.isBound) {
+                    val versionRequest = Parser.encode("{\"recordType\":\"Version\",\"emptyFields\":[\"decoderType\"],\"VERSION\":\"2\"}")
+                    s.getOutputStream().write(versionRequest)
+                    val statusRequest = Parser.encode("{\"recordType\":\"Status\",\"emptyFields\":[" +
+                            "\"loopTriggers\",\"noise\",\"gps\", \"temperature-text\",\"inputVoltage-text\"],\"VERSION\":\"2\"}")
+                    s.getOutputStream().write(statusRequest)
+
+                    // TODO send all possible messages
+                    // FIXME make sure Console Fragment caches all fields
+
+                }
+            }
+        }
+
+    }
+
     private fun disconnectDecoder2(decoder: Decoder) {
 
         try {

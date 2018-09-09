@@ -32,6 +32,8 @@ class StartupFragment : Fragment() {
     private lateinit var connectReceiver: BroadcastReceiver
     private lateinit var dataReceiver: BroadcastReceiver
 
+
+    // FIXME connected receiver show up very late after connect button pressed...
     class ConnectionReceiver(val stateHandler: (UUID) -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val uuid = UUID.fromString(intent?.getStringExtra("uuid")!!)

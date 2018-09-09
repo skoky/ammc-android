@@ -26,4 +26,6 @@
     <string name="LapTime">Time</string>
     <string name="Diff">Diff</string>
     <string name="decoderId">DecoderId:</string>
+    <string name="loopTriggers">Loop triggers:</string>
+    <string name="noise">Noise:</string>
 </resources>
