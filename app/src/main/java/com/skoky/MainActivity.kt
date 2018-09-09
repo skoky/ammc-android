@@ -20,7 +20,8 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.RadioButton
 import android.widget.RadioGroup
-import android.widget.Toast
+import com.google.android.gms.ads.AdRequest
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.skoky.fragment.ConsoleModeFragment
 import com.skoky.fragment.RacingModeFragment
 import com.skoky.fragment.StartupFragment
@@ -33,7 +34,9 @@ import com.skoky.services.DecoderService
 import kotlinx.android.synthetic.main.main.*
 import kotlinx.android.synthetic.main.select_decoder.*
 import kotlinx.android.synthetic.main.startup_content.*
-import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.android.gms.ads.AdView
+
+
 
 
 class MainActivity : AppCompatActivity(),
@@ -54,6 +57,7 @@ class MainActivity : AppCompatActivity(),
 
     private lateinit var app: MyApp
     private lateinit var mFirebaseAnalytics: FirebaseAnalytics
+    private var mAdView: AdView? = null
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,6 +97,7 @@ class MainActivity : AppCompatActivity(),
         bindService(intent, decoderServiceConnection, Context.BIND_AUTO_CREATE)
 
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        adView.loadAd(AdRequest.Builder().build())
     }
 
     private fun openStartupFragment() {

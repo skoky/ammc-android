@@ -1,4 +1,6 @@
 <resources>
+    <string name="banner_ad_unit_id" translatable="false">ca-app-pub-3940256099942544/6300978111</string>
+
     <string name="app_name">AMM Converter</string>
     <string name="querying_decoders">Querying decoders...</string>
     <string name="show_more_decoders">More decoders >>></string>
