@@ -36,8 +36,6 @@ import kotlinx.android.synthetic.main.startup_content.*
 import com.google.firebase.analytics.FirebaseAnalytics
 
 
-
-
 class MainActivity : AppCompatActivity(),
         TrainingModeFragment.OnListFragmentInteractionListener,
         RacingModeFragment.OnListFragmentInteractionListener,
@@ -125,13 +123,13 @@ class MainActivity : AppCompatActivity(),
         AlertDialog.Builder(this).setMessage(getString(R.string.well))
                 .setPositiveButton(getString(R.string.send_email)) { d, i ->
 
-            val intent = Intent(Intent.ACTION_SEND)
-            intent.type = "plain/text"
-            intent.putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf<String>("skokys@gmail.com"))
-            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, "AMM wish from Android")
-            intent.putExtra(android.content.Intent.EXTRA_TEXT, "I wish....")
-            startActivity(Intent.createChooser(intent, "Send"))
-        }.setCancelable(true).create().show()
+                    val intent = Intent(Intent.ACTION_SEND)
+                    intent.type = "plain/text"
+                    intent.putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf<String>("skokys@gmail.com"))
+                    intent.putExtra(android.content.Intent.EXTRA_SUBJECT, "AMM wish from Android")
+                    intent.putExtra(android.content.Intent.EXTRA_TEXT, "I wish....")
+                    startActivity(Intent.createChooser(intent, "Send"))
+                }.setCancelable(true).create().show()
 
     }
 
@@ -300,15 +298,15 @@ class MainActivity : AppCompatActivity(),
 
         // Checks the orientation of the screen
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show()
+            //          Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show()
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show()
         }
         // Checks whether a hardware keyboard is available
         if (newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
-            Toast.makeText(this, "keyboard visible", Toast.LENGTH_SHORT).show()
+            //        Toast.makeText(this, "keyboard visible", Toast.LENGTH_SHORT).show()
         } else if (newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
-            Toast.makeText(this, "keyboard hidden", Toast.LENGTH_SHORT).show()
+            //      Toast.makeText(this, "keyboard hidden", Toast.LENGTH_SHORT).show()
         }
 
         Log.d(TAG, "Layout:" + newConfig.screenLayout)
@@ -321,19 +319,18 @@ class MainActivity : AppCompatActivity(),
 //    }
 
 
+    companion object {
+        private const val TAG = "MainActivity"
 
-companion object {
-    private const val TAG = "MainActivity"
+        fun decoderLabel(d: Decoder): String {
 
-    fun decoderLabel(d: Decoder): String {
+            if (d.decoderType != null && d.ipAddress != null) return "${d.decoderType} / ${d.ipAddress}"
 
-        if (d.decoderType != null && d.ipAddress != null) return "${d.decoderType} / ${d.ipAddress}"
+            d.ipAddress?.let { return it }
 
-        d.ipAddress?.let { return it }
+            d.decoderId?.let { return it }
 
-        d.decoderId?.let { return it }
-
-        return d.uuid.toString()
+            return d.uuid.toString()
+        }
     }
-}
 }
