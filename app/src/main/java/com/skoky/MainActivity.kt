@@ -33,6 +33,9 @@ import com.skoky.services.DecoderService
 import kotlinx.android.synthetic.main.main.*
 import kotlinx.android.synthetic.main.select_decoder.*
 import kotlinx.android.synthetic.main.startup_content.*
+import com.google.firebase.analytics.FirebaseAnalytics
+
+
 
 
 class MainActivity : AppCompatActivity(),
@@ -52,6 +55,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     private lateinit var app: MyApp
+    private lateinit var mFirebaseAnalytics: FirebaseAnalytics
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,6 +93,8 @@ class MainActivity : AppCompatActivity(),
         Log.w(TAG, "Binding service")
         val intent = Intent(this, DecoderService::class.java)
         bindService(intent, decoderServiceConnection, Context.BIND_AUTO_CREATE)
+
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
     }
 
     private fun openStartupFragment() {

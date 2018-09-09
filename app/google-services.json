@@ -1,27 +1,27 @@
 {
   "project_info": {
-    "project_number": "945220343946",
-    "firebase_url": "https://verbastic-97817.firebaseio.com",
-    "project_id": "verbastic-97817",
-    "storage_bucket": "verbastic-97817.appspot.com"
+    "project_number": "775851624396",
+    "firebase_url": "https://ammc-fa122.firebaseio.com",
+    "project_id": "ammc-fa122",
+    "storage_bucket": "ammc-fa122.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:945220343946:android:f724e9a52e4a4bd9",
+        "mobilesdk_app_id": "1:775851624396:android:8cef5b7b1d79b635",
         "android_client_info": {
           "package_name": "com.skoky"
         }
       },
       "oauth_client": [
         {
-          "client_id": "945220343946-hkv20ah5bbdt6c6sn3ovo6it0fqu5grt.apps.googleusercontent.com",
+          "client_id": "775851624396-i6d751cspg16vebb0s39l4ob02scp9eg.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyA6-nH1bdBWzJV9MMYcC5J5q21IWQ7lc7o"
+          "current_key": "AIzaSyC7vXaPSv3MKvGLfXuQPkW2hGOijx2L0IA"
         }
       ],
       "services": {
