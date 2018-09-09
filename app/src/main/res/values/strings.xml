@@ -28,4 +28,6 @@
     <string name="decoderId">DecoderId:</string>
     <string name="loopTriggers">Loop triggers:</string>
     <string name="noise">Noise:</string>
+    <string name="well">Well, yes, this is not full timing app of course. But send me an email to describe what you need and we might find a way how to move forward :)</string>
+    <string name="send_email">Send e-mail</string>
 </resources>

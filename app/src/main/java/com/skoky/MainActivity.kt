@@ -122,12 +122,17 @@ class MainActivity : AppCompatActivity(),
 
     fun doMakeAWish(view: View) {
 
-        val intent = Intent(Intent.ACTION_SEND)
-        intent.type = "plain/text"
-        intent.putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf<String>("skokys@gmail.com"))
-        intent.putExtra(android.content.Intent.EXTRA_SUBJECT, "AMM wish from Android")
-        intent.putExtra(android.content.Intent.EXTRA_TEXT, "I wish....")
-        startActivity(Intent.createChooser(intent, "Send"))
+        AlertDialog.Builder(this).setMessage(getString(R.string.well))
+                .setPositiveButton(getString(R.string.send_email)) { d, i ->
+
+            val intent = Intent(Intent.ACTION_SEND)
+            intent.type = "plain/text"
+            intent.putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf<String>("skokys@gmail.com"))
+            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, "AMM wish from Android")
+            intent.putExtra(android.content.Intent.EXTRA_TEXT, "I wish....")
+            startActivity(Intent.createChooser(intent, "Send"))
+        }.setCancelable(true).create().show()
+
     }
 
     fun showMoreDecoders(view: View) {
