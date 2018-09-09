@@ -127,6 +127,7 @@ class StartupFragment : Fragment() {
     override fun onDetach() {
         super.onDetach()
         context?.unregisterReceiver(connectReceiver)
+        context?.unregisterReceiver(dataReceiver)
     }
 
     companion object {

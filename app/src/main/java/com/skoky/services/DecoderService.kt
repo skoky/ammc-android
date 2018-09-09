@@ -11,6 +11,7 @@ import android.util.Log
 import com.skoky.MyApp
 import com.skoky.NetworkBroadcastHandler
 import eu.plib.Parser
+import eu.plib.ParserS
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
@@ -139,21 +140,37 @@ class DecoderService : Service() {
         }
     }
 
+
+    private val exploreMesages = listOf(
+            "{\"recordType\":\"Version\",\"emptyFields\":[\"decoderType\"],\"VERSION\":\"2\"}",
+            "{\"recordType\":\"Status\",\"emptyFields\":[\"loopTriggers\",\"noise\",\"gps\", \"temperature\",\"inputVoltage\",\"satInUse\"],\"VERSION\":\"2\"}",
+            "{\"recordType\":\"AuxiliarySettings\",\"emptyFields\":[\"photocellHoldOff\",\"externalStartHoldOff\",\"syncHoldOff\"],\"VERSION\":\"2\"}",
+            "{\"recordType\":\"GeneralSettings\",\"emptyFields\":[\"statusInterval\",\"realTimeClock\",\"enableFirstContactRecord\",\"decoderMode\"],\"VERSION\":\"2\"}",
+            "{\"recordType\":\"GPS\",\"emptyFields\":[\"longtitude\",\"latitude\",\"numOfSatInUse\"],\"VERSION\":\"2\"}",
+            "{\"recordType\":\"LoopTrigger\",\"emptyFields\":[\"flags\",\"pingCount\",\"temperature\",\"strength\",\"code\",\"lastReceivedPingRtcTime\",\"lastReceivedPingUtcTime\",\"actStrength\",\"recordIndex\"],\"VERSION\":\"2\"}",
+            "{\"recordType\":\"NetworkSettings\",\"emptyFields\":[\"automatic\",\"staticSubnetMask\",\"obtained\",\"activeIPAddress\",\"activeDNS\",\"activeGateway\",\"staticDNSServer\",\"activeSubNetMask\",\"activate\",\"interfaceNumber\",\"staticIpAddress\",\"staticGateway\"],\"VERSION\":\"2\"}",
+            "{\"recordType\":\"ServerSettings\",\"emptyFields\":[\"host\",\"ipPort\",\"interfaceName\"],\"VERSION\":\"2\"}",
+            "{\"recordType\":\"Signals\",\"emptyFields\":[\"beepFrequency\",\"beepDuration\",\"beepHoldOff\",\"auxiliaryOutput\"],\"VERSION\":\"2\"}",
+            "{\"recordType\":\"Time\",\"emptyFields\":[\"RTC_Time\",\"UTC_Time\",\"flags\"],\"VERSION\":\"2\"}",
+            "{\"recordType\":\"Timeline\",\"emptyFields\":[\"gateTime\",\"ID\",\"name\",\"sports\",\"loopTriggerEnabled\",\"minOutField\",\"squelch\"],\"VERSION\":\"2\"}",
+            "{\"recordType\":\"Version\",\"emptyFields\":[\"description\",\"options\",\"version\",\"decoderType\",\"release\",\"registration\",\"buildNumber\"],\"VERSION\":\"2\"}"
+    )
+
     fun exploreDecoder(uuid: UUID) {
         val socket = decoders.find { it.uuid == uuid }?.connection
 
         doAsync {
             socket?.let { s ->
                 if (s.isBound) {
-                    val versionRequest = Parser.encode("{\"recordType\":\"Version\",\"emptyFields\":[\"decoderType\"],\"VERSION\":\"2\"}")
-                    s.getOutputStream().write(versionRequest)
-                    val statusRequest = Parser.encode("{\"recordType\":\"Status\",\"emptyFields\":[" +
-                            "\"loopTriggers\",\"noise\",\"gps\", \"temperature-text\",\"inputVoltage-text\"],\"VERSION\":\"2\"}")
-                    s.getOutputStream().write(statusRequest)
 
-                    // TODO send all possible messages
-                    // FIXME make sure Console Fragment caches all fields
-
+                    exploreMesages.forEach { m ->
+                        try {
+                            val parsed = Parser.encode(m)
+                            parsed?.let { p -> s.getOutputStream().write(p) }
+                        } finally {
+                            Thread.sleep(200)
+                        }
+                    }
                 }
             }
         }
@@ -316,7 +333,8 @@ class DecoderService : Service() {
 
         if (json.has("decoderID")) {
             // not caching for another decoder or disconnected decoder
-             decoders.find { it.decoderId == json.getString("decoderId") && it.connection != null } ?: return
+            decoders.find { it.decoderId == json.getString("decoderId") && it.connection != null }
+                    ?: return
         } else {
             return      // weird
         }

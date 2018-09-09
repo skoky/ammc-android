@@ -13,6 +13,7 @@ import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import com.skoky.MyApp
 import com.skoky.R
@@ -27,7 +28,6 @@ import java.util.*
 class ConsoleModeFragment : Fragment() {
 
     private var listener: OnListFragmentInteractionListener? = null
-
 
     class ConnectionReceiver(val handler: () -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -53,7 +53,7 @@ class ConsoleModeFragment : Fragment() {
         }
         context!!.registerReceiver(disconnectReceiver, IntentFilter(DECODER_DISCONNECTED))
 
-        val ll = view as LinearLayout
+        val ll = (view as ScrollView).childrenSequence().first() as LinearLayout
         val dataHandler = DataReceiver {
             val json = JSONObject(it)
             Log.d(TAG, json.getString("recordType"))
@@ -81,7 +81,7 @@ class ConsoleModeFragment : Fragment() {
     }
 
     private val skipped = listOf("recordType","SPARE","crcOk","FLAGS","VERSION",
-            "gps","temperature", "decoderType","origin","decoderId")    // TODO review all messages
+            "gps","temperature", "decoderType","origin","decoderId","requestId","emptyFields")    // TODO review all messages
     private fun shouldShow(json: JSONObject, key: String?): Boolean {
         key?.let {k ->
             if (k.endsWith("-text")) return true

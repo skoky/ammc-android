@@ -183,7 +183,7 @@ class MainActivity : AppCompatActivity(),
 
     }
 
-    private lateinit var consoleFragment : ConsoleModeFragment
+    private lateinit var consoleFragment: ConsoleModeFragment
     fun openConsoleMode(view: View?): Boolean {
         val decoderUUID = firstDecoderId.tag as? String
 
@@ -303,19 +303,26 @@ class MainActivity : AppCompatActivity(),
         Log.d(TAG, "Layout:" + newConfig.screenLayout)
     }
 
+// FIXME disconnect service once finishing
+//    override fun onDestroy() {
+//        super.onDestroy()
+//        app.decoderService?.let { unbindService(it... connection) }
+//    }
 
-    companion object {
-        private const val TAG = "MainActivity"
 
-        fun decoderLabel(d: Decoder): String {
 
-            if (d.decoderType != null && d.ipAddress != null) return "${d.decoderType} / ${d.ipAddress}"
+companion object {
+    private const val TAG = "MainActivity"
 
-            d.ipAddress?.let { return it }
+    fun decoderLabel(d: Decoder): String {
 
-            d.decoderId?.let { return it }
+        if (d.decoderType != null && d.ipAddress != null) return "${d.decoderType} / ${d.ipAddress}"
 
-            return d.uuid.toString()
-        }
+        d.ipAddress?.let { return it }
+
+        d.decoderId?.let { return it }
+
+        return d.uuid.toString()
     }
+}
 }

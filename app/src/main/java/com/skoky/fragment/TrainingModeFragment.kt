@@ -37,6 +37,7 @@ class TrainingModeFragment : Fragment() {
 
     private var listener: OnListFragmentInteractionListener? = null
     private lateinit var receiver: BroadcastReceiver
+    private lateinit var disconnectReceiver: BroadcastReceiver
 
     private var startStopButtonM: Button? = null
 
@@ -96,7 +97,7 @@ class TrainingModeFragment : Fragment() {
         startStopButtonM = view.startStopButton
         startStopButtonM!!.setOnClickListener { doStartStopDialog() }
 
-        val disconnectReceiver = ConnectionReceiver {
+        disconnectReceiver = ConnectionReceiver {
             Log.i(TAG, "Disconnected")
             //AlertDialog.Builder(context).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
         }
@@ -203,8 +204,8 @@ class TrainingModeFragment : Fragment() {
     override fun onDetach() {
         super.onDetach()
         context?.unregisterReceiver(receiver)
+        context?.unregisterReceiver(disconnectReceiver)
     }
-
 
     interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
@@ -224,5 +225,4 @@ class TrainingModeFragment : Fragment() {
                     }
                 }
     }
-
 }
