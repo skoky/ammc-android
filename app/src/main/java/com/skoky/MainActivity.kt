@@ -22,10 +22,6 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import com.google.android.gms.ads.AdRequest
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.skoky.fragment.ConsoleModeFragment
-import com.skoky.fragment.RacingModeFragment
-import com.skoky.fragment.StartupFragment
-import com.skoky.fragment.TrainingModeFragment
 import com.skoky.fragment.content.ConsoleModel
 import com.skoky.fragment.content.Racer
 import com.skoky.fragment.content.TrainingLap
@@ -35,8 +31,7 @@ import kotlinx.android.synthetic.main.main.*
 import kotlinx.android.synthetic.main.select_decoder.*
 import kotlinx.android.synthetic.main.startup_content.*
 import com.google.android.gms.ads.AdView
-
-
+import com.skoky.fragment.*
 
 
 class MainActivity : AppCompatActivity(),
@@ -73,6 +68,7 @@ class MainActivity : AppCompatActivity(),
                 R.id.nav_training -> menuItem.isChecked = openTrainingMode(null)
                 R.id.nav_racing -> menuItem.isChecked = openRacingMode(null)
                 R.id.nav_console -> menuItem.isChecked = openConsoleMode(null)
+                R.id.nav_connection_help -> menuItem.isChecked = openHelp(null)
                 else -> {
                     menuItem.isChecked = false
                     Log.w(TAG, "Unknown mode $menuItem")
@@ -196,6 +192,16 @@ class MainActivity : AppCompatActivity(),
         override fun afterTextChanged(s: Editable?) {
         }
 
+    }
+
+    private lateinit var helpFragment: HelpFragment
+    private fun openHelp(view: View?): Boolean {
+        helpFragment = HelpFragment.newInstance(1)
+        val fragmentTransaction = supportFragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.screen_container, helpFragment)
+        fragmentTransaction.commit()
+
+        return true
     }
 
     private lateinit var consoleFragment: ConsoleModeFragment
