@@ -96,6 +96,7 @@ class MainActivity : AppCompatActivity(),
         val intent = Intent(this, DecoderService::class.java)
         bindService(intent, decoderServiceConnection, Context.BIND_AUTO_CREATE)
 
+        mAdView = adView
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
         adView.loadAd(AdRequest.Builder().build())
     }
