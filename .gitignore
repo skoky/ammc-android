@@ -1,2 +1,7 @@
 .idea/*
 *.apk
+*.iml
+ammc/build/*
+ammc/release/*
+.gradle
+build/*
