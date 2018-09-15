@@ -11,7 +11,7 @@ allprojects {
 }
 
 buildscript {
-    ext.kotlin_version = '1.2.51'
+    ext.kotlin_version = '1.2.61'
     repositories {
         maven { url 'https://maven.google.com' }
         jcenter()

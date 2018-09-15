@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "775851624396-avrklrm82g5t3ld8dp28qgaf9mot8mhi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.skoky",
+            "certificate_hash": "79bd750e8a4b1ab8fbe2043d91a06106ced14d26"
+          }
+        },
+        {
           "client_id": "775851624396-i6d751cspg16vebb0s39l4ob02scp9eg.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,13 +37,19 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "775851624396-i6d751cspg16vebb0s39l4ob02scp9eg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
           "status": 2
         }
-      }
+      },
+      "admob_app_id": "ca-app-pub-7655373768605194~7466307464"
     }
   ],
   "configuration_version": "1"
