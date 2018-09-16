@@ -44,7 +44,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-ads:15.0.1'
     implementation 'com.google.firebase:firebase-crash:11.8.0'
 
-    implementation 'eu.plib:plib_2.11:2.6.5'
+    implementation 'eu.plib:plib_2.11:2.7.0'
     implementation 'com.j256.ormlite:ormlite-android:4.47'
     implementation 'com.shamanland:fab:0.0.8'
 
