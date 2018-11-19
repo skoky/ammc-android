@@ -22,8 +22,6 @@ class HelpFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val app = activity!!.application as MyApp
-
     }
 
     companion object {

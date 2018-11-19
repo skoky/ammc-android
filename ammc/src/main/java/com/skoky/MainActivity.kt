@@ -123,7 +123,7 @@ class MainActivity : AppCompatActivity(),
     fun doMakeAWish(view: View) {
 
         AlertDialog.Builder(this).setMessage(getString(R.string.well))
-                .setPositiveButton(getString(R.string.send_email)) { d, i ->
+                .setPositiveButton(getString(R.string.send_email)) { _, _ ->
 
                     val intent = Intent(Intent.ACTION_SEND)
                     intent.type = "plain/text"
@@ -145,10 +145,10 @@ class MainActivity : AppCompatActivity(),
         val decoderText = d.decoder_address_edittext
         val dd = d.known_decoders
 
-        decodersCopy.forEach { d ->
-            if (d.ipAddress != null) {
+        decodersCopy.forEach { d2 ->
+            if (d2.ipAddress != null) {
                 val b = RadioButton(this)
-                b.text = MainActivity.decoderLabel(d)
+                b.text = MainActivity.decoderLabel(d2)
                 b.isChecked = false
                 b.id = d.hashCode()
                 b.setOnCheckedChangeListener { view, checked ->
@@ -170,7 +170,7 @@ class MainActivity : AppCompatActivity(),
             if (decoderText.text.isNotEmpty()) {
                 app.decoderService?.let { it.connectDecoder(decoderText.text.toString().trim()) }
             } else
-                foundDecoder?.let { app.decoderService?.let { s -> s.connectDecoder2(it) } }
+                foundDecoder?.let { d3 -> app.decoderService?.let { s -> s.connectDecoder2(d3) } }
 
             d.cancel()
         }
