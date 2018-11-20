@@ -1,17 +1,13 @@
 package com.skoky.services
 
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.os.Binder
-import android.os.Build
 import android.os.IBinder
-import android.support.annotation.RequiresApi
 import android.util.Log
-import com.skoky.MyApp
 import com.skoky.NetworkBroadcastHandler
+import com.skoky.P98Parser
 import eu.plib.Parser
-import eu.plib.ParserS
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
@@ -203,7 +199,7 @@ class DecoderService : Service() {
                     read = it.read(buffer)
                     Log.i(TAG, "Received $read bytes")
                     if (read > 0) {
-                        val json = JSONObject(Parser.decode(buffer.copyOf(read)))
+                        val json = processTcpMsg(buffer.copyOf(read))
                         if (json.get("recordType").toString().isNotEmpty()) sendBroadcastData(decoder, json)
                         when {
                             json.get("recordType").toString() == "Passing" -> sendBroadcastPassing(json.toString())
@@ -235,7 +231,19 @@ class DecoderService : Service() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
+    private fun processTcpMsg(msg: ByteArray): JSONObject {
+        if (msg.size > 1 && msg[0] == 0x8e.toByte()) {
+            return JSONObject(Parser.decode(msg))
+        } else if (msg.size > 1 && ( msg[0] == '#'.toByte() || msg[0] == '@'.toByte() ) ) {
+            return P98Parser.parse(msg)
+        } else {
+            Log.w(TAG,"Invalid msg on TCP " + msg.toString())
+            return JSONObject("{\"recordType\":\"Error\",\"description\":\"Invalid message\"}")
+        }
+    }
+
+
+//    @RequiresApi(Build.VERSION_CODES.N)
     private fun processUdpMsg(msgB: ByteArray) {
         Log.w(TAG, "Data received: ${msgB.size}")
         val msg = Parser.decode(msgB)
