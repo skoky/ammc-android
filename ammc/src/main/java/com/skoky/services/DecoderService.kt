@@ -7,8 +7,11 @@ import android.os.IBinder
 import android.util.Log
 import com.skoky.NetworkBroadcastHandler
 import com.skoky.P98Parser
+import com.skoky.Tools
+import com.skoky.Tools.P3_DEF_PORT
 import eu.plib.Parser
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.runOnUiThread
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
 import org.json.JSONObject
@@ -16,8 +19,9 @@ import java.net.*
 import java.util.*
 import kotlin.concurrent.schedule
 
-data class Decoder(val uuid: UUID, var decoderId: String? = null, var ipAddress: String? = null, var decoderType: String? = null,
-                   var connection: Socket? = null, var lastSeen: Long) {
+data class Decoder(val uuid: UUID, var decoderId: String? = null, var ipAddress: String? = null,
+                   var port: Int? = null,
+                   var decoderType: String? = null, var connection: Socket? = null, var lastSeen: Long) {
     override fun equals(other: Any?): Boolean {
         return uuid == (other as? Decoder)?.uuid
     }
@@ -27,8 +31,10 @@ data class Decoder(val uuid: UUID, var decoderId: String? = null, var ipAddress:
     }
 
     companion object {
-        fun newDecoder(ipAddress: String? = null, decoderId: String? = null): Decoder {
-            return Decoder(UUID.randomUUID(), ipAddress = ipAddress, decoderId = decoderId, lastSeen = System.currentTimeMillis())
+        fun newDecoder(ipAddress: String? = null, port: Int? = null, decoderId: String? = null): Decoder {
+            val fixedPort = if (port == null) Tools.P3_DEF_PORT else port
+            return Decoder(UUID.randomUUID(), ipAddress = ipAddress, port = fixedPort,
+                    decoderId = decoderId, lastSeen = System.currentTimeMillis())
         }
     }
 }
@@ -41,6 +47,7 @@ fun MutableList<Decoder>.addOrUpdate(decoder: Decoder) {
         if (d.uuid == d.uuid) {
             decoder.decoderId?.let { d.decoderId = it }
             decoder.ipAddress?.let { d.ipAddress = it }
+            decoder.port?.let { d.port = it }
             decoder.decoderType?.let { d.decoderType = it }
             decoder.connection?.let { d.connection = it }
             if (decoder.lastSeen > d.lastSeen) d.lastSeen = decoder.lastSeen
@@ -111,8 +118,14 @@ class DecoderService : Service() {
             doAsync {
                 val socket = Socket()
                 try {
-                    socket.connect(InetSocketAddress(decoder.ipAddress, 5403), 5000)
-                    decoders.addOrUpdate(decoder.copy(connection = socket, lastSeen = System.currentTimeMillis()))
+                    socket.connect(InetSocketAddress(decoder.ipAddress, decoder.port!!), 5000)
+
+                    if (isVostok(decoder)) {
+                        runOnUiThread { toast("Decoder is Vostok") }
+                        decoders.addOrUpdate(decoder.copy(decoderId = "Vostok", connection = socket, lastSeen = System.currentTimeMillis()))
+                    } else if (isP3Decoder(decoder)) {
+                        decoders.addOrUpdate(decoder.copy(connection = socket, lastSeen = System.currentTimeMillis()))
+                    }
 
                     Log.i(TAG, "Decoder $decoder connected")
                     sendBroadcastConnect(decoder)
@@ -121,13 +134,15 @@ class DecoderService : Service() {
                         listenOnSocketConnection(socket, decoder)
                     }
 
-                    val versionRequest = Parser.encode("{\"recordType\":\"Version\",\"emptyFields\":[\"decoderType\"],\"VERSION\":\"2\"}")
-                    socket.getOutputStream().write(versionRequest)
+                    if (isP3Decoder(decoder)) {
+                        val versionRequest = Parser.encode("{\"recordType\":\"Version\",\"emptyFields\":[\"decoderType\"],\"VERSION\":\"2\"}")
+                        socket.getOutputStream().write(versionRequest)
+                    }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error connecting decoder", e)
                     socket.close()
                     uiThread {
-                        toast("Connection not possible to ${decoder.ipAddress}:5403")
+                        toast("Connection not possible to ${decoder.ipAddress}:${decoder.port}")
                     }
                 }
             }
@@ -137,7 +152,16 @@ class DecoderService : Service() {
     }
 
 
-    private val exploreMesages = listOf(
+    private fun isVostok(d: Decoder): Boolean {
+        return d.port != P3_DEF_PORT
+    }
+
+    private fun isP3Decoder(d: Decoder): Boolean {
+        return d.port == P3_DEF_PORT
+    }
+
+
+    private val exploreMessages = listOf(
             "{\"recordType\":\"Version\",\"emptyFields\":[\"decoderType\"],\"VERSION\":\"2\"}",
             "{\"recordType\":\"Status\",\"emptyFields\":[\"loopTriggers\",\"noise\",\"gps\", \"temperature\",\"inputVoltage\",\"satInUse\"],\"VERSION\":\"2\"}",
             "{\"recordType\":\"AuxiliarySettings\",\"emptyFields\":[\"photocellHoldOff\",\"externalStartHoldOff\",\"syncHoldOff\"],\"VERSION\":\"2\"}",
@@ -152,6 +176,7 @@ class DecoderService : Service() {
             "{\"recordType\":\"Version\",\"emptyFields\":[\"description\",\"options\",\"version\",\"decoderType\",\"release\",\"registration\",\"buildNumber\"],\"VERSION\":\"2\"}"
     )
 
+
     fun exploreDecoder(uuid: UUID) {
         val socket = decoders.find { it.uuid == uuid }?.connection
 
@@ -159,7 +184,7 @@ class DecoderService : Service() {
             socket?.let { s ->
                 if (s.isBound) {
 
-                    exploreMesages.forEach { m ->
+                    exploreMessages.forEach { m ->
                         try {
                             val parsed = Parser.encode(m)
                             parsed?.let { p -> s.getOutputStream().write(p) }
@@ -200,6 +225,8 @@ class DecoderService : Service() {
                     Log.i(TAG, "Received $read bytes")
                     if (read > 0) {
                         val json = processTcpMsg(buffer.copyOf(read))
+
+
                         if (json.get("recordType").toString().isNotEmpty()) sendBroadcastData(decoder, json)
                         when {
                             json.get("recordType").toString() == "Passing" -> sendBroadcastPassing(json.toString())
@@ -210,6 +237,11 @@ class DecoderService : Service() {
                             }
                             else -> Log.w(TAG, "received unknown data $json")
                         }
+
+                        if (isVostok(orgDecoder)) {
+                            decoders.addOrUpdate(decoder.copy(decoderType = "Vostok"))
+                        }
+
                         if (json.has("decoderId")) {
                             json.getString("decoderId")?.let { id -> decoders.addOrUpdate(decoder.copy(decoderId = id)) }
                         }
@@ -232,18 +264,17 @@ class DecoderService : Service() {
     }
 
     private fun processTcpMsg(msg: ByteArray): JSONObject {
-        if (msg.size > 1 && msg[0] == 0x8e.toByte()) {
-            return JSONObject(Parser.decode(msg))
-        } else if (msg.size > 1 && ( msg[0] == '#'.toByte() || msg[0] == '@'.toByte() ) ) {
-            return P98Parser.parse(msg)
+        return if (msg.size > 1 && msg[0] == 0x8e.toByte()) {
+            JSONObject(Parser.decode(msg))
+        } else if (msg.size > 1 && (msg[0] == '#'.toByte() || msg[0] == '@'.toByte())) {
+            JSONObject(P98Parser.parse(msg))
         } else {
-            Log.w(TAG,"Invalid msg on TCP " + msg.toString())
-            return JSONObject("{\"recordType\":\"Error\",\"description\":\"Invalid message\"}")
+            Log.w(TAG, "Invalid msg on TCP " + msg.toString())
+            JSONObject("{\"recordType\":\"Error\",\"description\":\"Invalid message\"}")
         }
     }
 
-
-//    @RequiresApi(Build.VERSION_CODES.N)
+    //    @RequiresApi(Build.VERSION_CODES.N)
     private fun processUdpMsg(msgB: ByteArray) {
         Log.w(TAG, "Data received: ${msgB.size}")
         val msg = Parser.decode(msgB)
@@ -298,9 +329,9 @@ class DecoderService : Service() {
     private fun sendUdpBroadcastMessage(msg: String) {
         var socket: DatagramSocket? = null
         try {
-            socket = DatagramSocket(5403)
+            socket = DatagramSocket(P3_DEF_PORT)
             socket.broadcast = true
-            socket.connect(InetAddress.getByName("255.255.255.255"), 5403)
+            socket.connect(InetAddress.getByName("255.255.255.255"), P3_DEF_PORT)
             val bytes = Parser.encode(msg)
             Log.w(TAG, "Bytes size ${bytes.size}")
             socket.send(DatagramPacket(bytes, bytes.size))
@@ -388,11 +419,29 @@ class DecoderService : Service() {
     fun connectDecoder(address: String): Boolean {
         Log.d(TAG, "Connecting to $address")
 
-        val foundByIp = decoders.find { it.ipAddress == address }
+        var addressIp: String = ""
+        var port: Int? = null
+
+        val foundByIp = if (address.contains(":") && address.split(":").size == 2) {
+            val fields = address.split(":")
+            addressIp = fields[0]
+            port = fields[1].toInt()
+            decoders.find { it.ipAddress == addressIp && it.port == port }
+
+        } else {
+            decoders.find { it.ipAddress == address }
+        }
+        toast("Connecting to ${addressIp}:${port}")
+//        val foundByIp = decoders.find { it.ipAddress == address }
         if (foundByIp != null)
             connectDecoder2(foundByIp)
         else {  // create new decoder
-            connectDecoder2(Decoder.newDecoder(ipAddress = address))
+
+            if (port != null) {
+                connectDecoder2(Decoder.newDecoder(ipAddress = addressIp, port = port))
+            } else {
+                connectDecoder2(Decoder.newDecoder(ipAddress = address))
+            }
         }
         return true
     }
@@ -409,6 +458,6 @@ class DecoderService : Service() {
         const val DECODER_DATA = "com.skoky.decoder.broadcast.data"
         const val DECODER_PASSING = "com.skoky.decoder.broadcast.passing"
         const val DECODER_DISCONNECTED = "com.skoky.decoder.broadcast.disconnected"
-        private const val INACTIVE_DECODER_TIMEOUT: Long = 10000  // 10secs
+        private const val INACTIVE_DECODER_TIMEOUT: Long = 100000  // 10secs
     }
 }

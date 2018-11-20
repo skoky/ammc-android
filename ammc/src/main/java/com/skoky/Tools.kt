@@ -9,17 +9,14 @@ import android.view.View
 import android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
 import android.widget.EditText
 import android.widget.Toast
-
-import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.SocketException
-import java.util.Enumeration
 
 object Tools {
 
     private val TAG = "P3Tools"
 
-    var DEF_PORT = 5403
+    var P3_DEF_PORT = 5403
 
     val localIpAddress: String?
         get() {
@@ -52,7 +49,7 @@ object Tools {
     }
 
     fun getPort(text: CharSequence): Int {
-        var port = DEF_PORT
+        var port = P3_DEF_PORT
         val a = text.toString()
         val spl = a.split(":".toRegex(), 2).toTypedArray()
         if (spl.size > 1) {

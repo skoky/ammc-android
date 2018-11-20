@@ -83,6 +83,7 @@ class StartupFragment : Fragment() {
         context!!.registerReceiver(dataReceiver, IntentFilter(DECODER_DATA))
 
         app.decoderService?.let {
+            Log.i(TAG,it.getDecoders().toString())
             if (it.getDecoders().isNotEmpty())
                 visualStateHandler(it.getDecoders().first().uuid)
         }
