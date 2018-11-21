@@ -18,7 +18,6 @@ android {
     }
     dexOptions {
         jumboMode true
-        incremental true
     }
     testOptions {
         unitTests.returnDefaultValues = true

@@ -122,7 +122,6 @@ class DecoderService : Service() {
                     socket.connect(InetSocketAddress(decoder.ipAddress, decoder.port!!), 5000)
 
                     if (isVostok(decoder)) {
-                        runOnUiThread { toast("Decoder is Vostok") }
                         decoders.addOrUpdate(decoder.copy(decoderId = vostokDecoderId(decoder), connection = socket, lastSeen = System.currentTimeMillis()))
                     } else if (isP3Decoder(decoder)) {
                         decoders.addOrUpdate(decoder.copy(connection = socket, lastSeen = System.currentTimeMillis()))
