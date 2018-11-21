@@ -82,4 +82,18 @@ class P98ParserTest {
                 "  \"RTC_Time\": \"46820\"\n" +
                 "}", json)
     }
+//
+//    @Test
+//    fun testCrc() {
+//        val bytes = "@\t101\t12\t3444425\t46.82\t61\t40\t2\txE934".toByteArray()
+//        val crc = P98Parser.calcCrc(bytes)
+//        assertEquals(crc,Integer.parseInt("E934",16).toShort())
+//    }
+//
+//    @Test
+//    fun testCrcSpec() {
+//        val bytes = "$\t40\t3\t5\t28800\txF9EB".toByteArray()
+//        val crc = P98Parser.calcCrc(bytes)
+//        assertEquals(crc,Integer.parseInt("F9EB",16).toShort())
+//    }
 }

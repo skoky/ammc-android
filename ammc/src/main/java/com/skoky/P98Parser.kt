@@ -2,6 +2,7 @@ package com.skoky
 
 import com.google.gson.GsonBuilder
 
+
 const val DELIM = "\t"
 const val VOSTOK_ID = "101"
 const val VOSTOK_NAME = "Vostok"
@@ -65,7 +66,7 @@ object P98Parser {
                 signalStrength = fields[6].toInt(),
                 passingStatus = fields[7].toInt(),
                 crcOk = isCrcOk,
-                RTC_Time = (tss*1000).toInt().toString()
+                RTC_Time = (tss * 1000).toInt().toString()
         )
         return gson.toJson(passing)
     }
@@ -74,7 +75,20 @@ object P98Parser {
         return gson.toJson(Error("Error", msg))
     }
 
+
     private fun checkCrc(msg: ByteArray, crc: String): Boolean {
         return true
     }
+
+    // does not work
+//    //        receivedCrc = Integer.parseInt(ps.getCrc().replaceAll("x", ""), 16).toShort()
+//    //        if (crcCalc === receivedCrc) ps.setCrcOk(true)
+//
+//    fun calcCrc(data: ByteArray): Short {
+//        val dataToCrc = ByteArray(data.size - 6)
+//        System.arraycopy(data, 1, dataToCrc, 0, dataToCrc.size)
+//        return CRC16.cmpCRC(dataToCrc)
+//    }
+
+
 }
