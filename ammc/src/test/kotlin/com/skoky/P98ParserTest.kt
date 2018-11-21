@@ -40,7 +40,7 @@ class P98ParserTest {
                 "  \"signalStrength\": 6,\n" +
                 "  \"passingStatus\": 7,\n" +
                 "  \"crcOk\": true,\n" +
-                "  \"RTC_Time\": \"4100\"\n" +
+                "  \"RTC_Time\": \"4100000\"\n" +
                 "}", json)
     }
 
@@ -79,7 +79,7 @@ class P98ParserTest {
                 "  \"signalStrength\": 40,\n" +
                 "  \"passingStatus\": 2,\n" +
                 "  \"crcOk\": true,\n" +
-                "  \"RTC_Time\": \"46820\"\n" +
+                "  \"RTC_Time\": \"46820000\"\n" +
                 "}", json)
     }
 //

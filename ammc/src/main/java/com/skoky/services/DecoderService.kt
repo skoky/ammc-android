@@ -463,6 +463,6 @@ class DecoderService : Service() {
         const val DECODER_DATA = "com.skoky.decoder.broadcast.data"
         const val DECODER_PASSING = "com.skoky.decoder.broadcast.passing"
         const val DECODER_DISCONNECTED = "com.skoky.decoder.broadcast.disconnected"
-        private const val INACTIVE_DECODER_TIMEOUT: Long = 100000  // 10secs
+        private const val INACTIVE_DECODER_TIMEOUT: Long = 10000  // 10secs
     }
 }

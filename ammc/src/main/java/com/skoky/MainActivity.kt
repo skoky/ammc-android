@@ -51,13 +51,14 @@ class MainActivity : AppCompatActivity(),
     }
 
     private lateinit var app: MyApp
-    private lateinit var mFirebaseAnalytics: FirebaseAnalytics
     private var mAdView: AdView? = null
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         app = application as MyApp
         MyApp.setCachedApplicationContext(this)
+
+        app.firebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
         setContentView(R.layout.main)
 

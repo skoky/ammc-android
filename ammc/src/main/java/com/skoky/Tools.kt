@@ -65,19 +65,6 @@ object Tools {
         return port
     }
 
-    fun textToInt(viewById: View): Int {
-
-        try {
-            val t = viewById as EditText
-            return Integer.parseInt(t.text.toString())
-        } catch (e: Exception) {
-            Log.e(TAG, "Error converting to int:$e")
-            return -1
-        }
-
-    }
-
-
     fun checkInt(text: CharSequence): Boolean {
         try {
             Integer.parseInt(text.toString())

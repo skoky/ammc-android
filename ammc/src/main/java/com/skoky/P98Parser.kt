@@ -66,7 +66,7 @@ object P98Parser {
                 signalStrength = fields[6].toInt(),
                 passingStatus = fields[7].toInt(),
                 crcOk = isCrcOk,
-                RTC_Time = (tss * 1000).toInt().toString()
+                RTC_Time = (tss * 1000 * 1000).toLong().toString()  // conversion to microsecs
         )
         return gson.toJson(passing)
     }
