@@ -55,8 +55,8 @@ class StartupFragment : Fragment() {
                 Log.d(TAG, "Last msg: $msg")
                 val json = JSONObject(msg)
 
-                if (json.has("decoderId")) {
-                    json.getString("decoderId")?.let { dId ->
+                if (json.has("decoderType")) {
+                    json.getString("decoderType")?.let { dId ->
                         // update decoder data
                         decoders.find { it.decoderId == dId }?.let { d ->
                             decoderText.text = MainActivity.decoderLabel(d)

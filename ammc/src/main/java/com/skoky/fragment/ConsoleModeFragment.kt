@@ -29,8 +29,8 @@ import java.util.*
 class ConsoleModeFragment : Fragment() {
 
     private var listener: OnListFragmentInteractionListener? = null
-    lateinit var disconnectReceiver: BroadcastReceiver
-    lateinit var dataHandler: BroadcastReceiver
+    private lateinit var disconnectReceiver: BroadcastReceiver
+    private lateinit var dataHandler: BroadcastReceiver
 
     class ConnectionReceiver(val handler: () -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -86,7 +86,7 @@ class ConsoleModeFragment : Fragment() {
     }
 
     private val skipped = listOf("recordType", "SPARE", "crcOk", "FLAGS", "VERSION",
-            "gps", "temperature", "decoderType", "origin", "decoderId", "requestId", "emptyFields")    // TODO review all messages
+            "gps", "temperature", "decoderType", "origin", "decoderType", "requestId", "emptyFields")    // TODO review all messages
 
     private fun shouldShow(json: JSONObject, key: String?): Boolean {
         key?.let { k ->

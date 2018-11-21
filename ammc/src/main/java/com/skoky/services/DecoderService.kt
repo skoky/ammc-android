@@ -9,6 +9,7 @@ import com.skoky.NetworkBroadcastHandler
 import com.skoky.P98Parser
 import com.skoky.Tools
 import com.skoky.Tools.P3_DEF_PORT
+import com.skoky.VOSTOK_NAME
 import eu.plib.Parser
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.runOnUiThread
@@ -122,7 +123,7 @@ class DecoderService : Service() {
 
                     if (isVostok(decoder)) {
                         runOnUiThread { toast("Decoder is Vostok") }
-                        decoders.addOrUpdate(decoder.copy(decoderId = "Vostok", connection = socket, lastSeen = System.currentTimeMillis()))
+                        decoders.addOrUpdate(decoder.copy(decoderId = vostokDecoderId(decoder), connection = socket, lastSeen = System.currentTimeMillis()))
                     } else if (isP3Decoder(decoder)) {
                         decoders.addOrUpdate(decoder.copy(connection = socket, lastSeen = System.currentTimeMillis()))
                     }
@@ -224,8 +225,8 @@ class DecoderService : Service() {
                     read = it.read(buffer)
                     Log.i(TAG, "Received $read bytes")
                     if (read > 0) {
-                        val json = processTcpMsg(buffer.copyOf(read))
-
+                        val json = processTcpMsg(buffer.copyOf(read),
+                                vostokDecoderId(orgDecoder))
 
                         if (json.get("recordType").toString().isNotEmpty()) sendBroadcastData(decoder, json)
                         when {
@@ -239,11 +240,11 @@ class DecoderService : Service() {
                         }
 
                         if (isVostok(orgDecoder)) {
-                            decoders.addOrUpdate(decoder.copy(decoderType = "Vostok"))
+                            decoders.addOrUpdate(decoder.copy(decoderType = VOSTOK_NAME))
                         }
 
-                        if (json.has("decoderId")) {
-                            json.getString("decoderId")?.let { id -> decoders.addOrUpdate(decoder.copy(decoderId = id)) }
+                        if (json.has("decoderType")) {
+                            json.getString("decoderType")?.let { id -> decoders.addOrUpdate(decoder.copy(decoderId = id)) }
                         }
                         decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis()))
                     }
@@ -263,11 +264,15 @@ class DecoderService : Service() {
         }
     }
 
-    private fun processTcpMsg(msg: ByteArray): JSONObject {
+    private fun vostokDecoderId(d: Decoder): String? {
+        return "${d.ipAddress}:${d.port}"
+    }
+
+    private fun processTcpMsg(msg: ByteArray, decoderId: String?): JSONObject {
         return if (msg.size > 1 && msg[0] == 0x8e.toByte()) {
             JSONObject(Parser.decode(msg))
         } else if (msg.size > 1 && (msg[0] == '#'.toByte() || msg[0] == '@'.toByte())) {
-            JSONObject(P98Parser.parse(msg))
+            JSONObject(P98Parser.parse(msg, decoderId ?: "-"))
         } else {
             Log.w(TAG, "Invalid msg on TCP " + msg.toString())
             JSONObject("{\"recordType\":\"Error\",\"description\":\"Invalid message\"}")
@@ -282,10 +287,10 @@ class DecoderService : Service() {
 
 
         var decoderId: String?
-        if (json.has("decoderId")) {
-            decoderId = json.get("decoderId") as String
+        if (json.has("decoderType")) {
+            decoderId = json.get("decoderType") as String
         } else {
-            Log.w(TAG, "Received P3 message without decoderId. Wired! $json")
+            Log.w(TAG, "Received P3 message without decoderType. Wired! $json")
             return
         }
 
@@ -372,7 +377,7 @@ class DecoderService : Service() {
 
         if (json.has("decoderID")) {
             // not caching for another decoder or disconnected decoder
-            decoders.find { it.decoderId == json.getString("decoderId") && it.connection != null }
+            decoders.find { it.decoderId == json.getString("decoderType") && it.connection != null }
                     ?: return
         } else {
             return      // weird
