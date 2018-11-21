@@ -21,7 +21,9 @@ import android.view.View
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.skoky.fragment.*
 import com.skoky.fragment.content.ConsoleModel
 import com.skoky.fragment.content.Racer
 import com.skoky.fragment.content.TrainingLap
@@ -30,8 +32,6 @@ import com.skoky.services.DecoderService
 import kotlinx.android.synthetic.main.main.*
 import kotlinx.android.synthetic.main.select_decoder.*
 import kotlinx.android.synthetic.main.startup_content.*
-import com.google.android.gms.ads.AdView
-import com.skoky.fragment.*
 
 
 class MainActivity : AppCompatActivity(),
@@ -209,9 +209,11 @@ class MainActivity : AppCompatActivity(),
     fun openConsoleMode(view: View?): Boolean {
         val decoderUUID = firstDecoderId.tag as? String
 
-        if (decoderUUID == null)
+        if (decoderUUID == null) {
+            AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected))
+                    .setCancelable(true).create().show()
             return true
-        else {
+        } else {
             app.decoderService?.let {
                 return if (it.isDecoderConnected()) {
                     consoleFragment = ConsoleModeFragment.newInstance(1)
