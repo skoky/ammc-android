@@ -12,7 +12,7 @@ android {
         applicationId "com.skoky"
         minSdkVersion 22
         targetSdkVersion 27
-        versionCode 45
+        versionCode 46
         versionName "2.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

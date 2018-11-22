@@ -464,7 +464,7 @@ class DecoderService : Service() {
         } else {
             decoders.find { it.ipAddress == address }
         }
-        toast("Connecting to ${addressIp}:${port}")
+//        toast("Connecting to ${addressIp}:${port}")
 //        val foundByIp = decoders.find { it.ipAddress == address }
         if (foundByIp != null)
             connectDecoder2(foundByIp)

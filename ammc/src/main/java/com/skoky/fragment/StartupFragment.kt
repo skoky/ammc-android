@@ -104,15 +104,16 @@ class StartupFragment : Fragment() {
             connectButton.text = app.getString(R.string.connect)
 
         } else {
+            progressBar2.visibility = INVISIBLE
+            connectButton.visibility = VISIBLE
 
-            if (foundDecoder!!.connection == null) { // not connected
-                progressBar2.visibility = INVISIBLE
-                connectButton.visibility = VISIBLE
+            foundDecoder?.let {
+                firstDecoderId.text = MainActivity.decoderLabel(it)
+                firstDecoderId.tag = foundDecoder.uuid.toString()
+            }
+
+            if (foundDecoder.connection == null) { // not connected
                 connectButton.text = app.getString(R.string.connect)
-                foundDecoder?.let {
-                    firstDecoderId.text = MainActivity.decoderLabel(it)
-                    firstDecoderId.tag = foundDecoder.uuid.toString()
-                }
             } else if (foundDecoder!!.connection != null && foundDecoder!!.connection!!.isBound) {  // connected
                 connectButton.text = app.getString(R.string.disconnect)
             }
