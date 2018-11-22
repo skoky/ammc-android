@@ -11,6 +11,7 @@ import com.skoky.NetworkBroadcastHandler
 import com.skoky.P98Parser
 import com.skoky.Tools
 import com.skoky.Tools.P3_DEF_PORT
+import com.skoky.Tools.reportEvent
 import com.skoky.VOSTOK_NAME
 import eu.plib.Parser
 import org.jetbrains.anko.doAsync
@@ -71,7 +72,7 @@ class DecoderService : Service() {
 
         decoders.sortedWith(compareBy({ it.uuid }, { it.uuid }))
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             decoderAutoCleanup()
         }
 
@@ -242,7 +243,12 @@ class DecoderService : Service() {
                                 decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
                                 sendBroadcastData(decoder, json)
                             }
-                            else -> Log.w(TAG, "received unknown data $json")
+                            else -> {
+                                doAsync {
+                                    reportEvent(application, "tcp-unknown-data", Arrays.toString(buffer.copyOf(read)))
+                                }
+                                Log.w(TAG, "received unknown data $json")
+                            }
                         }
 
                         if (isVostok(orgDecoder)) {
@@ -282,22 +288,33 @@ class DecoderService : Service() {
             JSONObject(P98Parser.parse(msg, decoderId ?: "-"))
         } else {
             Log.w(TAG, "Invalid msg on TCP " + Arrays.toString(msg))
+            doAsync {
+                reportEvent(application, "tcp-msg-error", Arrays.toString(msg))
+            }
             JSONObject("{\"recordType\":\"Error\",\"description\":\"Invalid message\"}")
         }
     }
 
     //    @RequiresApi(Build.VERSION_CODES.N)
     private fun processUdpMsg(msgB: ByteArray) {
-        Log.w(TAG, "Data received: ${msgB.size}")
+        Log.d(TAG, "Data received: ${msgB.size}")
         val msg = Parser.decode(msgB)
         val json = JSONObject(msg)
 
+        if (msg.contains("Error")) {
+            doAsync {
+                reportEvent(application, "tcp-msg-with-error", Arrays.toString(msgB))
+            }
+        }
 
         var decoderId: String?
         if (json.has("decoderType")) {
             decoderId = json.get("decoderType") as String
         } else {
             Log.w(TAG, "Received P3 message without decoderType. Wired! $json")
+            doAsync {
+                reportEvent(application, "udp-no-decoder-type", Arrays.toString(msgB))
+            }
             return
         }
 
@@ -325,6 +342,10 @@ class DecoderService : Service() {
                         decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
                         sendBroadcastData(d, json)
                     }
+                "Error" ->
+                    doAsync {
+                        reportEvent(application, "tcp-error", Arrays.toString(msgB))
+                    }
             }
             Log.i(TAG, "Decoders: $decoders")
         }
@@ -345,7 +366,7 @@ class DecoderService : Service() {
             socket.broadcast = true
             socket.connect(InetAddress.getByName("255.255.255.255"), P3_DEF_PORT)
             val bytes = Parser.encode(msg)
-            Log.w(TAG, "Bytes size ${bytes.size}")
+            Log.d(TAG, "Bytes size ${bytes.size}")
             socket.send(DatagramPacket(bytes, bytes.size))
         } catch (e: Exception) {
             Log.w(TAG, "Error $e", e)
@@ -359,7 +380,7 @@ class DecoderService : Service() {
         intent.action = DECODER_CONNECT
         intent.putExtra("uuid", decoder.uuid.toString())
         applicationContext.sendBroadcast(intent)
-        Log.w(TAG, "Broadcast sent $intent")
+        Log.d(TAG, "Broadcast sent $intent")
     }
 
     private fun sendBroadcastDisconnected(decoder: Decoder) {
@@ -368,7 +389,7 @@ class DecoderService : Service() {
         intent.putExtra("uuid", decoder.uuid.toString())
         // TBD more data as it is not in decoders anymore
         applicationContext.sendBroadcast(intent)
-        Log.w(TAG, "Broadcast sent $intent")
+        Log.d(TAG, "Broadcast sent $intent")
     }
 
     private fun sendBroadcastPassing(jsonData: String) {
@@ -376,7 +397,7 @@ class DecoderService : Service() {
         intent.action = DECODER_PASSING
         intent.putExtra("Passing", jsonData)
         applicationContext.sendBroadcast(intent)
-        Log.w(TAG, "Broadcast passing sent $intent")
+        Log.d(TAG, "Broadcast passing sent $intent")
     }
 
     private val cache = mutableListOf<JSONObject>()
@@ -410,7 +431,7 @@ class DecoderService : Service() {
         intent.putExtra("Data", jsonData.toString())
         decoder?.let { intent.putExtra("uuid", it.toString()) }
         applicationContext.sendBroadcast(intent)
-        Log.w(TAG, "Broadcast data sent $intent")
+        Log.d(TAG, "Broadcast data sent $intent")
     }
 
     private val myBinder = MyLocalBinder()

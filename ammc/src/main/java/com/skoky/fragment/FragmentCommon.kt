@@ -2,6 +2,8 @@ package com.skoky.fragment
 
 import android.app.Fragment
 import android.util.Log
+import com.skoky.Tools.reportEvent
+import org.jetbrains.anko.doAsync
 import org.json.JSONObject
 
 
@@ -18,6 +20,9 @@ class FragmentCommon : Fragment() {
                 Time((json.get("msecs_since_start") as Integer).toLong()*1000)
             else -> {
                 Log.w(TrainingModeFragment.TAG, "No time in passing record $json")
+                doAsync {
+                    reportEvent(activity.application, "passing-no-time", json.toString())
+                }
                 return Time(0L)
             }
         }
@@ -31,6 +36,10 @@ class FragmentCommon : Fragment() {
             json.has("driverId") -> json.get("driverId") as String
             else -> {
                 Log.w(TrainingModeFragment.TAG, "No racer identification in Passing $json")
+                doAsync {
+                    reportEvent(activity.application, "passing-not-transponder", json.toString())
+                }
+
                 return "---"
             }
         }
