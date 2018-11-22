@@ -146,6 +146,7 @@
                 android:padding="10dp"
                 android:text="@string/racing_mode"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 tools:layout_editor_absoluteY="1dp"
                 />
 
