@@ -9,6 +9,7 @@ class P98ParserTest {
 //        val bytes  = ByteArray(1, 35, 9, 49, 48, 49, 9, 57, 48, 48, 9, 48, 9, 120, 69, 65, 66, 66, 13, 10)
 //    }
 
+    private fun one() = arrayOf(1.toByte()).toByteArray()
     @Test
     fun testsWork() {
         val bytes = "xxx".toByteArray()
@@ -19,8 +20,8 @@ class P98ParserTest {
 // FIXME add 0x01 on the beginning for all tests
     @Test
     fun testsWork1() {
-        val bytes1 = "#\t101\t2\t3\t4".toByteArray()
-        val json = P98Parser.parse(bytes,"xxx")
+    val bytes1 = one() + "#\t101\t2\t3\t4".toByteArray()
+    val json = P98Parser.parse(bytes1, "xxx")
         assertEquals("{\n" +
                 "  \"recordType\": \"Status\",\n" +
                 "  \"decoderType\": \"Vostok\",\n" +
@@ -33,7 +34,7 @@ class P98ParserTest {
 
     @Test
     fun testsWork2() {
-        val bytes = "@\t1\t2\t3\t4.1\t5\t6\t7\t8".toByteArray()
+        val bytes = one() + "@\t1\t2\t3\t4.1\t5\t6\t7\t8".toByteArray()
         val json = P98Parser.parse(bytes,"xxx")
         assertEquals("{\n" +
                 "  \"recordType\": \"Passing\",\n" +
@@ -46,13 +47,13 @@ class P98ParserTest {
                 "  \"signalStrength\": 6,\n" +
                 "  \"passingStatus\": 7,\n" +
                 "  \"crcOk\": true,\n" +
-                "  \"RTC_Time\": \"4100000\"\n" +
+                "  \"msecs_since_start\": 4100\n" +
                 "}", json)
     }
 
     @Test
     fun testsWork3() {
-        val bytes = "@\t1\t2\t3\t4,1\t5\t6\t7\t8".toByteArray()
+        val bytes = one() + "@\t1\t2\t3\t4,1\t5\t6\t7\t8".toByteArray()
         val json = P98Parser.parse(bytes,"xxx")
         assertEquals("{\n" +
                 "  \"recordType\": \"Error\",\n" +
@@ -62,7 +63,7 @@ class P98ParserTest {
 
     @Test
     fun testsWork3err() {
-        val bytes = "@\t1\txxx\tyyy\tddd\t5\t6\t7\t8".toByteArray()
+        val bytes = one() + "@\t1\txxx\tyyy\tddd\t5\t6\t7\t8".toByteArray()
         val json = P98Parser.parse(bytes,"xxx")
         assertEquals("{\n" +
                 "  \"recordType\": \"Error\",\n" +
@@ -72,7 +73,7 @@ class P98ParserTest {
 
     @Test
     fun testsWork4() {
-        val bytes = "@\t101\t12\t3444425\t46.82\t61\t40\t2\txE934".toByteArray()
+        val bytes = one() + "@\t101\t12\t3444425\t46.82\t61\t40\t2\txE934".toByteArray()
         val json = P98Parser.parse(bytes,"vostok123")
         assertEquals("{\n" +
                 "  \"recordType\": \"Passing\",\n" +
@@ -85,7 +86,7 @@ class P98ParserTest {
                 "  \"signalStrength\": 40,\n" +
                 "  \"passingStatus\": 2,\n" +
                 "  \"crcOk\": true,\n" +
-                "  \"RTC_Time\": \"46820000\"\n" +
+                "  \"msecs_since_start\": 46820\n" +
                 "}", json)
     }
 //
