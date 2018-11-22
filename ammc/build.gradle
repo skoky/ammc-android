@@ -10,7 +10,7 @@ android {
     buildToolsVersion '28.0.3'
     defaultConfig {
         applicationId "com.skoky"
-        minSdkVersion 24
+        minSdkVersion 22
         targetSdkVersion 27
         versionCode 44
         versionName "2.0"
@@ -44,7 +44,9 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.google.firebase:firebase-core:16.0.1'
-    implementation 'com.google.firebase:firebase-ads:15.0.1'
+    implementation('com.google.firebase:firebase-ads:15.0.1', {
+        exclude group:'com.android.support', module: 'customtabs'
+    })
     implementation 'com.google.firebase:firebase-crash:11.8.0'
     implementation 'eu.plib:plib_2.11:2.7.0'
     implementation 'com.j256.ormlite:ormlite-android:4.47'
@@ -56,9 +58,9 @@ dependencies {
     implementation 'com.android.billingclient:billing:dp-1'
     implementation "com.android.support:appcompat-v7:$android_support_version"
     implementation "com.android.support:design:$android_support_version"
-    implementation 'org.jetbrains.anko:anko-commons:0.10.4'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
-    implementation 'com.google.code.gson:gson:2.8.0'
+    implementation 'org.jetbrains.anko:anko-commons:0.10.5'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'com.google.code.gson:gson:2.8.3'
 
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
