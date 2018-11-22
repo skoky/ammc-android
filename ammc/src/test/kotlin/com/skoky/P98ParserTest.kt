@@ -17,7 +17,6 @@ class P98ParserTest {
         assert(json.contains("Error"))
     }
 
-// FIXME add 0x01 on the beginning for all tests
     @Test
     fun testsWork1() {
     val bytes1 = one() + "#\t101\t2\t3\t4".toByteArray()
@@ -26,7 +25,7 @@ class P98ParserTest {
                 "  \"recordType\": \"Status\",\n" +
                 "  \"decoderType\": \"Vostok\",\n" +
                 "  \"decoderId\": \"xxx\",\n" +
-                "  \"num\": 2,\n" +
+                "  \"packetSequenceNum\": 2,\n" +
                 "  \"noise\": 3,\n" +
                 "  \"crcOk\": true\n" +
                 "}", json)
@@ -40,7 +39,7 @@ class P98ParserTest {
                 "  \"recordType\": \"Passing\",\n" +
                 "  \"decoderType\": \"\",\n" +
                 "  \"decoderId\": \"xxx\",\n" +
-                "  \"num\": 2,\n" +
+                "  \"packetSequenceNum\": 2,\n" +
                 "  \"transponderCode\": \"3\",\n" +
                 "  \"timeSinceStart\": 4.1,\n" +
                 "  \"hitCounts\": 5,\n" +
@@ -79,7 +78,7 @@ class P98ParserTest {
                 "  \"recordType\": \"Passing\",\n" +
                 "  \"decoderType\": \"Vostok\",\n" +
                 "  \"decoderId\": \"vostok123\",\n" +
-                "  \"num\": 12,\n" +
+                "  \"packetSequenceNum\": 12,\n" +
                 "  \"transponderCode\": \"3444425\",\n" +
                 "  \"timeSinceStart\": 46.82,\n" +
                 "  \"hitCounts\": 61,\n" +

@@ -8,8 +8,8 @@ const val VOSTOK_ID = "101"
 const val VOSTOK_NAME = "Vostok"
 const val VOSTOK_NAME_LONG = "Vostok lap timing system"
 
-data class Status(val recordType: String, val decoderType: String, val decoderId: String, val num: Int, val noise: Int, val crcOk: Boolean)
-data class Passing(val recordType: String, val decoderType: String, val decoderId: String, val num: Int, val transponderCode: String,
+data class Status(val recordType: String, val decoderType: String, val decoderId: String, val packetSequenceNum: Int, val noise: Int, val crcOk: Boolean)
+data class Passing(val recordType: String, val decoderType: String, val decoderId: String, val packetSequenceNum: Int, val transponderCode: String,
                    val timeSinceStart: Float, val hitCounts: Int, val signalStrength: Int,
                    val passingStatus: Int, val crcOk: Boolean,
                    val msecs_since_start: Long)
@@ -40,7 +40,7 @@ object P98Parser {
                 recordType = "Status",
                 decoderType = type,
                 decoderId = id,
-                num = fields[2].toInt(),
+                packetSequenceNum = fields[2].toInt(),
                 noise = fields[3].toInt(),
                 crcOk = isCrcOk
         )
@@ -59,7 +59,7 @@ object P98Parser {
                 recordType = "Passing",
                 decoderType = type,
                 decoderId = id,
-                num = fields[2].toInt(),
+                packetSequenceNum = fields[2].toInt(),
                 transponderCode = fields[3],
                 timeSinceStart = tss,
                 hitCounts = fields[5].toInt(),

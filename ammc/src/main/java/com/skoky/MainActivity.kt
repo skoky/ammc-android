@@ -37,8 +37,8 @@ import kotlinx.android.synthetic.main.startup_content.*
 class MainActivity : AppCompatActivity(),
         TrainingModeFragment.OnListFragmentInteractionListener,
         RacingModeFragment.OnListFragmentInteractionListener,
-        ConsoleModeFragment.OnListFragmentInteractionListener {
-
+        ConsoleModeFragment.OnListFragmentInteractionListener,
+        ConsoleModeVostokFragment.OnListFragmentInteractionListener {
 
     override fun onListFragmentInteraction(item: ConsoleModel?) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -149,7 +149,7 @@ class MainActivity : AppCompatActivity(),
         val decodersCopy = app.decoderService!!.getDecoders()
 
         val decoderText = d.decoder_address_edittext
-        decoderText.setText(getSharedPreferences(AMMC_PREFS,0).getString(LAST_IP,""))
+        decoderText.setText(getSharedPreferences(AMMC_PREFS, 0).getString(LAST_IP, ""))
 
         val dd = d.known_decoders
 
@@ -176,7 +176,7 @@ class MainActivity : AppCompatActivity(),
 
             if (decoderText.text.isNotEmpty()) {
                 val dd = decoderText.text.toString().trim()
-                getSharedPreferences(AMMC_PREFS,0).edit().putString(LAST_IP,dd).commit()
+                getSharedPreferences(AMMC_PREFS, 0).edit().putString(LAST_IP, dd).commit()
                 app.decoderService?.let { it.connectDecoder(dd) }
             } else
                 foundDecoder?.let { d3 -> app.decoderService?.let { s -> s.connectDecoder2(d3) } }
@@ -214,6 +214,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     private lateinit var consoleFragment: ConsoleModeFragment
+    private lateinit var consoleVostokFragment: ConsoleModeVostokFragment
     fun openConsoleMode(view: View?): Boolean {
         val decoderUUID = firstDecoderId.tag as? String
 
@@ -224,11 +225,18 @@ class MainActivity : AppCompatActivity(),
         } else {
             app.decoderService?.let {
                 return if (it.isDecoderConnected()) {
-                    consoleFragment = ConsoleModeFragment.newInstance(1)
                     val fragmentTransaction = supportFragmentManager.beginTransaction()
-                    fragmentTransaction.replace(R.id.screen_container, consoleFragment)
+                    if (it.isConnectedDecoderVostok()) {
+                        consoleVostokFragment = ConsoleModeVostokFragment.newInstance(1)
+                        fragmentTransaction.replace(R.id.screen_container, consoleVostokFragment)
+                    } else {
+                        fragmentTransaction.replace(R.id.screen_container, consoleFragment)
+                        consoleFragment = ConsoleModeFragment.newInstance(1)
+                    }
                     fragmentTransaction.commit()
+
                     true
+
                 } else {
                     AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
                     false

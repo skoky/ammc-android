@@ -164,6 +164,11 @@ class DecoderService : Service() {
         return d.port != P3_DEF_PORT
     }
 
+    fun isConnectedDecoderVostok(): Boolean {
+        val connectedDecoder = decoders.first { it.connection != null }
+        return isVostok(connectedDecoder)
+    }
+
     private fun isP3Decoder(d: Decoder): Boolean {
         return d.port == P3_DEF_PORT
     }
