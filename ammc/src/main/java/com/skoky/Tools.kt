@@ -4,6 +4,8 @@ package com.skoky
 import android.app.Activity
 import android.content.Context
 import android.os.PowerManager
+import android.os.PowerManager.FULL_WAKE_LOCK
+import android.os.PowerManager.SCREEN_BRIGHT_WAKE_LOCK
 import android.util.Log
 import android.view.View
 import android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
@@ -106,15 +108,17 @@ object Tools {
 
     fun wakeLock(context: Context, b: Boolean) {
         if (b) {
-            val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-            val wl = pm.newWakeLock(FLAG_KEEP_SCREEN_ON, "AMMC:Race running")
-            wl.acquire()
-            MyApp.wakeLock = wl
+            // FIXME use smaller wake lock on new androids
+            MyApp.wakeLock = (context.getSystemService(Context.POWER_SERVICE) as PowerManager).run {
+                newWakeLock(FULL_WAKE_LOCK , "AMMC:Race running").apply {
+                    acquire()
+                }
+
+            }
         } else {
             MyApp.wakeLock?.let { lock ->
                 if (lock.isHeld) lock.release()
             }
         }
     }
-
 }

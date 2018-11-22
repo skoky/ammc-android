@@ -108,7 +108,7 @@ class RacingModeFragment : Fragment() {
         activity!!.findViewById<View>(R.id.miHome).visibility = VISIBLE     // FIXME does not work :(
     }
 
-    var running = false
+    private var running = false
     private fun doStartStopDialog() {
         doStartStop()
     }
@@ -116,11 +116,12 @@ class RacingModeFragment : Fragment() {
     private fun doStartStop() {
 
         if (running) {
+            Tools.wakeLock(context!!,false)
             running = false
             clock.cancel(true)      // TODO calculate exact training timeUs
             startStopButtonM?.text = getText(R.string.start)
         } else {    // not running
-
+            Tools.wakeLock(context!!,true)
             if (timingContentView.adapter.itemCount == 1) {     // just a label, nothing to clear
                 doStart()
             } else {
