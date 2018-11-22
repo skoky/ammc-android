@@ -21,9 +21,9 @@ val gson = GsonBuilder().setPrettyPrinting().create()
 object P98Parser {
     fun parse(msg: ByteArray, id: String): String {
         return try {
-            when (msg[0].toChar()) {
-                '#' -> parserStatus(msg, id)
-                '@' -> parsePassing(msg, id)
+            when (msg[1].toChar()) {
+                '#' -> parserStatus(msg.copyOfRange(1,msg.size-1), id)
+                '@' -> parsePassing(msg.copyOfRange(1,msg.size-1), id)
                 else -> makeError("unknown 98 record type")
             }
         } catch (e: Exception) {

@@ -4,6 +4,11 @@ import kotlin.test.assertEquals
 
 class P98ParserTest {
 
+//    @Test
+//    fun testVostokRealData() {
+//        val bytes  = ByteArray(1, 35, 9, 49, 48, 49, 9, 57, 48, 48, 9, 48, 9, 120, 69, 65, 66, 66, 13, 10)
+//    }
+
     @Test
     fun testsWork() {
         val bytes = "xxx".toByteArray()
@@ -11,9 +16,10 @@ class P98ParserTest {
         assert(json.contains("Error"))
     }
 
+// FIXME add 0x01 on the beginning for all tests
     @Test
     fun testsWork1() {
-        val bytes = "#\t101\t2\t3\t4".toByteArray()
+        val bytes1 = "#\t101\t2\t3\t4".toByteArray()
         val json = P98Parser.parse(bytes,"xxx")
         assertEquals("{\n" +
                 "  \"recordType\": \"Status\",\n" +

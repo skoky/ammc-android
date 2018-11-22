@@ -278,10 +278,10 @@ class DecoderService : Service() {
     private fun processTcpMsg(msg: ByteArray, decoderId: String?): JSONObject {
         return if (msg.size > 1 && msg[0] == 0x8e.toByte()) {
             JSONObject(Parser.decode(msg))
-        } else if (msg.size > 1 && (msg[0] == '#'.toByte() || msg[0] == '@'.toByte())) {
+        } else if (msg.size > 1 && msg[0] == 1.toByte()) {
             JSONObject(P98Parser.parse(msg, decoderId ?: "-"))
         } else {
-            Log.w(TAG, "Invalid msg on TCP " + msg.toString())
+            Log.w(TAG, "Invalid msg on TCP " + Arrays.toString(msg))
             JSONObject("{\"recordType\":\"Error\",\"description\":\"Invalid message\"}")
         }
     }
