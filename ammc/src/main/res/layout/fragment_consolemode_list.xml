@@ -19,8 +19,7 @@
             android:layout_height="wrap_content"
             android:src="@drawable/baseline_refresh_24px"
             android:layout_gravity="right"
-            android:padding="10dp"
-            android:onClick="doRefresh"/>
+            android:padding="10dp"/>
 
     </LinearLayout>
 </ScrollView>

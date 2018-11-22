@@ -3,7 +3,9 @@ package com.skoky.services
 import android.app.Service
 import android.content.Intent
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
+import android.support.annotation.RequiresApi
 import android.util.Log
 import com.skoky.NetworkBroadcastHandler
 import com.skoky.P98Parser
@@ -12,7 +14,6 @@ import com.skoky.Tools.P3_DEF_PORT
 import com.skoky.VOSTOK_NAME
 import eu.plib.Parser
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.runOnUiThread
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
 import org.json.JSONObject
@@ -70,6 +71,17 @@ class DecoderService : Service() {
 
         decoders.sortedWith(compareBy({ it.uuid }, { it.uuid }))
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ) {
+            decoderAutoCleanup()
+        }
+
+        doAsync {
+            NetworkBroadcastHandler.receiveBroadcastData { processUdpMsg(it) }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun decoderAutoCleanup() {
         Timer().schedule(1000, 1000) {
             // removes inactive decoders
             decoders.removeIf { d ->
@@ -86,11 +98,6 @@ class DecoderService : Service() {
                 }
             }
         }
-
-        doAsync {
-            NetworkBroadcastHandler.receiveBroadcastData { processUdpMsg(it) }
-        }
-
     }
 
     fun getDecoders(): List<Decoder> {
@@ -260,6 +267,7 @@ class DecoderService : Service() {
             decoder.connection = null
             Log.i(TAG, "Decoder disconnected")
             sendBroadcastDisconnected(decoder)
+            decoders.remove(orgDecoder)
         }
     }
 

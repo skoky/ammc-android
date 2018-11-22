@@ -107,7 +107,7 @@ object Tools {
     fun wakeLock(context: Context, b: Boolean) {
         if (b) {
             val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-            val wl = pm.newWakeLock(FLAG_KEEP_SCREEN_ON, "Race running")
+            val wl = pm.newWakeLock(FLAG_KEEP_SCREEN_ON, "AMMC:Race running")
             wl.acquire()
             MyApp.wakeLock = wl
         } else {
