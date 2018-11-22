@@ -14,6 +14,8 @@ class FragmentCommon : Fragment() {
         return when {
             json.has("RTC_Time") -> Time((json.get("RTC_Time") as String).toLong())
             json.has("UTC_Time") -> Time((json.get("UTC_Time") as String).toLong())
+            json.has("msecs_since_start") ->
+                Time((json.get("msecs_since_start") as Integer).toLong()*1000)
             else -> {
                 Log.w(TrainingModeFragment.TAG, "No time in passing record $json")
                 return Time(0L)

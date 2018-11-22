@@ -12,7 +12,7 @@ data class Status(val recordType: String, val decoderType: String, val decoderId
 data class Passing(val recordType: String, val decoderType: String, val decoderId: String, val num: Int, val transponderCode: String,
                    val timeSinceStart: Float, val hitCounts: Int, val signalStrength: Int,
                    val passingStatus: Int, val crcOk: Boolean,
-                   val RTC_Time: String)
+                   val msecs_since_start: Long)
 
 data class Error(val recordType: String, val msg: String)
 
@@ -66,7 +66,7 @@ object P98Parser {
                 signalStrength = fields[6].toInt(),
                 passingStatus = fields[7].toInt(),
                 crcOk = isCrcOk,
-                RTC_Time = (tss * 1000 * 1000).toLong().toString()  // conversion to microsecs
+                msecs_since_start = (tss * 1000).toLong()  // conversion to millis since start
         )
         return gson.toJson(passing)
     }
