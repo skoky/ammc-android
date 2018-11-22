@@ -1,7 +1,5 @@
 package com.skoky
 
-import android.content.Context
-import android.content.Intent
 import android.util.Log
 import java.net.DatagramPacket
 import java.net.DatagramSocket
@@ -18,6 +16,7 @@ object NetworkBroadcastHandler {
         val incomingBuffer = ByteArray(1024)
         var socket: DatagramSocket? = null
         while (true) {
+            Thread.sleep(2000)
             socket = try {
                 DatagramSocket(INCOMING_PORT)
             } catch (e: Exception) {
