@@ -126,5 +126,4 @@ object Tools {
         (app as MyApp).firebaseAnalytics.logEvent("AmmcAndroid", params)
 
     }
-
 }
