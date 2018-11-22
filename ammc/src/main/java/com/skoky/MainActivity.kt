@@ -38,6 +38,8 @@ class MainActivity : AppCompatActivity(),
         TrainingModeFragment.OnListFragmentInteractionListener,
         RacingModeFragment.OnListFragmentInteractionListener,
         ConsoleModeFragment.OnListFragmentInteractionListener {
+
+
     override fun onListFragmentInteraction(item: ConsoleModel?) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
@@ -136,6 +138,9 @@ class MainActivity : AppCompatActivity(),
 
     }
 
+    val AMMC_PREFS = "ammcprefs"
+    val LAST_IP = "lastip"
+
     fun showMoreDecoders(view: View) {
 
         val d = Dialog(this)
@@ -144,6 +149,8 @@ class MainActivity : AppCompatActivity(),
         val decodersCopy = app.decoderService!!.getDecoders()
 
         val decoderText = d.decoder_address_edittext
+        decoderText.setText(getSharedPreferences(AMMC_PREFS,0).getString(LAST_IP,""))
+
         val dd = d.known_decoders
 
         decodersCopy.forEach { d2 ->
@@ -160,7 +167,6 @@ class MainActivity : AppCompatActivity(),
             }
         }
 
-
         decoderText.addTextChangedListener(SimpleTextWatcher(dd))
 
         d.decoder_select_ok_button.setOnClickListener {
@@ -169,7 +175,9 @@ class MainActivity : AppCompatActivity(),
             Log.i(TAG, "decoder $foundDecoder")
 
             if (decoderText.text.isNotEmpty()) {
-                app.decoderService?.let { it.connectDecoder(decoderText.text.toString().trim()) }
+                val dd = decoderText.text.toString().trim()
+                getSharedPreferences(AMMC_PREFS,0).edit().putString(LAST_IP,dd).commit()
+                app.decoderService?.let { it.connectDecoder(dd) }
             } else
                 foundDecoder?.let { d3 -> app.decoderService?.let { s -> s.connectDecoder2(d3) } }
 
