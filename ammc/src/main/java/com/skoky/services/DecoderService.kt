@@ -245,7 +245,7 @@ class DecoderService : Service() {
                             }
                             else -> {
                                 doAsync {
-                                    reportEvent(application, "tcp-unknown-data", Arrays.toString(buffer.copyOf(read)))
+                                    reportEvent(application, "tcp_unknown_data", Arrays.toString(buffer.copyOf(read)))
                                 }
                                 Log.w(TAG, "received unknown data $json")
                             }
@@ -289,7 +289,7 @@ class DecoderService : Service() {
         } else {
             Log.w(TAG, "Invalid msg on TCP " + Arrays.toString(msg))
             doAsync {
-                reportEvent(application, "tcp-msg-error", Arrays.toString(msg))
+                reportEvent(application, "tcp_msg_error", Arrays.toString(msg))
             }
             JSONObject("{\"recordType\":\"Error\",\"description\":\"Invalid message\"}")
         }
@@ -303,7 +303,7 @@ class DecoderService : Service() {
 
         if (msg.contains("Error")) {
             doAsync {
-                reportEvent(application, "tcp-msg-with-error", Arrays.toString(msgB))
+                reportEvent(application, "tcp_msg_with_error", Arrays.toString(msgB))
             }
         }
 
@@ -313,7 +313,7 @@ class DecoderService : Service() {
         } else {
             Log.w(TAG, "Received P3 message without decoderType. Wired! $json")
             doAsync {
-                reportEvent(application, "udp-no-decoder-type", Arrays.toString(msgB))
+                reportEvent(application, "udp_no_decoder_type", Arrays.toString(msgB))
             }
             return
         }
@@ -344,7 +344,7 @@ class DecoderService : Service() {
                     }
                 "Error" ->
                     doAsync {
-                        reportEvent(application, "tcp-error", Arrays.toString(msgB))
+                        reportEvent(application, "tcp_error", Arrays.toString(msgB))
                     }
             }
             Log.i(TAG, "Decoders: $decoders")

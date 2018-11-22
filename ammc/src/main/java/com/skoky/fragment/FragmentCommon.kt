@@ -37,7 +37,7 @@ class FragmentCommon : Fragment() {
             else -> {
                 Log.w(TrainingModeFragment.TAG, "No racer identification in Passing $json")
                 doAsync {
-                    reportEvent(activity.application, "passing-not-transponder", json.toString())
+                    reportEvent(activity.application, "passing_not_transponder", json.toString())
                 }
 
                 return "---"
