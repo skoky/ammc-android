@@ -42,7 +42,7 @@ class StartupFragment : Fragment() {
     }
 
 
-    class DataReceiver(val app: MyApp, private val bar: ProgressBar, val button: Button,
+    class DataReceiver(val app: MyApp, private val bar: ProgressBar, private val button: Button,
                        private val decoderText: TextView) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
 
@@ -83,11 +83,15 @@ class StartupFragment : Fragment() {
         context!!.registerReceiver(dataReceiver, IntentFilter(DECODER_DATA))
 
         app.decoderService?.let {
-            Log.i(TAG,it.getDecoders().toString())
-            if (it.getDecoders().isNotEmpty())
-                visualStateHandler(it.getDecoders().first().uuid)
+            Log.i(TAG, it.getDecoders().toString())
+            if (it.getDecoders().isNotEmpty()) {
+                val connectedDecoder = it.getDecoders().find { d -> d.connection != null }
+                if (connectedDecoder != null)
+                    visualStateHandler(connectedDecoder.uuid)
+                else
+                    visualStateHandler(it.getDecoders().first().uuid)
+            }
         }
-
     }
 
     private fun visualStateHandler(uuid: UUID) {
@@ -95,6 +99,7 @@ class StartupFragment : Fragment() {
         val app = activity!!.application as MyApp
 
         val foundDecoder = app.decoderService!!.getDecoders().find { it.uuid == uuid }
+
 
         if (foundDecoder == null) {  // query
             progressBar2.visibility = VISIBLE

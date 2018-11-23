@@ -22,6 +22,9 @@ import java.net.*
 import java.util.*
 import kotlin.concurrent.schedule
 
+const val VOSTOK_DEFAULT_IP = "84.15.166.218" // FIXME right IP ""10.10.100.254"
+const val VOSTOK_DEFAULT_PORT = 8899
+
 data class Decoder(val uuid: UUID, var decoderId: String? = null, var ipAddress: String? = null,
                    var port: Int? = null,
                    var decoderType: String? = null, var connection: Socket? = null, var lastSeen: Long) {
@@ -78,6 +81,22 @@ class DecoderService : Service() {
 
         doAsync {
             NetworkBroadcastHandler.receiveBroadcastData { processUdpMsg(it) }
+        }
+
+        val socketVostok = Socket()
+        doAsync {
+            while (true) {
+
+                val connectedDecoder = decoders.find { it.connection != null } != null
+                val alreadyHaveVostok = decoders.find {  it.decoderType == VOSTOK_NAME } != null
+                Log.d(TAG,"Vostok has decoder $connectedDecoder / $alreadyHaveVostok")
+                if (!connectedDecoder && !alreadyHaveVostok) {
+                    Log.d(TAG, "Vostok default connecting....")
+                    val connected = connectDecoder("$VOSTOK_DEFAULT_IP:$VOSTOK_DEFAULT_PORT")
+                    Log.d(TAG, "Vostok connected $connected")
+                }
+                Thread.sleep(5000)
+            }
         }
     }
 
