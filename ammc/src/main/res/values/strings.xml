@@ -1,7 +1,7 @@
 <resources>
 
     <string name="banner_ad_unit_id" translatable="false">ca-app-pub-7655373768605194/8320224132</string>
-    <string name="google_app_id" translatable="false">1:775851624396:android:8cef5b7b1d79b635</string>
+    <!--<string name="google_app_id" translatable="false">1:775851624396:android:8cef5b7b1d79b635</string>-->
 
     <string name="app_name">AMM Converter</string>
     <string name="querying_decoders">Querying decoders...</string>
@@ -24,7 +24,7 @@
     <string name="or_connect_directly_to_decoder_by_ip_address">Or connect directly to decoder by IP address</string>
     <string name="help_connecting">Help connecting</string>
     <string name="make_a_wish">Make a wish</string>
-    <string name="transponder"></string>
+    <string name="transponder">Transponder</string>
     <string name="pos_hash">#</string>
     <string name="Laps">Laps</string>
     <string name="LapTime">Time</string>
