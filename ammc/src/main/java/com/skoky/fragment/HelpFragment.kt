@@ -19,11 +19,6 @@ class HelpFragment : Fragment() {
         return view
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-    }
-
     companion object {
 
         private const val ARG_COLUMN_COUNT = "column-count"
