@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
-def android_support_version = '27.0.1'
+def android_support_version = '27.1.1'
 
 android {
     useLibrary 'org.apache.http.legacy'
@@ -43,11 +43,11 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.google.firebase:firebase-core:16.0.1'
+    implementation 'com.google.firebase:firebase-core:16.0.5'
     implementation('com.google.firebase:firebase-ads:15.0.1', {
-        exclude group:'com.android.support', module: 'customtabs'
+        exclude group: 'com.android.support', module: 'customtabs'
     })
-    implementation 'com.google.firebase:firebase-crash:11.8.0'
+    implementation 'com.google.firebase:firebase-crash:16.2.1'
     implementation 'eu.plib:plib_2.11:2.7.0'
     implementation 'com.j256.ormlite:ormlite-android:4.47'
     implementation 'com.shamanland:fab:0.0.8'
