@@ -22,7 +22,7 @@ import java.net.*
 import java.util.*
 import kotlin.concurrent.schedule
 
-const val VOSTOK_DEFAULT_IP = "84.15.166.218" // FIXME right IP ""10.10.100.254"
+const val VOSTOK_DEFAULT_IP = "10.10.100.254"
 const val VOSTOK_DEFAULT_PORT = 8899
 
 data class Decoder(val uuid: UUID, var decoderId: String? = null, var ipAddress: String? = null,
@@ -92,13 +92,15 @@ class DecoderService : Service() {
                 if (alreadyHaveVostok == null) {
                     if (connectedDecoder == null) {
                         Log.d(TAG, "Vostok default connecting....")
-                        val valid = checkTcpSocket(VOSTOK_DEFAULT_IP, VOSTOK_DEFAULT_PORT)
-                        Log.d(TAG, "Vostok socket $valid")
-                        val newDecoder = Decoder.newDecoder(VOSTOK_DEFAULT_IP, VOSTOK_DEFAULT_PORT,
-                                vostokDecoderId(VOSTOK_DEFAULT_IP, VOSTOK_DEFAULT_PORT),
-                                VOSTOK_NAME)
-                        decoders.addOrUpdate(newDecoder)
-                        sendBroadcastDecodersUpdate()
+                        val validSocket = checkTcpSocket(VOSTOK_DEFAULT_IP, VOSTOK_DEFAULT_PORT)
+                        Log.d(TAG, "Vostok socket $validSocket")
+                        if (validSocket) {      // default vostok decoder found
+                            val newDecoder = Decoder.newDecoder(VOSTOK_DEFAULT_IP, VOSTOK_DEFAULT_PORT,
+                                    vostokDecoderId(VOSTOK_DEFAULT_IP, VOSTOK_DEFAULT_PORT),
+                                    VOSTOK_NAME)
+                            decoders.addOrUpdate(newDecoder)
+                            sendBroadcastDecodersUpdate()
+                        }
                     } else Log.d(TAG, "Vostok: Already connected another decoder")
                 } else Log.d(TAG, "Already have vostok")
                 Thread.sleep(5000)
@@ -177,8 +179,8 @@ class DecoderService : Service() {
                 try {
                     socket.connect(InetSocketAddress(decoder.ipAddress, decoder.port!!), 5000)
 
-                    if (isVostok(decoder)) {
-                        decoders.addOrUpdate(decoder.copy(decoderId = vostokDecoderId(decoder.ipAddress, decoder.port), decoderType = VOSTOK_NAME, connection = socket, lastSeen = System.currentTimeMillis()))
+                    if (!isP3Decoder(decoder)) {
+                        decoders.addOrUpdate(decoder.copy(decoderId = vostokDecoderId(decoder.ipAddress, decoder.port), connection = socket, lastSeen = System.currentTimeMillis()))
                     } else if (isP3Decoder(decoder)) {
                         decoders.addOrUpdate(decoder.copy(connection = socket, lastSeen = System.currentTimeMillis()))
                     }
@@ -212,7 +214,7 @@ class DecoderService : Service() {
 
     private fun isVostok(d: Decoder): Boolean {
         if (d.decoderType == VOSTOK_NAME || d.decoderId == VOSTOK_NAME) return true
-        if (d.port != P3_DEF_PORT) return true  // bit speculative :(
+//        if (d.port != P3_DEF_PORT) return true  // bit speculative :(
         return false
     }
 
@@ -295,7 +297,6 @@ class DecoderService : Service() {
                         val json = processTcpMsg(buffer.copyOf(read),
                                 vostokDecoderId(decoder.ipAddress, decoder.port))
 
-                        sendBroadcastDecodersUpdate()
                         if (json.get("recordType").toString().isNotEmpty()) sendBroadcastData(decoder, json)
                         val recordType = json.get("recordType").toString()
                         when (recordType) {
@@ -306,7 +307,11 @@ class DecoderService : Service() {
                                 sendBroadcastData(decoder, json)
                             }
                             "Status" -> {
-                                decoder.copy(lastSeen = System.currentTimeMillis())
+//                                if (json.get("decoderType") == VOSTOK_NAME) {
+//                                    decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis(), decoderType = VOSTOK_NAME))
+//                                } else {
+//                                    decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis()))
+//                                }
                             }
                             else -> {
                                 doAsync {
@@ -316,14 +321,15 @@ class DecoderService : Service() {
                             }
                         }
 
-                        if (isVostok(orgDecoder)) {
-                            decoders.addOrUpdate(decoder.copy(decoderType = VOSTOK_NAME))
-                        }
-
-                        if (json.has("decoderType")) {
-                            json.getString("decoderType")?.let { id -> decoders.addOrUpdate(decoder.copy(decoderId = id)) }
+                        if (json.has("decoderType-text")) {
+                            json.getString("decoderType-text")?.let { type -> decoders.addOrUpdate(decoder.copy(decoderType = type)) }
+                        } else {
+                            if (json.has("decoderType")) {
+                                json.getString("decoderType")?.let { type -> decoders.addOrUpdate(decoder.copy(decoderType = type)) }
+                            }
                         }
                         decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis()))
+                        sendBroadcastDecodersUpdate()
                     }
                 }
                 decoders.find { it.uuid == decoder.uuid }?.let { decoder = it }
@@ -347,11 +353,11 @@ class DecoderService : Service() {
         return "$ipAddress:$port"
     }
 
-    private fun processTcpMsg(msg: ByteArray, decoderId: String?): JSONObject {
+    private fun processTcpMsg(msg: ByteArray, decoderIdVostok: String?): JSONObject {
         return if (msg.size > 1 && msg[0] == 0x8e.toByte()) {
             JSONObject(Parser.decode(msg))
         } else if (msg.size > 1 && msg[0] == 1.toByte()) {
-            JSONObject(P98Parser.parse(msg, decoderId ?: "-"))
+            JSONObject(P98Parser.parse(msg, decoderIdVostok ?: "-"))
         } else {
             Log.w(TAG, "Invalid msg on TCP " + Arrays.toString(msg))
             doAsync {
@@ -374,18 +380,17 @@ class DecoderService : Service() {
         }
 
         var decoderId: String?
-        if (json.has("decoderType")) {
-            decoderId = json.get("decoderType") as String
+        if (json.has("decoderId")) {
+            decoderId = json.get("decoderId") as String
         } else {
-            Log.w(TAG, "Received P3 message without decoderType. Wired! $json")
-            doAsync {
-                reportEvent(application, "udp_no_decoder_type", Arrays.toString(msgB))
-            }
+            Log.w(TAG, "Received P3 message without decoderId. Wired! $json")
             return
         }
 
         var decoder = decoders.find { it.decoderId == decoderId }
         if (decoder == null) decoder = Decoder.newDecoder(decoderId = decoderId)
+
+        decoder!!.lastSeen = System.currentTimeMillis()
 
         decoder?.let { d ->
 
@@ -412,8 +417,11 @@ class DecoderService : Service() {
                     doAsync {
                         reportEvent(application, "tcp_error", Arrays.toString(msgB))
                     }
+            } else {
+                Log.w(TAG,"Msg with record type on UDP. Wired! $json")
             }
             Log.i(TAG, "Decoders: $decoders")
+            sendBroadcastDecodersUpdate()
         }
     }
 
