@@ -117,6 +117,7 @@ class StartupFragment : Fragment() {
         if (foundDecoder == null) {  // query
             progressBar2.visibility = VISIBLE
             connectButton.visibility = INVISIBLE
+            moreDecodersButton.visibility = VISIBLE
             firstDecoderId.text = app.getString(R.string.querying_decoders)
             firstDecoderId.tag = null
             connectButton.text = app.getString(R.string.connect)
@@ -124,6 +125,7 @@ class StartupFragment : Fragment() {
         } else {
             progressBar2.visibility = INVISIBLE
             connectButton.visibility = VISIBLE
+            connectButton.isEnabled = foundDecoder!!.ipAddress != null
 
             foundDecoder?.let {
                 firstDecoderId.text = MainActivity.decoderLabel(it)
@@ -132,8 +134,10 @@ class StartupFragment : Fragment() {
 
             if (foundDecoder.connection == null) { // not connected
                 connectButton.text = app.getString(R.string.connect)
-            } else if (foundDecoder!!.connection != null && foundDecoder!!.connection!!.isBound) {  // connected
+                moreDecodersButton.visibility = VISIBLE
+            } else if (foundDecoder!!.connection != null && foundDecoder!!.connection!!.isConnected) {  // connected
                 connectButton.text = app.getString(R.string.disconnect)
+                moreDecodersButton.visibility = INVISIBLE
             }
         }
     }
