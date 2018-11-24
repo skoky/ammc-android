@@ -11,22 +11,10 @@ import java.lang.ref.WeakReference
  */
 class MyApp : Application() {
 
-    var decoderService : DecoderService? = null
+    var decoderService: DecoderService? = null
     lateinit var firebaseAnalytics: FirebaseAnalytics
 
     companion object {
         var wakeLock: PowerManager.WakeLock? = null
-
-        private var cachedApplicationContext: WeakReference<MainActivity>? = null
-
-        @Synchronized
-        fun setCachedApplicationContext(app: MainActivity?) {
-            if (app == null)
-                throw IllegalArgumentException("Context is null")
-            cachedApplicationContext = WeakReference(app)
-        }
-
     }
-
-
 }

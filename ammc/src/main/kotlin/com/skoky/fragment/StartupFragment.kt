@@ -111,9 +111,7 @@ class StartupFragment : Fragment() {
             val uuid = UUID.fromString(uuidUnsure!!)
             app.decoderService!!.getDecoders().find { it.uuid == uuid }
         }
-
-//        val foundDecoder = app.decoderService!!.getDecoders().find { it.uuid == uuid }
-
+        
         if (foundDecoder == null) {  // query
             progressBar2.visibility = VISIBLE
             connectButton.visibility = INVISIBLE

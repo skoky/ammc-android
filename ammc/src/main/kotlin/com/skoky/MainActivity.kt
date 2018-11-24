@@ -1,10 +1,7 @@
 package com.skoky
 
 import android.app.Dialog
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.IBinder
@@ -58,7 +55,6 @@ class MainActivity : AppCompatActivity(),
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         app = application as MyApp
-        MyApp.setCachedApplicationContext(this)
 
         app.firebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
@@ -98,6 +94,21 @@ class MainActivity : AppCompatActivity(),
         mAdView = findViewById<View>(R.id.adView) as AdView?
         val adRequest = AdRequest.Builder().build()
         mAdView?.loadAd(adRequest)
+    }
+
+    override fun onBackPressed() {
+        AlertDialog.Builder (this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")
+                .setMessage("Are you sure you want to exit?")
+                .setPositiveButton("Yes")  { _,_ ->
+                        finish()
+                    }
+                .setNegativeButton("No") { _,_ -> }.show()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        Log.d(TAG, "Focus $hasFocus")
+        Tools.wakeLock(this, hasFocus)
     }
 
     private fun openStartupFragment() {
@@ -343,13 +354,6 @@ class MainActivity : AppCompatActivity(),
 
         Log.d(TAG, "Layout:" + newConfig.screenLayout)
     }
-
-// FIXME disconnect service once finishing
-//    override fun onDestroy() {
-//        super.onDestroy()
-//        app.decoderService?.let { unbindService(it... connection) }
-//    }
-
 
     companion object {
         private const val TAG = "MainActivity"
