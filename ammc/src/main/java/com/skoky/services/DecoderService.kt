@@ -37,10 +37,11 @@ data class Decoder(val uuid: UUID, var decoderId: String? = null, var ipAddress:
     }
 
     companion object {
-        fun newDecoder(ipAddress: String? = null, port: Int? = null, decoderId: String? = null): Decoder {
-            val fixedPort = if (port == null) Tools.P3_DEF_PORT else port
+        fun newDecoder(ipAddress: String? = null, port: Int? = null, decoderId: String? = null, decoderType: String? = null): Decoder {
+            val fixedPort = port ?: Tools.P3_DEF_PORT
             return Decoder(UUID.randomUUID(), ipAddress = ipAddress, port = fixedPort,
-                    decoderId = decoderId, lastSeen = System.currentTimeMillis())
+                    decoderId = decoderId, decoderType = decoderType,
+                    lastSeen = System.currentTimeMillis())
         }
     }
 }
@@ -83,20 +84,37 @@ class DecoderService : Service() {
             NetworkBroadcastHandler.receiveBroadcastData { processUdpMsg(it) }
         }
 
-        val socketVostok = Socket()
         doAsync {
             while (true) {
 
-                val connectedDecoder = decoders.find { it.connection != null } != null
-                val alreadyHaveVostok = decoders.find {  it.decoderType == VOSTOK_NAME } != null
-                Log.d(TAG,"Vostok has decoder $connectedDecoder / $alreadyHaveVostok")
-                if (!connectedDecoder && !alreadyHaveVostok) {
-                    Log.d(TAG, "Vostok default connecting....")
-                    val connected = connectDecoder("$VOSTOK_DEFAULT_IP:$VOSTOK_DEFAULT_PORT")
-                    Log.d(TAG, "Vostok connected $connected")
-                }
+                val connectedDecoder = getConnectedDecoder()
+                val alreadyHaveVostok = decoders.find { isVostok(it) }
+                if (alreadyHaveVostok == null) {
+                    if (connectedDecoder == null) {
+                        Log.d(TAG, "Vostok default connecting....")
+                        val valid = checkTcpSocket(VOSTOK_DEFAULT_IP, VOSTOK_DEFAULT_PORT)
+                        Log.d(TAG, "Vostok socket $valid")
+                        val newDecoder = Decoder.newDecoder(VOSTOK_DEFAULT_IP, VOSTOK_DEFAULT_PORT,
+                                vostokDecoderId(VOSTOK_DEFAULT_IP, VOSTOK_DEFAULT_PORT),
+                                VOSTOK_NAME)
+                        decoders.addOrUpdate(newDecoder)
+                        sendBroadcastDecodersUpdate()
+                    } else Log.d(TAG, "Vostok: Already connected another decoder")
+                } else Log.d(TAG, "Already have vostok")
                 Thread.sleep(5000)
             }
+        }
+    }
+
+    private fun checkTcpSocket(ipaddress: String, port: Int): Boolean {
+        var socket = Socket()
+        return try {
+            socket.connect(InetSocketAddress(ipaddress, port), 5000)
+            socket.isConnected
+        } catch (e: java.lang.Exception) {
+            false
+        } finally {
+            socket?.let { socket.close() }
         }
     }
 
@@ -106,13 +124,14 @@ class DecoderService : Service() {
             // removes inactive decoders
             decoders.removeIf { d ->
                 Log.i(TAG, "Decoder $d diff: ${System.currentTimeMillis() - d.lastSeen}")
-                val toRemove = (System.currentTimeMillis() - d.lastSeen) > INACTIVE_DECODER_TIMEOUT
-                if (toRemove) {
+                if ((System.currentTimeMillis() - d.lastSeen) > INACTIVE_DECODER_TIMEOUT) {
                     Log.i(TAG, "Removing decoder $d, current decoders $decoders")
-                    d.connection?.close()
-                    sendBroadcastDisconnected(d)
+                    if (d.connection != null) {
+                        d.connection?.close()
+                        sendBroadcastDisconnected(d)
+                    }
+                    sendBroadcastDecodersUpdate()
                     true
-
                 } else {
                     false
                 }
@@ -120,12 +139,16 @@ class DecoderService : Service() {
         }
     }
 
-    fun getDecoders(): List<Decoder> {
+    fun getDecoders(): List<Decoder> {      // FIXME review if used properly
         return decoders.toList()
     }
 
     fun isDecoderConnected(): Boolean {
         return decoders.any { it.connection != null }
+    }
+
+    fun getConnectedDecoder(): Decoder? {
+        return decoders.find { d -> d.connection != null && d.connection!!.isConnected() }
     }
 
     fun disconnectDecoderByIpUUID(decoderUUID: String) {
@@ -134,22 +157,28 @@ class DecoderService : Service() {
         found?.let { disconnectDecoder2(it) }
     }
 
+    fun disconnectAllDecoders() {
+        decoders.forEach {
+            if (it.connection != null) disconnectDecoder2(it)
+        }
+    }
+
     fun connectDecoderByUUID(decoderUUIDString: String) {
         val uuid = UUID.fromString(decoderUUIDString)
         val found = decoders.find { it.uuid == uuid }
         found?.let { connectDecoder2(it) }
     }
 
-    fun connectDecoder2(decoder: Decoder) {
+    fun connectDecoder2(decoder: Decoder, notifyError: Boolean = true) {
 
-        if (decoder.connection == null) {
+        if (decoder.connection == null || (decoder.connection != null && !decoder.connection!!.isConnected)) {
             doAsync {
                 val socket = Socket()
                 try {
                     socket.connect(InetSocketAddress(decoder.ipAddress, decoder.port!!), 5000)
 
                     if (isVostok(decoder)) {
-                        decoders.addOrUpdate(decoder.copy(decoderId = vostokDecoderId(decoder), connection = socket, lastSeen = System.currentTimeMillis()))
+                        decoders.addOrUpdate(decoder.copy(decoderId = vostokDecoderId(decoder.ipAddress, decoder.port), decoderType = VOSTOK_NAME, connection = socket, lastSeen = System.currentTimeMillis()))
                     } else if (isP3Decoder(decoder)) {
                         decoders.addOrUpdate(decoder.copy(connection = socket, lastSeen = System.currentTimeMillis()))
                     }
@@ -166,32 +195,38 @@ class DecoderService : Service() {
                         socket.getOutputStream().write(versionRequest)
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error connecting decoder", e)
-                    socket.close()
-                    uiThread {
-                        toast("Connection not possible to ${decoder.ipAddress}:${decoder.port}")
+                    socket?.let { it.close() }
+                    if (notifyError) {
+                        Log.e(TAG, "Error connecting decoder", e)
+                        uiThread {
+                            toast("Connection not possible to ${decoder.ipAddress}:${decoder.port}")
+                        }
                     }
                 }
             }
         } else {
             Log.e(TAG, "Decoder already connected $decoder")
+            toast("Decoder already connected $decoder")
         }
     }
 
-
     private fun isVostok(d: Decoder): Boolean {
-        return d.port != P3_DEF_PORT
+        if (d.decoderType == VOSTOK_NAME || d.decoderId == VOSTOK_NAME) return true
+        if (d.port != P3_DEF_PORT) return true  // bit speculative :(
+        return false
     }
 
     fun isConnectedDecoderVostok(): Boolean {
-        val connectedDecoder = decoders.first { it.connection != null }
-        return isVostok(connectedDecoder)
+        val connectedDecoder = getConnectedDecoder()
+        connectedDecoder?.let {
+            return isVostok(it)
+        }
+        return false
     }
 
     private fun isP3Decoder(d: Decoder): Boolean {
         return d.port == P3_DEF_PORT
     }
-
 
     private val exploreMessages = listOf(
             "{\"recordType\":\"Version\",\"emptyFields\":[\"decoderType\"],\"VERSION\":\"2\"}",
@@ -214,7 +249,7 @@ class DecoderService : Service() {
 
         doAsync {
             socket?.let { s ->
-                if (s.isBound) {
+                if (s.isConnected) {
 
                     exploreMessages.forEach { m ->
                         try {
@@ -238,8 +273,9 @@ class DecoderService : Service() {
             }
             // cleanup
             decoder.connection = null
-            cache.clear()
+            //cache.clear()
             sendBroadcastDisconnected(decoder)
+            sendBroadcastDecodersUpdate()
 
         } catch (e: Exception) {
             Log.w(TAG, "Unable to disconnect decoder $decoder", e)
@@ -251,21 +287,26 @@ class DecoderService : Service() {
         var decoder = orgDecoder
         try {
             var read = 0
-            while (socket.isBound && read != -1) {
+            while (socket.isConnected && read != -1) {
                 socket.getInputStream()?.let {
                     read = it.read(buffer)
                     Log.i(TAG, "Received $read bytes")
                     if (read > 0) {
                         val json = processTcpMsg(buffer.copyOf(read),
-                                vostokDecoderId(orgDecoder))
+                                vostokDecoderId(decoder.ipAddress, decoder.port))
 
+                        sendBroadcastDecodersUpdate()
                         if (json.get("recordType").toString().isNotEmpty()) sendBroadcastData(decoder, json)
-                        when {
-                            json.get("recordType").toString() == "Passing" -> sendBroadcastPassing(json.toString())
-                            json.get("recordType").toString() == "Version" -> {
+                        val recordType = json.get("recordType").toString()
+                        when (recordType) {
+                            "Passing" -> sendBroadcastPassing(json.toString())
+                            "Version" -> {
                                 val decoderType = json.get("decoderType-text") as? String
                                 decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
                                 sendBroadcastData(decoder, json)
+                            }
+                            "Status" -> {
+                                decoder.copy(lastSeen = System.currentTimeMillis())
                             }
                             else -> {
                                 doAsync {
@@ -287,7 +328,7 @@ class DecoderService : Service() {
                 }
                 decoders.find { it.uuid == decoder.uuid }?.let { decoder = it }
             }
-            Log.i(TAG, "Bound ${socket.isBound}, read $read")
+            Log.i(TAG, "Connected ${socket.isConnected}, read $read")
         } catch (e: Exception) {
             Log.w(TAG, "Decoder connection error $decoder", e)
         } catch (t: Throwable) {
@@ -301,8 +342,9 @@ class DecoderService : Service() {
         }
     }
 
-    private fun vostokDecoderId(d: Decoder): String? {
-        return "${d.ipAddress}:${d.port}"
+    private fun vostokDecoderId(ipAddress: String?, port: Int?): String? {
+        if (ipAddress == null || port == null) return null
+        return "$ipAddress:$port"
     }
 
     private fun processTcpMsg(msg: ByteArray, decoderId: String?): JSONObject {
@@ -399,6 +441,13 @@ class DecoderService : Service() {
         }
     }
 
+    private fun sendBroadcastDecodersUpdate() {
+        val intent = Intent()
+        intent.action = DECODERS_UPDATE
+        applicationContext.sendBroadcast(intent)
+        Log.d(TAG, "Broadcast sent $intent")
+    }
+
     private fun sendBroadcastConnect(decoder: Decoder) {
         val intent = Intent()
         intent.action = DECODER_CONNECT
@@ -424,32 +473,32 @@ class DecoderService : Service() {
         Log.d(TAG, "Broadcast passing sent $intent")
     }
 
-    private val cache = mutableListOf<JSONObject>()
-    private fun updateCache(json: JSONObject) {
-
-        if (json.has("decoderID")) {
-            // not caching for another decoder or disconnected decoder
-            decoders.find { it.decoderId == json.getString("decoderType") && it.connection != null }
-                    ?: return
-        } else {
-            return      // weird
-        }
-
-        val found = cache.find { it.getString("recordType") == json.getString("recordType") }
-
-        if (found == null) {
-            cache.add(json)
-        } else {
-            cache.forEachIndexed { i, j ->
-                if (j.getString("recordType") == found.getString("recordType")) {
-                    cache[i] = found
-                }
-            }
-        }
-    }
+//    private val cache = mutableListOf<JSONObject>()
+//    private fun updateCache(json: JSONObject) {
+//
+//        if (json.has("decoderID")) {
+//            // not caching for another decoder or disconnected decoder
+//            decoders.find { it.decoderId == json.getString("decoderType") && it.connection != null }
+//                    ?: return
+//        } else {
+//            return      // weird
+//        }
+//
+//        val found = cache.find { it.getString("recordType") == json.getString("recordType") }
+//
+//        if (found == null) {
+//            cache.add(json)
+//        } else {
+//            cache.forEachIndexed { i, j ->
+//                if (j.getString("recordType") == found.getString("recordType")) {
+//                    cache[i] = found
+//                }
+//            }
+//        }
+//    }
 
     private fun sendBroadcastData(decoder: Decoder?, jsonData: JSONObject) {
-        updateCache(jsonData)
+        //updateCache(jsonData)
         val intent = Intent()
         intent.action = DECODER_DATA
         intent.putExtra("Data", jsonData.toString())
@@ -473,8 +522,8 @@ class DecoderService : Service() {
         return myBinder
     }
 
-    fun connectDecoder(address: String): Boolean {
-        Log.d(TAG, "Connecting to $address")
+    fun connectDecoder(address: String, notifyError: Boolean = true): Boolean {
+        Log.d(TAG, "Connecting to $address $notifyError")
 
         var addressIp: String = ""
         var port: Int? = null
@@ -488,18 +537,19 @@ class DecoderService : Service() {
         } else {
             decoders.find { it.ipAddress == address }
         }
-//        toast("Connecting to ${addressIp}:${port}")
-//        val foundByIp = decoders.find { it.ipAddress == address }
-        if (foundByIp != null)
-            connectDecoder2(foundByIp)
-        else {  // create new decoder
 
+        if (foundByIp != null) {
+            toast("Decoder already found")
+            connectDecoder2(foundByIp)
+        } else {  // create new decoder
+            //toast("Connecting to $addressIp:$port")
             if (port != null) {
-                connectDecoder2(Decoder.newDecoder(ipAddress = addressIp, port = port))
+                connectDecoder2(Decoder.newDecoder(ipAddress = addressIp, port = port), notifyError)
             } else {
-                connectDecoder2(Decoder.newDecoder(ipAddress = address))
+                connectDecoder2(Decoder.newDecoder(ipAddress = address), notifyError)
             }
         }
+        sendBroadcastDecodersUpdate()
         return true
     }
 
@@ -511,6 +561,7 @@ class DecoderService : Service() {
 
     companion object {
         private const val TAG = "DecoderService"
+        const val DECODERS_UPDATE = "com.skoky.decoder.broadcast.decoders_update"
         const val DECODER_CONNECT = "com.skoky.decoder.broadcast.connect"
         const val DECODER_DATA = "com.skoky.decoder.broadcast.data"
         const val DECODER_PASSING = "com.skoky.decoder.broadcast.passing"
@@ -518,3 +569,4 @@ class DecoderService : Service() {
         private const val INACTIVE_DECODER_TIMEOUT: Long = 10000  // 10secs
     }
 }
+

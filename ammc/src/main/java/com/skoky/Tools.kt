@@ -78,14 +78,6 @@ object Tools {
     }
 
 
-    fun toast(activity: Activity, s: String) {
-        val context = activity.applicationContext
-        val duration = Toast.LENGTH_SHORT
-
-        val toast = Toast.makeText(context, s, duration)
-        toast.show()
-    }
-
     fun millisToTime(duration: Long): String {
 
         val seconds = (duration / 1000).toInt() % 60

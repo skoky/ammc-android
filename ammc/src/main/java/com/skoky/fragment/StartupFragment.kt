@@ -19,6 +19,7 @@ import android.widget.TextView
 import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
+import com.skoky.services.DecoderService.Companion.DECODERS_UPDATE
 import com.skoky.services.DecoderService.Companion.DECODER_CONNECT
 import com.skoky.services.DecoderService.Companion.DECODER_DATA
 import com.skoky.services.DecoderService.Companion.DECODER_DISCONNECTED
@@ -34,13 +35,12 @@ class StartupFragment : Fragment() {
 
 
     // FIXME connected receiver show up very late after connect button pressed...
-    class ConnectionReceiver(val stateHandler: (UUID) -> Unit) : BroadcastReceiver() {
+    class ConnectionReceiver(val stateHandler: (String?) -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            val uuid = UUID.fromString(intent?.getStringExtra("uuid")!!)
+            val uuid = intent?.getStringExtra("uuid")
             stateHandler(uuid)
         }
     }
-
 
     class DataReceiver(val app: MyApp, private val bar: ProgressBar, private val button: Button,
                        private val decoderText: TextView) : BroadcastReceiver() {
@@ -76,6 +76,7 @@ class StartupFragment : Fragment() {
         val app = activity!!.application as MyApp
 
         connectReceiver = ConnectionReceiver(this@StartupFragment::visualStateHandler)
+        context!!.registerReceiver(connectReceiver, IntentFilter(DECODERS_UPDATE))
         context!!.registerReceiver(connectReceiver, IntentFilter(DECODER_CONNECT))
         context!!.registerReceiver(connectReceiver, IntentFilter(DECODER_DISCONNECTED))
 
@@ -85,21 +86,33 @@ class StartupFragment : Fragment() {
         app.decoderService?.let {
             Log.i(TAG, it.getDecoders().toString())
             if (it.getDecoders().isNotEmpty()) {
-                val connectedDecoder = it.getDecoders().find { d -> d.connection != null }
+                val connectedDecoder = it.getConnectedDecoder()
                 if (connectedDecoder != null)
-                    visualStateHandler(connectedDecoder.uuid)
+                    visualStateHandler(connectedDecoder.uuid.toString())
                 else
-                    visualStateHandler(it.getDecoders().first().uuid)
+                    visualStateHandler(it.getDecoders().first().uuid.toString())
             }
         }
     }
 
-    private fun visualStateHandler(uuid: UUID) {
+    private fun visualStateHandler(uuidUnsure: String?) {
 
         val app = activity!!.application as MyApp
 
-        val foundDecoder = app.decoderService!!.getDecoders().find { it.uuid == uuid }
+        val foundDecoder = if (uuidUnsure == null) {
+            app.decoderService!!.getConnectedDecoder()?.run { this }
 
+            if (app.decoderService!!.getDecoders().isNotEmpty()) {
+                app.decoderService!!.getDecoders().first()
+            } else {
+                null
+            }
+        } else {
+            val uuid = UUID.fromString(uuidUnsure!!)
+            app.decoderService!!.getDecoders().find { it.uuid == uuid }
+        }
+
+//        val foundDecoder = app.decoderService!!.getDecoders().find { it.uuid == uuid }
 
         if (foundDecoder == null) {  // query
             progressBar2.visibility = VISIBLE

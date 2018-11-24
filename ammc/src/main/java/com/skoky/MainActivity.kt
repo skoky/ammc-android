@@ -115,7 +115,8 @@ class MainActivity : AppCompatActivity(),
     fun connectOrDisconnect(view: View) {
         app.decoderService?.let { ds ->
             if (ds.isDecoderConnected()) {
-                ds.disconnectDecoderByIpUUID(firstDecoderId.tag as String)
+                ds.disconnectAllDecoders()
+//                ds.disconnectDecoderByIpUUID(firstDecoderId.tag as String)
             } else {
                 ds.connectDecoderByUUID(firstDecoderId.tag as String)
             }
@@ -143,50 +144,50 @@ class MainActivity : AppCompatActivity(),
 
     fun showMoreDecoders(view: View) {
 
-        val d = Dialog(this)
-        d.setContentView(R.layout.select_decoder)
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.select_decoder)
 
         val decodersCopy = app.decoderService!!.getDecoders()
 
-        val decoderText = d.decoder_address_edittext
+        val decoderText = dialog.decoder_address_edittext
         decoderText.setText(getSharedPreferences(AMMC_PREFS, 0).getString(LAST_IP, ""))
 
-        val dd = d.known_decoders
+        val radioButton = dialog.known_decoders
 
         decodersCopy.forEach { d2 ->
             if (d2.ipAddress != null) {
                 val b = RadioButton(this)
                 b.text = MainActivity.decoderLabel(d2)
                 b.isChecked = false
-                b.id = d.hashCode()
+                b.id = d2.hashCode()
                 b.setOnCheckedChangeListener { view, checked ->
                     Log.d(TAG, "Checked $view $checked")
                     decoderText.text = null
                 }
-                dd.addView(b)
+                radioButton.addView(b)
             }
         }
 
-        decoderText.addTextChangedListener(SimpleTextWatcher(dd))
+        decoderText.addTextChangedListener(SimpleTextWatcher(radioButton))
 
-        d.decoder_select_ok_button.setOnClickListener {
-            val checkDecoder = d.known_decoders.checkedRadioButtonId
-            val foundDecoder = decodersCopy.find { it.hashCode() == checkDecoder }
+        dialog.decoder_select_ok_button.setOnClickListener {
+            val checkDecoderHashCode = dialog.known_decoders.checkedRadioButtonId
+            val foundDecoder = decodersCopy.find { decoder -> decoder.hashCode() == checkDecoderHashCode }
             Log.i(TAG, "decoder $foundDecoder")
 
             if (decoderText.text.isNotEmpty()) {
                 val dd = decoderText.text.toString().trim()
                 getSharedPreferences(AMMC_PREFS, 0).edit().putString(LAST_IP, dd).commit()
-                app.decoderService?.let { it.connectDecoder(dd) }
+                app.decoderService?.let { s -> s.connectDecoder(dd) }
             } else
                 foundDecoder?.let { d3 -> app.decoderService?.let { s -> s.connectDecoder2(d3) } }
 
-            d.cancel()
+            dialog.cancel()
         }
 
-        d.setCancelable(true)
-        d.setOnCancelListener { it.cancel() }
-        d.show()
+        dialog.setCancelable(true)
+        dialog.setOnCancelListener { it.cancel() }
+        dialog.show()
     }
 
     class SimpleTextWatcher(dd: RadioGroup) : TextWatcher {
