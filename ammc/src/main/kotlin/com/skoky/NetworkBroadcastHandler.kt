@@ -31,10 +31,10 @@ object NetworkBroadcastHandler {
                         val incomingPacket = DatagramPacket(incomingBuffer, incomingBuffer.size)
                         s.receive(incomingPacket)
                         val data = incomingPacket.data
-                        Log.w(TAG, "Received data length ${incomingPacket.length}")
 
-                        data?.let { handler(it.copyOf(incomingPacket.length)) }
-
+                        data?.let {
+                            handler(it.copyOf(incomingPacket.length))
+                        }
                     }
                 } catch (e: Exception) {
                     Log.w(TAG, "Broadcast socket closed $e")

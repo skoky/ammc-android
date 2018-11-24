@@ -1,7 +1,10 @@
 package com.skoky
 
 import android.app.Dialog
-import android.content.*
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.IBinder
@@ -127,7 +130,6 @@ class MainActivity : AppCompatActivity(),
         app.decoderService?.let { ds ->
             if (ds.isDecoderConnected()) {
                 ds.disconnectAllDecoders()
-//                ds.disconnectDecoderByIpUUID(firstDecoderId.tag as String)
             } else {
                 ds.connectDecoderByUUID(firstDecoderId.tag as String)
             }
@@ -188,7 +190,7 @@ class MainActivity : AppCompatActivity(),
 
             if (decoderText.text.isNotEmpty()) {
                 val dd = decoderText.text.toString().trim()
-                getSharedPreferences(AMMC_PREFS, 0).edit().putString(LAST_IP, dd).commit()
+                if (!dd.isBlank()) getSharedPreferences(AMMC_PREFS, 0).edit().putString(LAST_IP, dd).commit()
                 app.decoderService?.let { s -> s.connectDecoder(dd) }
             } else
                 foundDecoder?.let { d3 -> app.decoderService?.let { s -> s.connectDecoder2(d3) } }

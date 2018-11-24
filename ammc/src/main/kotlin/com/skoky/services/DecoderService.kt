@@ -51,7 +51,9 @@ fun MutableList<Decoder>.addOrUpdate(decoder: Decoder) {
     var found = false
 
     this.forEach { d ->
-        if (d.uuid == d.uuid) {
+        if (d.uuid == decoder.uuid) {
+            if (decoder.decoderId != d.decoderId)
+                Log.d("D","DecodersX: decoder ID to update ${decoder.decoderId} -> ${d.decoderId}")
             decoder.decoderId?.let { d.decoderId = it }
             decoder.ipAddress?.let { d.ipAddress = it }
             decoder.port?.let { d.port = it }
@@ -61,8 +63,10 @@ fun MutableList<Decoder>.addOrUpdate(decoder: Decoder) {
             found = true
         }
     }
-    if (!found)
+    if (!found) {
+        decoder.lastSeen = System.currentTimeMillis()
         this.add(decoder)
+    }
 }
 
 class DecoderService : Service() {
@@ -208,7 +212,6 @@ class DecoderService : Service() {
             }
         } else {
             Log.e(TAG, "Decoder already connected $decoder")
-            toast("Decoder already connected $decoder")
         }
     }
 
@@ -367,11 +370,11 @@ class DecoderService : Service() {
         }
     }
 
-    //    @RequiresApi(Build.VERSION_CODES.N)
     private fun processUdpMsg(msgB: ByteArray) {
         Log.d(TAG, "Data received: ${msgB.size}")
         val msg = Parser.decode(msgB)
         val json = JSONObject(msg)
+        Log.d(TAG, ">> $json")
 
         if (msg.contains("Error")) {
             doAsync {
@@ -379,7 +382,7 @@ class DecoderService : Service() {
             }
         }
 
-        var decoderId: String?
+        val decoderId: String?
         if (json.has("decoderId")) {
             decoderId = json.get("decoderId") as String
         } else {
@@ -388,7 +391,10 @@ class DecoderService : Service() {
         }
 
         var decoder = decoders.find { it.decoderId == decoderId }
-        if (decoder == null) decoder = Decoder.newDecoder(decoderId = decoderId)
+        if (decoder == null) {
+            decoder = Decoder.newDecoder(decoderId = decoderId)
+            decoders.addOrUpdate(decoder)
+        }
 
         decoder!!.lastSeen = System.currentTimeMillis()
 
@@ -408,7 +414,7 @@ class DecoderService : Service() {
                         sendBroadcastData(d, json)
                     }
                 "Version" ->
-                    if (json.has("decoderType")) {
+                    if (json.has("decoderType-text")) {
                         val decoderType = json.get("decoderType-text") as? String
                         decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
                         sendBroadcastData(d, json)
@@ -418,9 +424,8 @@ class DecoderService : Service() {
                         reportEvent(application, "tcp_error", Arrays.toString(msgB))
                     }
             } else {
-                Log.w(TAG,"Msg with record type on UDP. Wired! $json")
+                Log.w(TAG, "Msg with record type on UDP. Wired! $json")
             }
-            Log.i(TAG, "Decoders: $decoders")
             sendBroadcastDecodersUpdate()
         }
     }
@@ -547,7 +552,6 @@ class DecoderService : Service() {
         }
 
         if (foundByIp != null) {
-            toast("Decoder already found")
             connectDecoder2(foundByIp)
         } else {  // create new decoder
             //toast("Connecting to $addressIp:$port")
