@@ -4,11 +4,12 @@
 
 Password t...
 
-
 ## TODO
 
 - Reset message send to decoder
-- ResendPasasings request / reposnse
+- ResendPassings request / reposnse
 - cloud backup
+
+
 
 

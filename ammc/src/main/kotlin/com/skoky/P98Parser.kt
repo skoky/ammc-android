@@ -19,7 +19,11 @@ data class Error(val recordType: String, val msg: String)
 val gson = GsonBuilder().setPrettyPrinting().create()
 
 object P98Parser {
-    fun parse(msg: ByteArray, id: String): String {
+    fun parse(msgMaybeMore: ByteArray, id: String): String {
+
+        // FIXME parse all messages, not only first!
+        val msg = String(msgMaybeMore).split("\r\n").first().toByteArray()
+
         return try {
             when (msg[1].toChar()) {
                 '#' -> parserStatus(msg.copyOfRange(1,msg.size-1), id)

@@ -88,6 +88,33 @@ class P98ParserTest {
                 "  \"msecs_since_start\": 46820\n" +
                 "}", json)
     }
+
+    @Test
+    fun testMultipleMessageBytes() {      // FIXME 2 messages in one ! FIXME
+        val bytes = intArrayOf(1, 64, 9, 49, 48, 49, 9, 57, 55, 56, 56, 9, 56, 49, 49, 48, 57, 56, 52, 9, 53, 50, 48, 56, 51, 46, 54, 57, 49, 9, 49, 50, 55, 9, 52, 48, 9, 50, 9, 120, 51, 68, 65, 70, 13, 10, 1, 35, 9, 49, 48, 49, 9, 57, 55, 56, 57, 9, 48, 9, 120, 56, 52, 48, 69, 13, 10)
+                .map { i -> i.toByte()}.toByteArray()
+
+        val x = String(bytes).split("\r\n")
+        x.forEach{
+            println(">> $it / ${it.length}")
+        }
+
+
+        val json = P98Parser.parse(bytes,"vostok123")
+        assertEquals("{\n" +
+                "  \"recordType\": \"Passing\",\n" +
+                "  \"decoderType\": \"Vostok\",\n" +
+                "  \"decoderId\": \"vostok123\",\n" +
+                "  \"packetSequenceNum\": 9788,\n" +
+                "  \"transponderCode\": \"8110984\",\n" +
+                "  \"timeSinceStart\": 52083.69,\n" +
+                "  \"hitCounts\": 127,\n" +
+                "  \"signalStrength\": 40,\n" +
+                "  \"passingStatus\": 2,\n" +
+                "  \"crcOk\": true,\n" +
+                "  \"msecs_since_start\": 52083692\n" +
+                "}", json)
+    }
 //
 //    @Test
 //    fun testCrc() {
