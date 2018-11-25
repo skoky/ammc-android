@@ -23,6 +23,7 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
     companion object {
         const val TAG = "RacingAdapter"
     }
+
     init {
         mValues.sortByDescending { it.pos }
         mOnClickListener = View.OnClickListener { v ->
@@ -59,7 +60,7 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
                 val item = mValues[position - 1]
 
                 holder.mPosition.text = item.pos.toString()
-                holder.mTrasView.text = if (item.driverName.isNullOrBlank())  item.transponder else item.driverName
+                holder.mTrasView.text = if (item.driverName.isNullOrBlank()) item.transponder else item.driverName
                 holder.mLastLapTime.text = timeToText(item.lastLapTimeMs)
                 holder.mLapCount.text = "     ${item.laps}"
 
@@ -87,12 +88,49 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
         mValues = tmm.newPassing(mValues.toList(), transponder, time).toMutableList()
     }
 
-
-    fun getTransponderAndDriver(transOrDriver: CharSequence?) {
+    fun getDriverForTransponder(transOrDriver: CharSequence?): String {
 
         mValues.forEach {
             if (it.transponder == transOrDriver) {
-                it.driverName="kuk"
+                return it.driverName.orEmpty()
+            }
+        }
+        mValues.forEach {
+            if (it.driverName == transOrDriver) {
+                return it.driverName.orEmpty()
+            }
+        }
+        return ""
+    }
+
+    fun getTransponder(transOrDriver: String): String {
+        mValues.forEach {
+            if (it.transponder == transOrDriver) {
+                return it.transponder
+            }
+        }
+        mValues.forEach {
+            if (it.driverName == transOrDriver) {
+                return it.transponder
+            }
+        }
+        return ""
+    }
+
+
+    fun saveDriverName(transOrDriver: String, newDriverName: String) {
+        // TODO save to database
+        mValues.forEach {
+            if (it.transponder == transOrDriver) {
+                it.driverName = newDriverName
+                return
+            }
+        }
+
+        mValues.forEach {
+            if (it.driverName == transOrDriver) {
+                it.driverName = newDriverName
+                return
             }
         }
     }

@@ -15,6 +15,7 @@ import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import com.skoky.R
 import com.skoky.Tools
@@ -73,7 +74,7 @@ class RacingModeFragment : FragmentCommon() {
                 columnCount <= 1 -> LinearLayoutManager(context)
                 else -> GridLayoutManager(context, columnCount)
             }
-            adapter = RacingModeRecyclerViewAdapter(mutableListOf(), listener) {handleDriverEditDialog(it)}
+            adapter = RacingModeRecyclerViewAdapter(mutableListOf(), listener) { handleDriverEditDialog(it) }
             mAdapter = adapter as RacingModeRecyclerViewAdapter
             receiver = PassingDataReceiver { data ->
                 val json = JSONObject(data)
@@ -115,7 +116,22 @@ class RacingModeFragment : FragmentCommon() {
         val views = view.childrenSequence().iterator()
         views.next()
         val transOrDriver = (views.next() as TextView).text
-        mAdapter.getTransponderAndDriver(transOrDriver)
+
+        val dialog = AlertDialog.Builder(activity).setCancelable(true)
+                .setView(R.layout.update_deriver_dialog).show()
+        val transET = dialog.findViewById<EditText>(R.id.transponder_edit_text)
+        transOrDriver?.let { transET.setText(mAdapter.getTransponder(transOrDriver.toString())) }
+        val driverET = dialog.findViewById<EditText>(R.id.driver_name_edit_text)
+        dialog.findViewById<Button>(R.id.cancel_button).setOnClickListener { dialog.dismiss() }
+        dialog.findViewById<Button>(R.id.save_button).setOnClickListener {
+            mAdapter.saveDriverName(transET.text.toString(), driverET.text.toString())
+            dialog.dismiss()
+        }
+
+        driverET?.let {
+            it.setText(mAdapter.getDriverForTransponder(transOrDriver))
+            it.requestFocus()
+        }
     }
 
     private var running = false

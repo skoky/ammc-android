@@ -3,11 +3,11 @@ package com.skoky
 import android.util.Log
 import java.util.*
 
-
 data class Driver(
         val name: String? = null,
         val transponder: String?,
-        var uuid: String = UUID.randomUUID().toString())
+        var uuid: String = UUID.randomUUID().toString(),
+        var lastUpdate: Long)
 
 class DriversManager(val app: MyApp) {
 
@@ -25,14 +25,15 @@ class DriversManager(val app: MyApp) {
     }
 
     private fun saveTransponder(transponder: String) {
-        val driver = Driver(transponder=transponder)
+        val driver = Driver(transponder=transponder, lastUpdate = System.currentTimeMillis())
+
         app.firestore.collection("drivers")
                 .add(driver)
                 .addOnSuccessListener {
-                    Log.d(DriversManager.TAG, "Bad msg added with ID: ${it.id}")
+                    Log.d(DriversManager.TAG, "Bad msg added")
                 }
                 .addOnFailureListener {
-                    Log.w(DriversManager.TAG, "Error adding bad msg", it)
+                    Log.w(DriversManager.TAG, "Error adding bad msg")
                 }
     }
 
