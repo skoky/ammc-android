@@ -22,6 +22,7 @@
     <string name="select_decoder_label">Select decoder to connect</string>
     <string name="no_transponder">No transponder visible from decoders so far. Pass loop at least once to register transponder</string>
     <string name="or_connect_directly_to_decoder_by_ip_address">Or connect directly to decoder by IP address</string>
+    <string name="drivers_editor">Drivers</string>
     <string name="help_connecting">Help connecting</string>
     <string name="make_a_wish">Make a wish</string>
     <string name="transponder">Transponder</string>

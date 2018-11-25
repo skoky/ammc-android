@@ -1,9 +1,11 @@
 package com.skoky.fragment
 
 import android.app.AlertDialog
-import android.content.*
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -20,15 +22,15 @@ import com.skoky.fragment.content.Racer
 import com.skoky.fragment.content.RacingModeModel
 import com.skoky.services.DecoderService.Companion.DECODER_DISCONNECTED
 import com.skoky.services.DecoderService.Companion.DECODER_PASSING
-import kotlinx.android.synthetic.main.fragment_racingmode.view.*
 import kotlinx.android.synthetic.main.fragment_racingmode_list.view.*
+import org.jetbrains.anko.childrenSequence
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import org.json.JSONObject
 import java.util.concurrent.Future
 
 
-class RacingModeFragment : Fragment() {
+class RacingModeFragment : FragmentCommon() {
 
     private var columnCount = 1
 
@@ -45,6 +47,8 @@ class RacingModeFragment : Fragment() {
 
     private lateinit var clockViewX: TextView
 
+    private lateinit var mAdapter: RacingModeRecyclerViewAdapter
+
     class ConnectionReceiver(val handler: () -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             handler()
@@ -60,7 +64,6 @@ class RacingModeFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_racingmode_list, container, false)
-
         clockViewX = view.clockView
         timingContentView = view.training_content
         // Set the adapter
@@ -70,12 +73,12 @@ class RacingModeFragment : Fragment() {
                 columnCount <= 1 -> LinearLayoutManager(context)
                 else -> GridLayoutManager(context, columnCount)
             }
-            adapter = RacingModeRecyclerViewAdapter(mutableListOf(), listener)
-
+            adapter = RacingModeRecyclerViewAdapter(mutableListOf(), listener) {handleDriverEditDialog(it)}
+            mAdapter = adapter as RacingModeRecyclerViewAdapter
             receiver = PassingDataReceiver { data ->
                 val json = JSONObject(data)
                 Log.i(TAG, "Received passing $data")
-                val transponder = FragmentCommon().getTransponderFromPassingJson(json)
+                val transponder = FragmentCommon().getTransponderFromPassingJson(activity!!.application, json)
                 val time = FragmentCommon().getTimeFromPassingJson(json)
 
                 if (running) {
@@ -84,8 +87,8 @@ class RacingModeFragment : Fragment() {
                 }
                 tmm = (adapter as RacingModeRecyclerViewAdapter).tmm
 
-                if (!transponders.contains(transponder.toString())) {
-                    transponders.add(transponder.toString())
+                if (!transponders.contains(transponder)) {
+                    transponders.add(transponder)
                 }
             }
             context!!.registerReceiver(receiver, IntentFilter(DECODER_PASSING))
@@ -95,7 +98,7 @@ class RacingModeFragment : Fragment() {
         startStopButtonM!!.setOnClickListener { doStartStopDialog() }
 
         disconnectReceiver = ConnectionReceiver {
-            Log.i(TAG,"Disconnected")
+            Log.i(TAG, "Disconnected")
             //AlertDialog.Builder(context).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
         }
         context!!.registerReceiver(disconnectReceiver, IntentFilter(DECODER_DISCONNECTED))
@@ -108,6 +111,13 @@ class RacingModeFragment : Fragment() {
         activity!!.findViewById<View>(R.id.miHome).visibility = VISIBLE     // FIXME does not work :(
     }
 
+    private fun handleDriverEditDialog(view: View) {
+        val views = view.childrenSequence().iterator()
+        views.next()
+        val transOrDriver = (views.next() as TextView).text
+        mAdapter.getTransponderAndDriver(transOrDriver)
+    }
+
     private var running = false
     private fun doStartStopDialog() {
         doStartStop()
@@ -116,12 +126,12 @@ class RacingModeFragment : Fragment() {
     private fun doStartStop() {
 
         if (running) {
-            Tools.wakeLock(context!!,false)
+            Tools.wakeLock(context!!, false)
             running = false
             clock.cancel(true)      // TODO calculate exact training timeUs
             startStopButtonM?.text = getText(R.string.start)
         } else {    // not running
-            Tools.wakeLock(context!!,true)
+            Tools.wakeLock(context!!, true)
             if (timingContentView.adapter.itemCount == 1) {     // just a label, nothing to clear
                 doStart()
             } else {

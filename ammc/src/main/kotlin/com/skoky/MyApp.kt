@@ -3,16 +3,17 @@ package com.skoky
 import android.app.Application
 import android.os.PowerManager
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
 import com.skoky.services.DecoderService
-import java.lang.ref.WeakReference
 
-/**
- * Called automatically when you base your application on the AngApplication in your AndroidManifest.xml
- */
 class MyApp : Application() {
 
     var decoderService: DecoderService? = null
     lateinit var firebaseAnalytics: FirebaseAnalytics
+    lateinit var drivers: DriversManager
+    var user: FirebaseUser? = null
+    lateinit var firestore: FirebaseFirestore
 
     companion object {
         var wakeLock: PowerManager.WakeLock? = null

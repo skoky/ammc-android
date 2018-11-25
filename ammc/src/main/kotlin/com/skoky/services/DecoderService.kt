@@ -7,12 +7,8 @@ import android.os.Build
 import android.os.IBinder
 import android.support.annotation.RequiresApi
 import android.util.Log
-import com.skoky.NetworkBroadcastHandler
-import com.skoky.P98Parser
-import com.skoky.Tools
+import com.skoky.*
 import com.skoky.Tools.P3_DEF_PORT
-import com.skoky.Tools.reportEvent
-import com.skoky.VOSTOK_NAME
 import eu.plib.Parser
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
@@ -53,7 +49,7 @@ fun MutableList<Decoder>.addOrUpdate(decoder: Decoder) {
     this.forEach { d ->
         if (d.uuid == decoder.uuid) {
             if (decoder.decoderId != d.decoderId)
-                Log.d("D","DecodersX: decoder ID to update ${decoder.decoderId} -> ${d.decoderId}")
+                Log.i("D", "DecodersX: decoder ID to update ${decoder.decoderId} -> ${d.decoderId}")
             decoder.decoderId?.let { d.decoderId = it }
             decoder.ipAddress?.let { d.ipAddress = it }
             decoder.port?.let { d.port = it }
@@ -77,6 +73,7 @@ class DecoderService : Service() {
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "Created")
+        val app = application as MyApp
 
         decoders.sortedWith(compareBy({ it.uuid }, { it.uuid }))
 
@@ -289,6 +286,7 @@ class DecoderService : Service() {
 
     private fun listenOnSocketConnection(socket: Socket, orgDecoder: Decoder) {
         val buffer = ByteArray(1024)
+        val app = application as MyApp
         var decoder = orgDecoder
         try {
             var read = 0
@@ -317,9 +315,7 @@ class DecoderService : Service() {
 //                                }
                             }
                             else -> {
-                                doAsync {
-                                    reportEvent(application, "tcp_unknown_data", Arrays.toString(buffer.copyOf(read)))
-                                }
+                                CloudDB.badMessageReport(application as MyApp, "tcp_unknown_data", Arrays.toString(buffer.copyOf(read)))
                                 Log.w(TAG, "received unknown data $json")
                             }
                         }
@@ -363,9 +359,7 @@ class DecoderService : Service() {
             JSONObject(P98Parser.parse(msg, decoderIdVostok ?: "-"))
         } else {
             Log.w(TAG, "Invalid msg on TCP " + Arrays.toString(msg))
-            doAsync {
-                reportEvent(application, "tcp_msg_error", Arrays.toString(msg))
-            }
+            CloudDB.badMessageReport(application as MyApp, "tcp_msg_error", Arrays.toString(msg))
             JSONObject("{\"recordType\":\"Error\",\"description\":\"Invalid message\"}")
         }
     }
@@ -377,9 +371,7 @@ class DecoderService : Service() {
         Log.d(TAG, ">> $json")
 
         if (msg.contains("Error")) {
-            doAsync {
-                reportEvent(application, "tcp_msg_with_error", Arrays.toString(msgB))
-            }
+            CloudDB.badMessageReport(application as MyApp, "tcp_msg_with_error", Arrays.toString(msgB))
         }
 
         val decoderId: String?
@@ -420,9 +412,8 @@ class DecoderService : Service() {
                         sendBroadcastData(d, json)
                     }
                 "Error" ->
-                    doAsync {
-                        reportEvent(application, "tcp_error", Arrays.toString(msgB))
-                    }
+                    CloudDB.badMessageReport(application as MyApp, "tcp_error", Arrays.toString(msgB))
+
             } else {
                 Log.w(TAG, "Msg with record type on UDP. Wired! $json")
             }

@@ -1,14 +1,10 @@
 package com.skoky
 
 
-import android.app.Activity
-import android.app.Application
 import android.content.Context
-import android.os.Bundle
 import android.os.PowerManager
 import android.os.PowerManager.FULL_WAKE_LOCK
 import android.util.Log
-import android.widget.Toast
 import java.net.NetworkInterface
 import java.net.SocketException
 
@@ -17,6 +13,7 @@ object Tools {
     private val TAG = "P3Tools"
 
     var P3_DEF_PORT = 5403
+
 
     val localIpAddress: String?
         get() {
@@ -112,10 +109,4 @@ object Tools {
         }
     }
 
-    fun reportEvent(app: Application, key: String, value: String) {
-        val params = Bundle()
-        params.putString(key, value)
-        (app as MyApp).firebaseAnalytics.logEvent("AmmcAndroid", params)
-
-    }
 }

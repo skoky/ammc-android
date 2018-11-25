@@ -8,6 +8,7 @@ import android.content.ServiceConnection
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.IBinder
+import android.support.v4.app.Fragment
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBar
 import android.support.v7.app.AlertDialog
@@ -23,6 +24,9 @@ import android.widget.RadioGroup
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.skoky.fragment.*
 import com.skoky.fragment.content.ConsoleModel
 import com.skoky.fragment.content.Racer
@@ -37,6 +41,7 @@ import kotlinx.android.synthetic.main.startup_content.*
 class MainActivity : AppCompatActivity(),
         TrainingModeFragment.OnListFragmentInteractionListener,
         RacingModeFragment.OnListFragmentInteractionListener,
+        DriversFragment.OnListFragmentInteractionListener,
         ConsoleModeFragment.OnListFragmentInteractionListener,
         ConsoleModeVostokFragment.OnListFragmentInteractionListener {
 
@@ -54,12 +59,33 @@ class MainActivity : AppCompatActivity(),
 
     private lateinit var app: MyApp
     private var mAdView: AdView? = null
+//    private lateinit var mDatabase: DatabaseReference
+//    private lateinit var mMessageReference: DatabaseReference
+
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         app = application as MyApp
 
         app.firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+
+        app.firestore = FirebaseFirestore.getInstance()
+        val settings = FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true).build()
+        app.firestore.firestoreSettings = settings
+
+        val auth = FirebaseAuth.getInstance()
+        app.drivers = DriversManager(app)
+
+        auth.signInWithEmailAndPassword("skokys@gmail.com", "sfsadfhads8923jhkwdKJGJKHDKJl!")
+                .addOnCompleteListener {
+                    Log.d(TAG, "Saved login ${it.result}")
+                    if (it.isSuccessful) {
+                        app.user = auth.currentUser
+                        Log.i(TAG,"Auth user ${app.user!!.isAnonymous}")
+                    }
+                }
+
 
         setContentView(R.layout.main)
 
@@ -70,6 +96,7 @@ class MainActivity : AppCompatActivity(),
                 R.id.nav_training -> menuItem.isChecked = openTrainingMode(null)
                 R.id.nav_racing -> menuItem.isChecked = openRacingMode(null)
                 R.id.nav_console -> menuItem.isChecked = openConsoleMode(null)
+                R.id.nav_drivers_editor -> menuItem.isChecked = openDriversEditor(null)
                 R.id.nav_connection_help -> menuItem.isChecked = openHelp(null)
                 else -> {
                     menuItem.isChecked = false
@@ -79,9 +106,7 @@ class MainActivity : AppCompatActivity(),
             true
         }
 
-
         setSupportActionBar(toolbar)
-
         val actionbar: ActionBar? = supportActionBar
         actionbar?.apply {
             setDisplayHomeAsUpEnabled(true)
@@ -100,12 +125,12 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onBackPressed() {
-        AlertDialog.Builder (this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")
+        AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")
                 .setMessage("Are you sure you want to exit?")
-                .setPositiveButton("Yes")  { _,_ ->
-                        finish()
-                    }
-                .setNegativeButton("No") { _,_ -> }.show()
+                .setPositiveButton("Yes") { _, _ ->
+                    finish()
+                }
+                .setNegativeButton("No") { _, _ -> }.show()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -227,6 +252,16 @@ class MainActivity : AppCompatActivity(),
         return true
     }
 
+    private lateinit var driversEditorFragment: DriversFragment
+    private fun openDriversEditor(view: View?): Boolean {
+        driversEditorFragment = DriversFragment.newInstance(1)
+        val fragmentTransaction = supportFragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.screen_container, driversEditorFragment)
+        fragmentTransaction.commit()
+
+        return true
+    }
+
     private lateinit var consoleFragment: ConsoleModeFragment
     private lateinit var consoleVostokFragment: ConsoleModeVostokFragment
     fun openConsoleMode(view: View?): Boolean {
@@ -273,7 +308,7 @@ class MainActivity : AppCompatActivity(),
             return if (it.isDecoderConnected()) {
                 racingFragment = RacingModeFragment.newInstance(1)
                 val fragmentTransaction = supportFragmentManager.beginTransaction()
-                fragmentTransaction.replace(R.id.screen_container, racingFragment)
+                fragmentTransaction.replace(R.id.screen_container, racingFragment as Fragment)
                 fragmentTransaction.commit()
                 true
             } else {

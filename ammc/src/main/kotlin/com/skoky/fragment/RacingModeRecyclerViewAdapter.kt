@@ -11,14 +11,18 @@ import com.skoky.fragment.content.Racer
 import com.skoky.fragment.content.RacingModeModel
 import kotlinx.android.synthetic.main.fragment_racingmode.view.*
 import java.text.SimpleDateFormat
-import kotlin.math.nextDown
 
 
-class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>, private val mListener: OnListFragmentInteractionListener?)
+class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
+                                    private val mListener: OnListFragmentInteractionListener?,
+                                    private val onLongTapListener: (View) -> Unit)
     : RecyclerView.Adapter<RacingModeRecyclerViewAdapter.ViewHolder>() {
 
     private val mOnClickListener: View.OnClickListener
 
+    companion object {
+        const val TAG = "RacingAdapter"
+    }
     init {
         mValues.sortByDescending { it.pos }
         mOnClickListener = View.OnClickListener { v ->
@@ -32,7 +36,9 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>, pri
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.fragment_racingmode, parent, false)
-
+        view.setOnLongClickListener {
+            onLongTapListener(it); true
+        }
         return ViewHolder(view)
     }
 
@@ -53,7 +59,7 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>, pri
                 val item = mValues[position - 1]
 
                 holder.mPosition.text = item.pos.toString()
-                holder.mTrasView.text = item.transponder
+                holder.mTrasView.text = if (item.driverName.isNullOrBlank())  item.transponder else item.driverName
                 holder.mLastLapTime.text = timeToText(item.lastLapTimeMs)
                 holder.mLapCount.text = "     ${item.laps}"
 
@@ -79,6 +85,16 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>, pri
     val tmm = RacingModeModel()
     fun addRecord(transponder: String, time: Time) {
         mValues = tmm.newPassing(mValues.toList(), transponder, time).toMutableList()
+    }
+
+
+    fun getTransponderAndDriver(transOrDriver: CharSequence?) {
+
+        mValues.forEach {
+            if (it.transponder == transOrDriver) {
+                it.driverName="kuk"
+            }
+        }
     }
 
     fun clearResults() {
