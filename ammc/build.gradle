@@ -12,7 +12,7 @@ android {
         applicationId "com.skoky"
         minSdkVersion 22
         targetSdkVersion 27
-        versionCode 46
+        versionCode 47
         versionName "2.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -59,7 +59,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.3'
 
     implementation 'com.google.firebase:firebase-core:16.0.5'
-    implementation 'com.google.firebase:firebase-ads:15.0.1'
+    implementation 'com.google.firebase:firebase-ads:17.1.1'
     implementation 'com.google.firebase:firebase-database:16.0.5'
     implementation 'com.google.firebase:firebase-auth:16.0.5'
     implementation 'com.google.firebase:firebase-firestore:17.1.0'

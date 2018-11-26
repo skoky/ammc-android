@@ -23,6 +23,7 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -68,6 +69,7 @@ class MainActivity : AppCompatActivity(),
         app = application as MyApp
 
         app.firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        MobileAds.initialize(this,"ca-app-pub-7655373768605194~7466307464")
 
         app.firestore = FirebaseFirestore.getInstance()
         val settings = FirebaseFirestoreSettings.Builder()
