@@ -22,6 +22,7 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.skoky.fragment.*
 import com.skoky.fragment.content.ConsoleModel
@@ -60,6 +61,7 @@ class MainActivity : AppCompatActivity(),
         app = application as MyApp
 
         app.firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        MobileAds.initialize(this,"ca-app-pub-7655373768605194~7466307464")
 
         setContentView(R.layout.main)
 
