@@ -38,7 +38,7 @@ open class FragmentCommon : android.support.v4.app.Fragment() {
                 return "---"
             }
         }
-        (app as MyApp).drivers.saveNewTransponder(transponderId)
+//        (app as MyApp).drivers.saveNewTransponder(transponderId)
         return transponderId
     }
 }

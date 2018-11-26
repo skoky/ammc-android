@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.fragment.RacingModeFragment.OnListFragmentInteractionListener
 import com.skoky.fragment.content.Racer
@@ -118,11 +119,12 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
     }
 
 
-    fun saveDriverName(transOrDriver: String, newDriverName: String) {
-        // TODO save to database
+    fun saveDriverName(app: MyApp, transOrDriver: String, newDriverName: String) {
+
         mValues.forEach {
             if (it.transponder == transOrDriver) {
                 it.driverName = newDriverName
+                app.drivers.saveNewTransponder(it.transponder,  newDriverName)
                 return
             }
         }
@@ -130,6 +132,7 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
         mValues.forEach {
             if (it.driverName == transOrDriver) {
                 it.driverName = newDriverName
+                app.drivers.saveNewTransponder(it.transponder, newDriverName)
                 return
             }
         }
@@ -139,4 +142,12 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
         mValues = mutableListOf()
     }
 
+    fun updateDriverName(app: MyApp, transponder: String) {
+        app.drivers.getDriverForTransponder(transponder) { nameFromDb ->
+            mValues.forEach { d ->
+                if (d.transponder == transponder)
+                    d.driverName = nameFromDb
+            }
+        }
+    }
 }

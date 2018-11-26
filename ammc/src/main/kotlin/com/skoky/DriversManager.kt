@@ -11,7 +11,7 @@ data class Driver(
 
 class DriversManager(val app: MyApp) {
 
-    fun saveNewTransponder(transponder: String) {
+    fun saveNewTransponder(transponder: String, driverName: String) {
         Log.d(TAG, "Saving $transponder")
 
         val driversDb = app.firestore.collection("drivers")
@@ -19,13 +19,13 @@ class DriversManager(val app: MyApp) {
 
         driverQuery.get().addOnCompleteListener { result ->
             if (result.isSuccessful && result.result!!.isEmpty) {      // transponder not found, save
-                saveTransponder(transponder)
+                saveTransponder(transponder, driverName)
             }
         }
     }
 
-    private fun saveTransponder(transponder: String) {
-        val driver = Driver(transponder=transponder, lastUpdate = System.currentTimeMillis())
+    private fun saveTransponder(transponder: String, driverName: String) {
+        val driver = Driver(transponder = transponder, name = driverName, lastUpdate = System.currentTimeMillis())
 
         app.firestore.collection("drivers")
                 .add(driver)
@@ -35,6 +35,22 @@ class DriversManager(val app: MyApp) {
                 .addOnFailureListener {
                     Log.w(DriversManager.TAG, "Error adding bad msg")
                 }
+    }
+
+    fun getDriverForTransponder(transponder: String, handler: (String) -> Unit): String? {
+        val q = app.firestore.collection("drivers").whereEqualTo("transponder", transponder)
+
+        val g = q.get().addOnSuccessListener { qry ->
+
+            if (qry.documents.isNotEmpty()) {
+                val d = qry.documents.first().getString("name")
+                d?.let {
+                    handler(it)
+                }
+            }
+        }
+
+        return null
     }
 
     companion object {

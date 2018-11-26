@@ -17,6 +17,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.Tools
 import com.skoky.fragment.content.Racer
@@ -85,6 +86,10 @@ class RacingModeFragment : FragmentCommon() {
                 if (running) {
                     (adapter as RacingModeRecyclerViewAdapter).addRecord(transponder, time)
                     adapter.notifyDataSetChanged()
+                    doAsync {
+                        val myApp = activity!!.application as MyApp
+                        (adapter as RacingModeRecyclerViewAdapter).updateDriverName(myApp, transponder)
+                    }
                 }
                 tmm = (adapter as RacingModeRecyclerViewAdapter).tmm
 
@@ -124,7 +129,8 @@ class RacingModeFragment : FragmentCommon() {
         val driverET = dialog.findViewById<EditText>(R.id.driver_name_edit_text)
         dialog.findViewById<Button>(R.id.cancel_button).setOnClickListener { dialog.dismiss() }
         dialog.findViewById<Button>(R.id.save_button).setOnClickListener {
-            mAdapter.saveDriverName(transET.text.toString(), driverET.text.toString())
+            val app = activity!!.application as MyApp
+            mAdapter.saveDriverName(app, transET.text.toString(), driverET.text.toString())
             dialog.dismiss()
         }
 
