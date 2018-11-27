@@ -18,7 +18,7 @@ class DriversManager(val app: MyApp) {
         val driverQuery = driversDb.whereEqualTo("transponder", transponder)
 
         driverQuery.get().addOnCompleteListener { result ->
-            if (result.isSuccessful && result.result!!.isEmpty) {      // transponder not found, save
+            if (result.isSuccessful) {
                 saveTransponder(transponder, driverName)
             }
         }
@@ -37,13 +37,17 @@ class DriversManager(val app: MyApp) {
                 }
     }
 
-    fun getDriverForTransponder(transponder: String, handler: (String) -> Unit): String? {
+    fun getDriverForTransponderLastByDate(transponder: String, handler: (String) -> Unit): String? {
         val q = app.firestore.collection("drivers").whereEqualTo("transponder", transponder)
 
         val g = q.get().addOnSuccessListener { qry ->
 
             if (qry.documents.isNotEmpty()) {
-                val d = qry.documents.first().getString("name")
+                Log.d(TAG, "Found names for transponder $transponder ${qry.documents.size}")
+
+                val last = qry.documents.maxBy { it.getLong("lastUpdate")!! }
+                val d = last!!.getString("name")
+
                 d?.let {
                     handler(it)
                 }

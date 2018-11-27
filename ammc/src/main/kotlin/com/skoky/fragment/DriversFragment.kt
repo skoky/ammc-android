@@ -18,6 +18,14 @@ class DriversFragment : Fragment() {
         }
     }
 
+//    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+//                              savedInstanceState: Bundle?): View? {
+//        val view = inflater.inflate(R.layout.fragment_consolemode_list, container, false)
+//
+//
+//    }
+
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is OnListFragmentInteractionListener) {

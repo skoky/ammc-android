@@ -124,7 +124,8 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
         mValues.forEach {
             if (it.transponder == transOrDriver) {
                 it.driverName = newDriverName
-                app.drivers.saveNewTransponder(it.transponder,  newDriverName)
+                notifyDataSetChanged()
+                app.drivers.saveNewTransponder(it.transponder, newDriverName)
                 return
             }
         }
@@ -132,6 +133,7 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
         mValues.forEach {
             if (it.driverName == transOrDriver) {
                 it.driverName = newDriverName
+                notifyDataSetChanged()
                 app.drivers.saveNewTransponder(it.transponder, newDriverName)
                 return
             }
@@ -143,11 +145,17 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
     }
 
     fun updateDriverName(app: MyApp, transponder: String) {
-        app.drivers.getDriverForTransponder(transponder) { nameFromDb ->
-            mValues.forEach { d ->
-                if (d.transponder == transponder)
-                    d.driverName = nameFromDb
+
+        mValues.forEach { d ->
+            if (d.transponder == transponder) {
+                if (d.driverName.isNullOrEmpty()) {
+                    app.drivers.getDriverForTransponderLastByDate(transponder) { foundDName ->
+                        d.driverName = foundDName
+                        notifyDataSetChanged()
+                    }
+                }
             }
         }
+
     }
 }

@@ -281,8 +281,8 @@ class MainActivity : AppCompatActivity(),
                         consoleVostokFragment = ConsoleModeVostokFragment.newInstance(1)
                         fragmentTransaction.replace(R.id.screen_container, consoleVostokFragment)
                     } else {
-                        fragmentTransaction.replace(R.id.screen_container, consoleFragment)
                         consoleFragment = ConsoleModeFragment.newInstance(1)
+                        fragmentTransaction.replace(R.id.screen_container, consoleFragment)
                     }
                     fragmentTransaction.commit()
 
