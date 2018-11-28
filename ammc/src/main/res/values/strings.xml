@@ -22,6 +22,7 @@
     <string name="select_label">Select transponder to watch</string>
     <string name="select_decoder_label">Select decoder to connect</string>
     <string name="update_driver_name">Update driver name for the transponder</string>
+    <string name="driver_name">Driver</string>
     <string name="no_transponder">No transponder visible from decoders so far. Pass loop at least once to register transponder</string>
     <string name="or_connect_directly_to_decoder_by_ip_address">Or connect directly to decoder by IP address</string>
     <string name="drivers_editor">Drivers</string>

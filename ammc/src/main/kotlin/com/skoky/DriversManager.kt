@@ -1,6 +1,7 @@
 package com.skoky
 
 import android.util.Log
+import com.google.firebase.firestore.Query.Direction.DESCENDING
 import java.util.*
 
 data class Driver(
@@ -55,6 +56,16 @@ class DriversManager(val app: MyApp) {
         }
 
         return null
+    }
+
+    fun driversList(handler: (String,String)->Unit) {
+        app.firestore.collection("drivers").orderBy("lastUpdate", DESCENDING).get()
+                .addOnSuccessListener {
+                    it.documents.map {doc ->
+                        handler(doc.getString("transponder")!!, doc.getString("name")!!)
+                    }
+
+        }
     }
 
     companion object {

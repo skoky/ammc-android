@@ -73,7 +73,9 @@ class MainActivity : AppCompatActivity(),
 
         app.firestore = FirebaseFirestore.getInstance()
         val settings = FirebaseFirestoreSettings.Builder()
-                .setTimestampsInSnapshotsEnabled(true).build()
+                .setTimestampsInSnapshotsEnabled(true)
+                .setPersistenceEnabled(true)
+                .build()
         app.firestore.firestoreSettings = settings
 
         val auth = FirebaseAuth.getInstance()
@@ -81,13 +83,17 @@ class MainActivity : AppCompatActivity(),
 
         auth.signInWithEmailAndPassword("skokys@gmail.com", "sfsadfhads8923jhkwdKJGJKHDKJl!")
                 .addOnCompleteListener {
+
                     Log.d(TAG, "Saved login ${it.result}")
-                    if (it.isSuccessful) {
-                        app.user = auth.currentUser
-                        Log.i(TAG,"Auth user ${app.user!!.isAnonymous}")
+                    try {
+                        if (it.isSuccessful) {
+                            app.user = auth.currentUser
+                            Log.i(TAG,"Auth user ${app.user!!.isAnonymous}")
+                        }
+                    } catch (e: Exception) {
+                        app.user = null     // TODO handle not login
                     }
                 }
-
 
         setContentView(R.layout.main)
 
