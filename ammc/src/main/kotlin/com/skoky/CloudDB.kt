@@ -1,12 +1,18 @@
 package com.skoky
 
 import android.util.Log
+import java.text.SimpleDateFormat
+import java.util.*
 
 object CloudDB {
 
+
     fun badMessageReport(app: MyApp, key : String,  bytes: String) {
 
-        val msg = hashMapOf(key to bytes) as Map<String,String>
+        val formatter = SimpleDateFormat("yy/MM/dd")
+        val today = formatter.format(Date())
+
+        val msg = hashMapOf(key to bytes, "len" to bytes.length, "date" to today) as Map<String,String>
 
         app.firestore.collection("badmsg")
                 .add(msg)

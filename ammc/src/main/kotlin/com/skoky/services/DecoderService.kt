@@ -314,8 +314,16 @@ class DecoderService : Service() {
 //                                    decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis()))
 //                                }
                             }
+                            "NetworkSettings" -> { }
+                            "AuxiliarySettings" -> { }
+                            "ServerSettings" -> { }
+                            "Timeline" -> { }
+                            "Signals" -> { }
+                            "LoopTrigger" -> { }
+                            "GPS" -> {}
                             else -> {
-                                CloudDB.badMessageReport(application as MyApp, "tcp_unknown_data", Arrays.toString(buffer.copyOf(read)))
+                                CloudDB.badMessageReport(application as MyApp, "tcp_unknown_data",
+                                        Arrays.toString(buffer.copyOf(read)))
                                 Log.w(TAG, "received unknown data $json")
                             }
                         }

@@ -44,7 +44,7 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
-    implementation 'eu.plib:plib_2.11:2.7.0'
+    implementation 'eu.plib:plib_2.11:2.7.1'
     implementation 'com.j256.ormlite:ormlite-android:4.47'
     implementation 'com.shamanland:fab:0.0.8'
     implementation 'me.relex:circleindicator:1.2.2@aar'
