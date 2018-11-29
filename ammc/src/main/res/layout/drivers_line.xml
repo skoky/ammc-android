@@ -28,4 +28,12 @@
         android:paddingBottom="8dp"
         android:layout_weight="0.5"/>
 
+    <ImageView
+        android:id="@+id/deleteImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/baseline_delete_24px"
+        android:layout_gravity="right"
+        android:padding="10dp"/>
+
 </LinearLayout>

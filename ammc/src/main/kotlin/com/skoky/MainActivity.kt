@@ -273,7 +273,7 @@ class MainActivity : AppCompatActivity(),
     private lateinit var consoleFragment: ConsoleModeFragment
     private lateinit var consoleVostokFragment: ConsoleModeVostokFragment
     fun openConsoleMode(view: View?): Boolean {
-        val decoderUUID = firstDecoderId.tag as? String
+        val decoderUUID = firstDecoderId.tag as? String // FIXME PADA!!!!
 
         if (decoderUUID == null) {
             AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected))

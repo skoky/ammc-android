@@ -25,6 +25,22 @@ class DriversManager(val app: MyApp) {
         }
     }
 
+    fun delete(transponder: String, doneHandler: (String) -> Unit) {
+        app.firestore.collection("drivers").whereEqualTo("transponder", transponder).get()
+                .addOnSuccessListener { qry ->
+                    if (qry.documents.isNotEmpty()) {
+                        val d = qry.documents.first()!!.id
+                        app.firestore.collection("drivers").document(d).delete().addOnSuccessListener {
+                            Log.i(TAG, "Driver $transponder deleted")
+                            doneHandler(transponder)
+                        }
+                    } else {
+                        Log.i(TAG, "Driver not found for trans $transponder")
+                    }
+                }
+                .addOnFailureListener { Log.i(TAG,"Driver delete not possible $transponder $it")}
+    }
+
     private fun saveTransponder(transponder: String, driverName: String) {
 
         app.firestore.collection("drivers").whereEqualTo("transponder", transponder).get()
@@ -33,9 +49,9 @@ class DriversManager(val app: MyApp) {
                     if (qry.documents.isNotEmpty()) {
                         val d = qry.documents.first()!!.id
                         app.firestore.collection("drivers").document(d)
-                                .update("name",driverName, "lastUpdate",System.currentTimeMillis())
-                                .addOnSuccessListener { Log.d(TAG,"Driver update $transponder") }
-                                .addOnFailureListener{ e -> Log.w(TAG,"Driver not updated $transponder $e")}
+                                .update("name", driverName, "lastUpdate", System.currentTimeMillis())
+                                .addOnSuccessListener { Log.d(TAG, "Driver update $transponder") }
+                                .addOnFailureListener { e -> Log.w(TAG, "Driver not updated $transponder $e") }
                     } else {
                         val driver = Driver(transponder = transponder, name = driverName, lastUpdate = System.currentTimeMillis())
                         app.firestore.collection("drivers")
@@ -70,14 +86,14 @@ class DriversManager(val app: MyApp) {
         return null
     }
 
-    fun driversList(handler: (String,String)->Unit) {
+    fun driversList(handler: (String, String) -> Unit) {
         app.firestore.collection("drivers").orderBy("lastUpdate", DESCENDING).get()
                 .addOnSuccessListener {
-                    it.documents.map {doc ->
+                    it.documents.map { doc ->
                         handler(doc.getString("transponder")!!, doc.getString("name")!!)
                     }
 
-        }
+                }
     }
 
     companion object {

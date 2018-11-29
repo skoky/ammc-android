@@ -34,10 +34,11 @@
                 android:layout_weight="1"/>
 
             <TextView
+                android:id="@+id/addNewDriverButton"
                 style="@style/amm_text_white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="PPP"
+                android:text="@string/addDriver"
                 android:textAlignment="textEnd"
                 android:layout_weight="0.1"/>
         </LinearLayout>

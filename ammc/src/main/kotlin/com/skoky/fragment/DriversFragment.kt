@@ -5,12 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.ScrollView
+import android.widget.*
 import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.fragment.content.ConsoleModel
@@ -31,6 +30,8 @@ class DriversFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_drivers_list, container, false)
 
+        view.findViewById<TextView>(R.id.addNewDriverButton).setOnClickListener{addNewDriverHandler(it)}
+
         val ll = (view as ScrollView).childrenSequence().first() as LinearLayout
 
         val app = activity!!.application as MyApp
@@ -38,10 +39,20 @@ class DriversFragment : Fragment() {
             val newView = inflater.inflate(R.layout.drivers_line, container, false) as LinearLayout
             (newView.getChildAt(0) as EditText).setText(t)
             (newView.getChildAt(1) as EditText).setText(d)
+            newView.findViewById<ImageView>(R.id.deleteImage).setOnClickListener {
+                app.drivers.delete(t) {
+                    ll.removeView(newView)
+                    Log.d(TAG,"Driver view removed")
+                }
+            }
             ll.addView(newView)
         }
 
         return view
+    }
+
+    private fun addNewDriverHandler(view: View) {
+
     }
 
 

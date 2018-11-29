@@ -301,7 +301,10 @@ class DecoderService : Service() {
                         if (json.get("recordType").toString().isNotEmpty()) sendBroadcastData(decoder, json)
                         val recordType = json.get("recordType").toString()
                         when (recordType) {
-                            "Passing" -> sendBroadcastPassing(json.toString())
+                            "Passing" -> {
+                                appendDriver(json.toString())
+                                sendBroadcastPassing(json.toString())
+                            }
                             "Version" -> {
                                 val decoderType = json.get("decoderType-text") as? String
                                 decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
@@ -353,6 +356,10 @@ class DecoderService : Service() {
             sendBroadcastDisconnected(decoder)
             decoders.remove(orgDecoder)
         }
+    }
+
+    private fun appendDriver(json: String) {
+
     }
 
     private fun vostokDecoderId(ipAddress: String?, port: Int?): String? {
