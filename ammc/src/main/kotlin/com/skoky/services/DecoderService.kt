@@ -302,7 +302,7 @@ class DecoderService : Service() {
                         val recordType = json.get("recordType").toString()
                         when (recordType) {
                             "Passing" -> {
-                                appendDriver(json.toString())
+                                appendDriver(json)
                                 sendBroadcastPassing(json.toString())
                             }
                             "Version" -> {
@@ -358,8 +358,19 @@ class DecoderService : Service() {
         }
     }
 
-    private fun appendDriver(json: String) {
+    private fun appendDriver(json: JSONObject) {
 
+        val transponder = if (json.has("transponderCode"))
+            json.getString("transponderCode")
+        else if (json.has("transponder"))
+            json.getString("transponder")
+        else if (json.has("driverId"))
+            json.getString("driverId")
+        else null
+
+        transponder?.let {
+            (application as MyApp).recentTransponders.add(it)
+        }
     }
 
     private fun vostokDecoderId(ipAddress: String?, port: Int?): String? {

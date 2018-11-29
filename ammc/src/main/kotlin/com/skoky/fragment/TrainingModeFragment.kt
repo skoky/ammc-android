@@ -41,7 +41,7 @@ class TrainingModeFragment : Fragment() {
 
     private var startStopButtonM: Button? = null
 
-    private var tmm: TrainingModeModel = TrainingModeModel()    // a dummy model with no transponder
+    private var tmm: TrainingModeModel = TrainingModeModel()    // a dummy model with no recentTransponders
     private val transponders = mutableListOf<String>()
 
     private lateinit var timingContentView: RecyclerView

@@ -42,7 +42,7 @@ class RacingModeFragment : FragmentCommon() {
 
     private var startStopButtonM: Button? = null
 
-    private var tmm: RacingModeModel = RacingModeModel()    // a dummy model with no transponder
+    private var tmm: RacingModeModel = RacingModeModel()    // a dummy model with no recentTransponders
     private val transponders = mutableListOf<String>()
 
     private lateinit var timingContentView: RecyclerView

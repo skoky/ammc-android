@@ -29,7 +29,7 @@ open class FragmentCommon : android.support.v4.app.Fragment() {
     fun getTransponderFromPassingJson(app: Application, json: JSONObject): String {
 
         val transponderId = when {
-            json.has("transponder") -> (json.get("transponder") as Int).toString()
+            json.has("recentTransponders") -> (json.get("recentTransponders") as Int).toString()
             json.has("transponderCode") -> json.get("transponderCode") as String
             json.has("driverId") -> json.get("driverId") as String
             else -> {

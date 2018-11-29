@@ -44,7 +44,7 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
         return ViewHolder(view)
     }
 
-    //    data class Racer(var pos: Int, var transponder: String, var laps: Int, var lastLapTimeMs: Long, val diffMs: Int)
+    //    data class Racer(var pos: Int, var recentTransponders: String, var laps: Int, var lastLapTimeMs: Long, val diffMs: Int)
     private val df = SimpleDateFormat("HH:mm:ss.SSS")
 
     private val r = mutableListOf<Racer>()

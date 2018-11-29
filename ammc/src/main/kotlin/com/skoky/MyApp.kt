@@ -15,6 +15,8 @@ class MyApp : Application() {
     var user: FirebaseUser? = null
     lateinit var firestore: FirebaseFirestore
 
+    val recentTransponders = hashSetOf<String>()
+
     companion object {
         var wakeLock: PowerManager.WakeLock? = null
     }

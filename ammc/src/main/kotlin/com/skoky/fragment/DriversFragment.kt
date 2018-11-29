@@ -35,6 +35,20 @@ class DriversFragment : Fragment() {
         val ll = (view as ScrollView).childrenSequence().first() as LinearLayout
 
         val app = activity!!.application as MyApp
+
+        app.recentTransponders.forEach {t ->
+            val newView = inflater.inflate(R.layout.drivers_line, container, false) as LinearLayout
+            (newView.getChildAt(0) as EditText).setText(t)
+            (newView.getChildAt(1) as EditText).setText("")
+            newView.findViewById<ImageView>(R.id.deleteImage).setOnClickListener {
+                app.drivers.delete(t) {
+                    ll.removeView(newView)
+                    Log.d(TAG,"Driver view removed")
+                }
+            }
+            ll.addView(newView)
+        }
+
         app.drivers.driversList() { t,d ->
             val newView = inflater.inflate(R.layout.drivers_line, container, false) as LinearLayout
             (newView.getChildAt(0) as EditText).setText(t)
