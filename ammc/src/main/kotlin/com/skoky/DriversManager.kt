@@ -26,15 +26,27 @@ class DriversManager(val app: MyApp) {
     }
 
     private fun saveTransponder(transponder: String, driverName: String) {
-        val driver = Driver(transponder = transponder, name = driverName, lastUpdate = System.currentTimeMillis())
 
-        app.firestore.collection("drivers")
-                .add(driver)
-                .addOnSuccessListener {
-                    Log.d(DriversManager.TAG, "Bad msg added")
-                }
-                .addOnFailureListener {
-                    Log.w(DriversManager.TAG, "Error adding bad msg")
+        app.firestore.collection("drivers").whereEqualTo("transponder", transponder).get()
+                .addOnSuccessListener { qry ->
+
+                    if (qry.documents.isNotEmpty()) {
+                        val d = qry.documents.first()!!.id
+                        app.firestore.collection("drivers").document(d)
+                                .update("name",driverName, "lastUpdate",System.currentTimeMillis())
+                                .addOnSuccessListener { Log.d(TAG,"Driver update $transponder") }
+                                .addOnFailureListener{ e -> Log.w(TAG,"Driver not updated $transponder $e")}
+                    } else {
+                        val driver = Driver(transponder = transponder, name = driverName, lastUpdate = System.currentTimeMillis())
+                        app.firestore.collection("drivers")
+                                .add(driver)
+                                .addOnSuccessListener {
+                                    Log.d(DriversManager.TAG, "Driver added")
+                                }
+                                .addOnFailureListener {
+                                    Log.w(DriversManager.TAG, "Driver adding error $it")
+                                }
+                    }
                 }
     }
 
