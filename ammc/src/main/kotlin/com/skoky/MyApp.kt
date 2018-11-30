@@ -19,6 +19,7 @@ class MyApp : Application() {
     val recentTransponders = hashSetOf<String>()
 
     companion object {
+        val suffix = if (BuildConfig.DEBUG) "_debug" else ""
         var wakeLock: PowerManager.WakeLock? = null
     }
 }

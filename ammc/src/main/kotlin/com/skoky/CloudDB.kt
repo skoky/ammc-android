@@ -1,11 +1,11 @@
 package com.skoky
 
 import android.util.Log
+import com.skoky.MyApp.Companion.suffix
 import java.text.SimpleDateFormat
 import java.util.*
 
 object CloudDB {
-
 
     fun badMessageReport(app: MyApp, key : String,  bytes: String) {
 
@@ -14,7 +14,7 @@ object CloudDB {
 
         val msg = hashMapOf(key to bytes, "len" to bytes.length, "date" to today) as Map<String,String>
 
-        app.firestore.collection("badmsg")
+        app.firestore.collection("badmsg$suffix")
                 .add(msg)
                 .addOnSuccessListener {
                     Log.d(DriversManager.TAG, "Bad msg added with ID: ${it.id}")
