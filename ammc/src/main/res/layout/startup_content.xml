@@ -39,21 +39,25 @@
                 style="@style/amm_text_white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
+                android:onClick="openConsoleMode"
                 android:paddingLeft="10dp"
                 android:text="@string/querying_decoders"
-                android:onClick="openConsoleMode"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <Button
                 android:id="@+id/connectButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
                 android:onClick="connectOrDisconnect"
                 android:text="@string/connect"
                 android:visibility="invisible"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/moreDecodersButton"
