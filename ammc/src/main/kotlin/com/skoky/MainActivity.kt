@@ -61,13 +61,9 @@ class MainActivity : AppCompatActivity(),
 
     private lateinit var app: MyApp
     private var mAdView: AdView? = null
-//    private lateinit var mDatabase: DatabaseReference
-//    private lateinit var mMessageReference: DatabaseReference
 
-
-    public override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        app = application as MyApp
+    override fun onPostResume() {
+        super.onPostResume()
 
         app.firebaseAnalytics = FirebaseAnalytics.getInstance(this)
         MobileAds.initialize(this,"ca-app-pub-7655373768605194~7466307464")
@@ -96,7 +92,6 @@ class MainActivity : AppCompatActivity(),
                     }
                 }
 
-        setContentView(R.layout.main)
 
         nav_view.setNavigationItemSelectedListener { menuItem ->
             drawer_layout.closeDrawers()
@@ -116,15 +111,6 @@ class MainActivity : AppCompatActivity(),
             true
         }
 
-        setSupportActionBar(toolbar)
-        val actionbar: ActionBar? = supportActionBar
-        actionbar?.apply {
-            setDisplayHomeAsUpEnabled(true)
-            setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp)
-        }
-
-        openStartupFragment()
-
         Log.w(TAG, "Binding service")
         val intent = Intent(this, DecoderService::class.java)
         bindService(intent, decoderServiceConnection, Context.BIND_AUTO_CREATE)
@@ -132,6 +118,27 @@ class MainActivity : AppCompatActivity(),
         mAdView = findViewById<View>(R.id.adView) as AdView?
         val adRequest = AdRequest.Builder().build()
         mAdView?.loadAd(adRequest)
+
+
+
+        // TODO readr preferences here
+
+    }
+
+    public override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        app = application as MyApp
+
+        setContentView(R.layout.main)
+
+        openStartupFragment()
+
+        setSupportActionBar(toolbar)
+        val actionbar: ActionBar? = supportActionBar
+        actionbar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp)
+        }
     }
 
     override fun onBackPressed() {

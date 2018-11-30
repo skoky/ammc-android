@@ -16,16 +16,12 @@
 
     </group>
 
-    <group android:checkableBehavior="single">
+    <group android:id="@+id/grp2" android:checkableBehavior="single">
 
         <item
             android:id="@+id/nav_drivers_editor"
             android:icon="@drawable/baseline_perm_contact_calendar_24px"
             android:title="@string/drivers_editor" />
-
-    </group>
-
-    <group android:id="@+id/grp2" android:checkableBehavior="single">
 
         <item
             android:id="@+id/nav_options"
