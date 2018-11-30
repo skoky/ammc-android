@@ -28,13 +28,13 @@ open class FragmentCommon : android.support.v4.app.Fragment() {
     fun getTransponderFromPassingJson(app: Application, json: JSONObject): String {
 
         return when {
-            json.has("recentTransponders") -> (json.get("recentTransponders") as Int).toString()
+            json.has("transponder") -> (json.get("transponder") as Int).toString()
             json.has("transponderCode") -> json.get("transponderCode") as String
             json.has("driverId") -> json.get("driverId") as String
             else -> {
                 Log.w(TrainingModeFragment.TAG, "No racer identification in Passing $json")
                 json?.let {
-                    activity?.let {a ->
+                    activity?.let { a ->
                         CloudDB.badMessageReport(a.application as MyApp, "passing_not_transponder", it.toString())
                     }
                 }

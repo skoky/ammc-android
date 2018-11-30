@@ -17,6 +17,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.Tools
 import com.skoky.fragment.content.TrainingLap
@@ -42,7 +43,6 @@ class TrainingModeFragment : Fragment() {
     private var startStopButtonM: Button? = null
 
     private var tmm: TrainingModeModel = TrainingModeModel()    // a dummy model with no recentTransponders
-    private val transponders = mutableListOf<String>()
 
     private lateinit var timingContentView: RecyclerView
 
@@ -86,10 +86,6 @@ class TrainingModeFragment : Fragment() {
                     adapter.notifyDataSetChanged()
                 }
                 tmm = (adapter as TrainingModeRecyclerViewAdapter).tmm
-
-                if (!transponders.contains(transponder)) {
-                    transponders.add(transponder)
-                }
             }
             context!!.registerReceiver(receiver, IntentFilter(DECODER_PASSING))
 
@@ -114,7 +110,8 @@ class TrainingModeFragment : Fragment() {
 
     fun openTransponderDialog(startRace: Boolean) {
 
-        val trs = transponders.toTypedArray()
+        val app = activity!!.application as MyApp
+        val trs = app.recentTransponders.toTypedArray()
 
         val b = android.support.v7.app.AlertDialog.Builder(this.context!!)
                 .setTitle(getString(R.string.select_label))
