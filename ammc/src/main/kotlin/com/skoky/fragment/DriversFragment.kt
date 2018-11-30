@@ -15,6 +15,7 @@ import com.skoky.R
 import com.skoky.fragment.content.ConsoleModel
 import org.jetbrains.anko.childrenSequence
 
+data class DriverPair(val t:String,val d:String)
 
 class DriversFragment : Fragment() {
 
@@ -26,44 +27,62 @@ class DriversFragment : Fragment() {
         }
     }
 
+
+    private val rows = mutableMapOf<String,LinearLayout>()
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_drivers_list, container, false)
 
-        view.findViewById<TextView>(R.id.addNewDriverButton).setOnClickListener{addNewDriverHandler(it)}
-
+        view.findViewById<TextView>(R.id.addNewDriverButton).setOnClickListener { addNewDriverHandler(it) }
         val ll = (view as ScrollView).childrenSequence().first() as LinearLayout
-
         val app = activity!!.application as MyApp
+        val transponders = app.recentTransponders.map { DriverPair(it,"") }.toMutableList()
 
-        app.recentTransponders.forEach {t ->
-            val newView = inflater.inflate(R.layout.drivers_line, container, false) as LinearLayout
-            (newView.getChildAt(0) as EditText).setText(t)
-            (newView.getChildAt(1) as EditText).setText("")
-            newView.findViewById<ImageView>(R.id.deleteImage).setOnClickListener {
-                app.drivers.delete(t) {
-                    ll.removeView(newView)
-                    Log.d(TAG,"Driver view removed")
-                }
-            }
-            ll.addView(newView)
+        transponders.forEach { p ->
+            addRow(inflater,container, app, ll, p)
         }
-
-        app.drivers.driversList() { t,d ->
-            val newView = inflater.inflate(R.layout.drivers_line, container, false) as LinearLayout
-            (newView.getChildAt(0) as EditText).setText(t)
-            (newView.getChildAt(1) as EditText).setText(d)
-            newView.findViewById<ImageView>(R.id.deleteImage).setOnClickListener {
-                app.drivers.delete(t) {
-                    ll.removeView(newView)
-                    Log.d(TAG,"Driver view removed")
-                }
-            }
-            ll.addView(newView)
-        }
-
         return view
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val app = activity!!.application as MyApp
+        val ll = (view as ScrollView).childrenSequence().first() as LinearLayout
+        val dbDrivers = app.drivers.driversList() { t, d ->
+                Log.d(TAG,"Driver $t $d")
+            if (rows.containsKey(t)) {
+                (rows[t]!!.getChildAt(1) as EditText).setText(d)
+            } else
+                addRow(LayoutInflater.from(activity), view, app, ll,DriverPair(t,d))
+        }
+    }
+
+    private fun saveDriverName(t: String, v: View) {
+        if (t.trim().isNotEmpty()) {
+            val driverNameToSave = (v as EditText).text.toString()
+            if (driverNameToSave.trim().isNotEmpty()) {
+                (activity!!.application as MyApp).drivers.saveTransponder(t, driverNameToSave)
+            }
+        }
+    }
+
+    private fun addRow(inflater: LayoutInflater, container: ViewGroup?, app: MyApp, ll: LinearLayout,
+        p: DriverPair) {
+        val newView = inflater.inflate(R.layout.drivers_line, container, false) as LinearLayout
+        (newView.getChildAt(0) as EditText).setText(p.t)
+        (newView.getChildAt(1) as EditText).setText(p.d)
+        (newView.getChildAt(1) as EditText).setOnFocusChangeListener { v, hasFocus -> if (!hasFocus) saveDriverName(p.t, v) }
+        newView.findViewById<ImageView>(R.id.deleteImage).setOnClickListener {
+            app.drivers.delete(p.t) {
+                ll.removeView(newView)
+                Log.d(TAG, "Driver view removed")
+            }
+        }
+        ll.addView(newView)
+        rows[p.t] = newView
+    }
+
 
     private fun addNewDriverHandler(view: View) {
 
