@@ -9,11 +9,13 @@
         android:layout_height="wrap_content"
         android:background="@color/amm_grey"
         android:lines="1"
+        android:maxLines="1"
+        android:maxLength="10"
         android:padding="5dp"
         android:layout_marginTop="5dp"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
-        android:layout_weight="0.5"/>
+        android:layout_weight="0.5" />
 
     <EditText xmlns:android="http://schemas.android.com/apk/res/android"
         style="@style/amm_text_white_edittext"
@@ -22,11 +24,13 @@
         android:layout_marginStart="8dp"
         android:background="@color/amm_grey"
         android:lines="1"
+        android:maxLines="1"
+        android:maxLength="20"
         android:padding="5dp"
         android:layout_marginTop="5dp"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
-        android:layout_weight="0.5"/>
+        android:layout_weight="0.5" />
 
     <ImageView
         android:id="@+id/deleteImage"
@@ -34,6 +38,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/baseline_delete_24px"
         android:layout_gravity="right"
-        android:padding="10dp"/>
+        android:paddingLeft="10dp"
+        android:paddingTop="10dp"/>
 
 </LinearLayout>

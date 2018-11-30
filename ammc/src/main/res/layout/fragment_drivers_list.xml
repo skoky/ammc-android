@@ -35,13 +35,6 @@
                 android:text="@string/driver_name"
                 android:layout_weight="1"/>
 
-            <TextView
-                android:id="@+id/savingStatusText"
-                style="@style/amm_text_white"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Saving"
-                android:layout_weight="1"/>
 
             <ImageView
                 android:id="@+id/addDriverImage"
@@ -49,7 +42,8 @@
                 android:layout_height="wrap_content"
                 android:src="@drawable/baseline_add_circle_24px"
                 android:layout_gravity="right"
-                android:paddingLeft="10dp" />
+                android:paddingLeft="10dp"
+                android:tint="@color/amm_white"/>
 
         </LinearLayout>
 

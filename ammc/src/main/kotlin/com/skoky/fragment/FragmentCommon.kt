@@ -11,7 +11,6 @@ data class Time(val us: Long)
 
 open class FragmentCommon : android.support.v4.app.Fragment() {
 
-
     fun getTimeFromPassingJson(json: JSONObject): Time {
         return when {
             json.has("RTC_Time") -> Time((json.get("RTC_Time") as String).toLong())

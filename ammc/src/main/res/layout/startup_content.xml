@@ -180,6 +180,63 @@
 
         </android.support.constraint.ConstraintLayout>
 
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/constraintLayout4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:background="@drawable/rounded"
+            android:minHeight="100dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            android:onClick="openDriversEditor"
+            app:layout_constraintTop_toBottomOf="@+id/constraintLayout2">
+
+            <TextView
+                android:id="@+id/textViewDriversEditor"
+                style="@style/amm_text_white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:padding="10dp"
+                android:text="@string/drivers_editor"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:layout_editor_absoluteY="1dp"
+                />
+
+            <TextView
+                android:id="@+id/textView2de"
+                style="@style/amm_text_white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:maxLines="5"
+                android:paddingBottom="10dp"
+                android:paddingLeft="10dp"
+                android:text="@string/drivers_editor_text"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textViewDriversEditor" />
+
+            <TextView
+                style="@style/amm_text_white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginTop="8dp"
+                android:onClick="openDriversEditor"
+                android:paddingBottom="10dp"
+                android:text="@string/label_open"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </android.support.constraint.ConstraintLayout>
+
         <Button
             android:id="@+id/button2"
             android:layout_width="wrap_content"
@@ -189,7 +246,7 @@
             android:text="@string/make_a_wish"
             android:onClick="doMakeAWish"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/constraintLayout2" />
+            app:layout_constraintTop_toBottomOf="@+id/constraintLayout4" />
 
     </android.support.constraint.ConstraintLayout>
 

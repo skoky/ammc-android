@@ -261,7 +261,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     private lateinit var driversEditorFragment: DriversFragment
-    private fun openDriversEditor(view: View?): Boolean {
+    fun openDriversEditor(view: View?): Boolean {
         driversEditorFragment = DriversFragment.newInstance(1)
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.screen_container, driversEditorFragment)

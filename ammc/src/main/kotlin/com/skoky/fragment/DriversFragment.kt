@@ -4,7 +4,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.support.v4.app.Fragment
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -32,8 +35,6 @@ class DriversFragment : Fragment() {
 
     private val rows = mutableMapOf<String, LinearLayout>()
 
-    // TODO handle saving status
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_drivers_list, container, false)
@@ -44,7 +45,7 @@ class DriversFragment : Fragment() {
         val transponders = app.recentTransponders.map { DriverPair(it, "") }.toMutableList()
 
         transponders.forEach { p ->
-            addRow(inflater, container, app, ll, p)
+            addRow(inflater, container, app, ll, p,true)
         }
         return view
     }
@@ -58,7 +59,7 @@ class DriversFragment : Fragment() {
             if (rows.containsKey(t)) {
                 (rows[t]!!.getChildAt(1) as EditText).setText(d)
             } else
-                addRow(LayoutInflater.from(activity), view, app, ll, DriverPair(t, d))
+                addRow(LayoutInflater.from(activity), view, app, ll, DriverPair(t, d),false)
         }
     }
 
@@ -66,34 +67,57 @@ class DriversFragment : Fragment() {
         val app = activity!!.application as MyApp
         val sv = activity!!.findViewById<ScrollView>(R.id.sv)
         val ll = activity!!.findViewById<LinearLayout>(R.id.driversList)
-        addRow(LayoutInflater.from(activity), sv, app, ll, DriverPair("", ""))
+        addRow(LayoutInflater.from(activity), sv, app, ll, DriverPair("", ""),true)
     }
 
     private fun saveDriverName(t: String, v: View) {
-        if (t.trim().isNotEmpty()) {
+        Log.d(TAG,"Driver tag ${v.tag}")
+        if (t.trim().isNotEmpty() && v.tag != false) {
             val driverNameToSave = (v as EditText).text.toString()
             if (driverNameToSave.trim().isNotEmpty()) {
-                (activity!!.application as MyApp).drivers.saveTransponder(t, driverNameToSave)
+                val saved = (activity!!.application as MyApp).drivers.saveTransponder(t, driverNameToSave) { err ->
+                    if (err.isEmpty()) {
+                        val et = v as EditText
+                        et.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.baseline_check_24px, 0)
+                        Handler().postDelayed({
+                            et.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
+                        }, 2000)
+                    }
+                }
             }
         }
     }
 
     private fun addRow(inflater: LayoutInflater, container: ViewGroup?, app: MyApp, ll: LinearLayout,
-                       p: DriverPair) {
+                       p: DriverPair, top: Boolean) {
         val newView = inflater.inflate(R.layout.drivers_line, container, false) as LinearLayout
         (newView.getChildAt(0) as EditText).setText(p.t)
+        val edt = (newView.getChildAt(0) as EditText)
         (newView.getChildAt(1) as EditText).setText(p.d)
-        (newView.getChildAt(1) as EditText).setOnFocusChangeListener { v, hasFocus -> if (!hasFocus) saveDriverName(p.t, v) }
+        val edd = (newView.getChildAt(1) as EditText)
+        edd.setOnFocusChangeListener { v, hasFocus ->
+            if (!hasFocus) saveDriverName(edt.text.toString(), v)
+        }
+        edd.tag=false
+        edd.addTextChangedListener(EditTextWatcher(edd))
+
         newView.findViewById<ImageView>(R.id.deleteImage).setOnClickListener {
             app.drivers.delete(p.t) {
                 ll.removeView(newView)
                 Log.d(TAG, "Driver view removed")
             }
         }
-        ll.addView(newView,1)
+        if (top) ll.addView(newView, 1) else ll.addView(newView)
         rows[p.t] = newView
     }
 
+    class EditTextWatcher(private val editText: EditText) : TextWatcher {
+        override fun afterTextChanged(s: Editable?) {}
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            editText.tag=true
+        }
+    }
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is OnListFragmentInteractionListener) {
