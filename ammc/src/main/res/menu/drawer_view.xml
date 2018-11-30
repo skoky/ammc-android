@@ -25,6 +25,15 @@
 
     </group>
 
+    <group android:id="@+id/grp2" android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/nav_options"
+            android:icon="@drawable/baseline_settings_20px"
+            android:title="@string/options" />
+
+    </group>
+
     <group android:id="@+id/grp1" android:checkableBehavior="single" >
 
         <item

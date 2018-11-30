@@ -19,6 +19,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.CheckBox
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import com.google.android.gms.ads.AdRequest
@@ -105,6 +106,7 @@ class MainActivity : AppCompatActivity(),
                 R.id.nav_racing -> menuItem.isChecked = openRacingMode(null)
                 R.id.nav_console -> menuItem.isChecked = openConsoleMode(null)
                 R.id.nav_drivers_editor -> menuItem.isChecked = openDriversEditor(null)
+                R.id.nav_options -> menuItem.isChecked = openOptions(null)
                 R.id.nav_connection_help -> menuItem.isChecked = openHelp(null)
                 else -> {
                     menuItem.isChecked = false
@@ -268,6 +270,26 @@ class MainActivity : AppCompatActivity(),
         fragmentTransaction.commit()
 
         return true
+    }
+
+    private lateinit var optionsFragment: OptionsFragment
+    private fun openOptions(view: View?): Boolean {
+        optionsFragment = OptionsFragment.newInstance(1)
+        val fragmentTransaction = supportFragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.screen_container, optionsFragment)
+        fragmentTransaction.commit()
+
+        return true
+    }
+
+    fun optionsDisableBadMsgReporting(view: View) {
+        val c = view as CheckBox
+        app.options["badmsg"] = c.isChecked
+    }
+
+    fun optionsDriversSync(view: View) {
+        val c = view as CheckBox
+        app.options["driversync"] = c.isChecked
     }
 
     private lateinit var consoleFragment: ConsoleModeFragment

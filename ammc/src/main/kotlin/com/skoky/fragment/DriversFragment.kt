@@ -135,7 +135,7 @@ class DriversFragment : Fragment() {
     companion object {
 
         private const val ARG_COLUMN_COUNT = "column-count"
-        const val TAG = "ConsoleModeFragment"
+        const val TAG = "DriversFragment"
 
         @JvmStatic
         fun newInstance(columnCount: Int) =

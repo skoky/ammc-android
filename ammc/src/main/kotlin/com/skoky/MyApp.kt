@@ -14,6 +14,7 @@ class MyApp : Application() {
     lateinit var drivers: DriversManager
     var user: FirebaseUser? = null
     lateinit var firestore: FirebaseFirestore
+    val options = mutableMapOf<String,Any>("badmsg" to true, "driversync" to true)
 
     val recentTransponders = hashSetOf<String>()
 
