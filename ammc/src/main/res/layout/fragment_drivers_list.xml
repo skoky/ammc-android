@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:name="com.skoky.fragment.DriversFragment"
+    android:id="@+id/sv"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginLeft="16dp"
@@ -8,6 +9,7 @@
     android:orientation="vertical">
 
     <LinearLayout
+        android:id="@+id/driversList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -34,13 +36,21 @@
                 android:layout_weight="1"/>
 
             <TextView
-                android:id="@+id/addNewDriverButton"
+                android:id="@+id/savingStatusText"
                 style="@style/amm_text_white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/addDriver"
-                android:textAlignment="textEnd"
-                android:layout_weight="0.1"/>
+                android:text="Saving"
+                android:layout_weight="1"/>
+
+            <ImageView
+                android:id="@+id/addDriverImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_add_circle_24px"
+                android:layout_gravity="right"
+                android:paddingLeft="10dp" />
+
         </LinearLayout>
 
     </LinearLayout>
