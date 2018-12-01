@@ -73,7 +73,6 @@ class DecoderService : Service() {
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "Created")
-        val app = application as MyApp
 
         decoders.sortedWith(compareBy({ it.uuid }, { it.uuid }))
 
@@ -117,7 +116,7 @@ class DecoderService : Service() {
         } catch (e: java.lang.Exception) {
             false
         } finally {
-            socket?.let { socket.close() }
+            socket.let { socket.close() }
         }
     }
 
@@ -198,7 +197,7 @@ class DecoderService : Service() {
                         socket.getOutputStream().write(versionRequest)
                     }
                 } catch (e: Exception) {
-                    socket?.let { it.close() }
+                    socket.let { it.close() }
                     if (notifyError) {
                         Log.e(TAG, "Error connecting decoder", e)
                         uiThread {
@@ -286,7 +285,6 @@ class DecoderService : Service() {
 
     private fun listenOnSocketConnection(socket: Socket, orgDecoder: Decoder) {
         val buffer = ByteArray(1024)
-        val app = application as MyApp
         var decoder = orgDecoder
         try {
             var read = 0
@@ -414,9 +412,9 @@ class DecoderService : Service() {
             decoders.addOrUpdate(decoder)
         }
 
-        decoder!!.lastSeen = System.currentTimeMillis()
+        decoder.lastSeen = System.currentTimeMillis()
 
-        decoder?.let { d ->
+        decoder.let { d ->
 
             if (json.has("recordType")) when (json.get("recordType")) {
                 "Status" -> {

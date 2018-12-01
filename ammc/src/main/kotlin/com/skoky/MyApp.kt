@@ -9,7 +9,7 @@ import com.skoky.services.DecoderService
 
 class MyApp : Application() {
 
-    var decoderService: DecoderService? = null
+    lateinit var decoderService: DecoderService
     lateinit var firebaseAnalytics: FirebaseAnalytics
     lateinit var drivers: DriversManager
     var user: FirebaseUser? = null

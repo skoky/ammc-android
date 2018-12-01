@@ -154,17 +154,18 @@ class MainActivity : AppCompatActivity(),
         return true
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun connectOrDisconnect(view: View) {
-        app.decoderService?.let { ds ->
-            if (ds.isDecoderConnected()) {
-                ds.disconnectAllDecoders()
-            } else {
-                ds.connectDecoderByUUID(firstDecoderId.tag as String)
-            }
-
+        val ds = app.decoderService
+        if (ds.isDecoderConnected()) {
+            ds.disconnectAllDecoders()
+        } else {
+            ds.connectDecoderByUUID(firstDecoderId.tag as String)
         }
+
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun doMakeAWish(view: View) {
 
         AlertDialog.Builder(this).setMessage(getString(R.string.well))
@@ -183,12 +184,13 @@ class MainActivity : AppCompatActivity(),
     val AMMC_PREFS = "ammcprefs"
     val LAST_IP = "lastip"
 
+    @Suppress("UNUSED_PARAMETER")
     fun showMoreDecoders(view: View) {
 
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.select_decoder)
 
-        val decodersCopy = app.decoderService!!.getDecoders()
+        val decodersCopy = app.decoderService.getDecoders()
 
         val decoderText = dialog.decoder_address_edittext
         decoderText.setText(getSharedPreferences(AMMC_PREFS, 0).getString(LAST_IP, ""))
@@ -346,21 +348,21 @@ class MainActivity : AppCompatActivity(),
     }
 
     private lateinit var trainingFragment: TrainingModeFragment
+
+    @Suppress("UNUSED_PARAMETER")
     fun openTrainingMode(view: View?): Boolean {
 
-        app.decoderService?.let {
-            return if (it.isDecoderConnected()) {
-                trainingFragment = TrainingModeFragment.newInstance(1)
-                val fragmentTransaction = supportFragmentManager.beginTransaction()
-                fragmentTransaction.replace(R.id.screen_container, trainingFragment)
-                fragmentTransaction.commit()
-                true
-            } else {
-                AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
-                false
-            }
+        return if (app.decoderService.isDecoderConnected()) {
+            trainingFragment = TrainingModeFragment.newInstance(1)
+            val fragmentTransaction = supportFragmentManager.beginTransaction()
+            fragmentTransaction.replace(R.id.screen_container, trainingFragment)
+            fragmentTransaction.commit()
+            true
+        } else {
+            AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
+            false
         }
-        return false
+
     }
 
     private val decoderServiceConnection = object : ServiceConnection {
@@ -370,15 +372,13 @@ class MainActivity : AppCompatActivity(),
             val binder = service as DecoderService.MyLocalBinder
             app.decoderService = binder.getService()
 
-            app.decoderService?.let {
-                Log.w(TAG, "Decoder service bound")
-                // FIXME connect last decoder Log.d(TAG, "Service -> " + it.connectDecoder("aDecoder"))
-            }
+            Log.w(TAG, "Decoder service bound")
+            // FIXME connect last decoder Log.d(TAG, "Service -> " + it.connectDecoder("aDecoder"))
+
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
-            app.decoderService = null
-            Log.w(TAG, "Service disconnected?")
+            toast("Service disconnected? This is unexpected stop. Restart the app")
             finish()
         }
     }
