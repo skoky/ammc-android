@@ -75,7 +75,6 @@ class DriversFragment : Fragment() {
                     addRow(LayoutInflater.from(activity), view, app, ll, DriverPair(t, d), false, activity!!)
             }
         }
-
     }
 
     private fun addNewDriverHandler(view: View) {

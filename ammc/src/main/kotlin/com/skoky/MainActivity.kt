@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity(),
 
         auth.signInWithEmailAndPassword("skokys@gmail.com", "sfsadfhads8923jhkwdKJGJKHDKJl!")
                 .addOnSuccessListener { result ->
-                    Log.d(TAG, "Saved login ${result}")
+                    Log.d(TAG, "Saved login $result")
                     app.user = auth.currentUser
                 }.addOnFailureListener {
                     toast("Cloud login issue. Update and restart app")
