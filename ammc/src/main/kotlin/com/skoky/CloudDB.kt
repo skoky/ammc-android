@@ -9,6 +9,9 @@ object CloudDB {
 
     fun badMessageReport(app: MyApp, key : String,  bytes: String) {
 
+        val enabled = app.options["badmsg"] as Boolean
+        if (!enabled) return
+
         val formatter = SimpleDateFormat("yy/MM/dd")
         val today = formatter.format(Date())
 

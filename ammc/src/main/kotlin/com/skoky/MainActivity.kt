@@ -38,6 +38,7 @@ import com.skoky.services.DecoderService
 import kotlinx.android.synthetic.main.main.*
 import kotlinx.android.synthetic.main.select_decoder.*
 import kotlinx.android.synthetic.main.startup_content.*
+import org.jetbrains.anko.defaultSharedPreferences
 
 
 class MainActivity : AppCompatActivity(),
@@ -119,10 +120,8 @@ class MainActivity : AppCompatActivity(),
         val adRequest = AdRequest.Builder().build()
         mAdView?.loadAd(adRequest)
 
-
-
-        // TODO readr preferences here
-
+        app.options["badmsg"] = defaultSharedPreferences.getBoolean("badmsg",true)
+        app.options["driversync"] = defaultSharedPreferences.getBoolean("driversync",true)
     }
 
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -292,11 +291,13 @@ class MainActivity : AppCompatActivity(),
     fun optionsDisableBadMsgReporting(view: View) {
         val c = view as CheckBox
         app.options["badmsg"] = c.isChecked
+        defaultSharedPreferences.edit().putBoolean("badmsg",c.isChecked).apply()
     }
 
     fun optionsDriversSync(view: View) {
         val c = view as CheckBox
         app.options["driversync"] = c.isChecked
+        defaultSharedPreferences.edit().putBoolean("driversync",c.isChecked).apply()
     }
 
     private lateinit var consoleFragment: ConsoleModeFragment

@@ -69,10 +69,10 @@ class DriversManager(val app: MyApp) {
                 }
     }
 
-    fun getDriverForTransponderLastByDate(transponder: String, handler: (String) -> Unit): String? {
+    fun getDriverForTransponderLastByDate(transponder: String, handler: (String) -> Unit) {
         val q = app.firestore.collection("drivers$suffix").whereEqualTo("transponder", transponder)
 
-        val g = q.get().addOnSuccessListener { qry ->
+        q.get().addOnSuccessListener { qry ->
 
             if (qry.documents.isNotEmpty()) {
                 Log.d(TAG, "Found names for transponder $transponder ${qry.documents.size}")
@@ -85,8 +85,6 @@ class DriversManager(val app: MyApp) {
                 }
             }
         }
-
-        return null
     }
 
     fun driversList(handler: (String, String) -> Unit) {
@@ -96,7 +94,9 @@ class DriversManager(val app: MyApp) {
                     it.documents.map { doc ->
                         handler(doc.getString("transponder")!!, doc.getString("name")!!)
                     }
-
+                }.addOnCompleteListener {
+                    Log.d(TAG,"Driver done")
+                    handler("","")
                 }
     }
 

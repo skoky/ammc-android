@@ -11,11 +11,9 @@ import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.ScrollView
+import android.widget.*
 import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.fragment.content.ConsoleModel
@@ -54,13 +52,18 @@ class DriversFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val app = activity!!.application as MyApp
         val ll = (view as ScrollView).childrenSequence().first() as LinearLayout
-        val dbDrivers = app.drivers.driversList() { t, d ->
+        app.drivers.driversList() { t, d ->
             Log.d(TAG, "Driver $t $d")
-            if (rows.containsKey(t)) {
-                (rows[t]!!.getChildAt(1) as EditText).setText(d)
-            } else
-                addRow(LayoutInflater.from(activity), view, app, ll, DriverPair(t, d),false)
+            if (t.isEmpty() && d.isEmpty()) {
+                view.findViewById<ProgressBar>(R.id.progressBarDrivers).visibility = GONE
+            } else {
+                if (rows.containsKey(t)) {
+                    (rows[t]!!.getChildAt(1) as EditText).setText(d)
+                } else
+                    addRow(LayoutInflater.from(activity), view, app, ll, DriverPair(t, d), false)
+            }
         }
+
     }
 
     private fun addNewDriverHandler(view: View) {

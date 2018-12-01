@@ -47,6 +47,16 @@
 
         </LinearLayout>
 
+        <ProgressBar
+            android:id="@+id/progressBarDrivers"
+            android:layout_width="61dp"
+            android:layout_height="41dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="8dp"
+            android:gravity="right"
+            android:indeterminate="true"
+            android:layout_gravity="center"/>
+
     </LinearLayout>
 
 </ScrollView>
