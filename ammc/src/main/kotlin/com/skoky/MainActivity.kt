@@ -178,9 +178,6 @@ class MainActivity : AppCompatActivity(),
 
     }
 
-    val AMMC_PREFS = "ammcprefs"
-    val LAST_IP = "lastip"
-
     @Suppress("UNUSED_PARAMETER")
     fun showMoreDecoders(view: View) {
 
@@ -417,6 +414,8 @@ class MainActivity : AppCompatActivity(),
 
     companion object {
         private const val TAG = "MainActivity"
+        private const val AMMC_PREFS = "ammcprefs"
+        private const val LAST_IP = "lastip"
 
         fun decoderLabel(d: Decoder): String {
 
