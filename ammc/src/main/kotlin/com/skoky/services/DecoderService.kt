@@ -141,29 +141,15 @@ class DecoderService : Service() {
         }
     }
 
-    fun getDecoders(): List<Decoder> {      // FIXME review if used properly
-        return decoders.toList()
-    }
+    fun getBestFreeDecoder() : Decoder? = decoders.maxBy { it.lastSeen }
 
-    fun isDecoderConnected(): Boolean {
-        return decoders.any { it.connection != null }
-    }
+    fun getDecoders() = decoders.toList()
+//    fun getDecodersByUUID(uuid: String) = decoders.find { it.uuid.toString() == uuid }
 
-    fun getConnectedDecoder(): Decoder? {
-        return decoders.find { d -> d.connection != null && d.connection!!.isConnected() }
-    }
+    fun isDecoderConnected() = decoders.any { it.connection != null }
 
-    fun disconnectDecoderByIpUUID(decoderUUID: String) {
-        val uuid = UUID.fromString(decoderUUID)
-        val found = decoders.find { it.uuid == uuid }
-        found?.let { disconnectDecoder2(it) }
-    }
 
-    fun disconnectAllDecoders() {
-        decoders.forEach {
-            if (it.connection != null) disconnectDecoder2(it)
-        }
-    }
+    fun getConnectedDecoder() = decoders.find { d -> d.connection != null && d.connection!!.isConnected }
 
     fun connectDecoderByUUID(decoderUUIDString: String) {
         val uuid = UUID.fromString(decoderUUIDString)
@@ -315,13 +301,20 @@ class DecoderService : Service() {
 //                                    decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis()))
 //                                }
                             }
-                            "NetworkSettings" -> { }
-                            "AuxiliarySettings" -> { }
-                            "ServerSettings" -> { }
-                            "Timeline" -> { }
-                            "Signals" -> { }
-                            "LoopTrigger" -> { }
-                            "GPS" -> {}
+                            "NetworkSettings" -> {
+                            }
+                            "AuxiliarySettings" -> {
+                            }
+                            "ServerSettings" -> {
+                            }
+                            "Timeline" -> {
+                            }
+                            "Signals" -> {
+                            }
+                            "LoopTrigger" -> {
+                            }
+                            "GPS" -> {
+                            }
                             else -> {
                                 CloudDB.badMessageReport(application as MyApp, "tcp_unknown_data",
                                         Arrays.toString(buffer.copyOf(read)))
@@ -344,7 +337,7 @@ class DecoderService : Service() {
             }
             Log.i(TAG, "Connected ${socket.isConnected}, read $read")
         } catch (e: Exception) {
-            Log.w(TAG, "Decoder connection error $decoder", e)
+            Log.w(TAG, "Decoder connection error $decoder -> $e")
         } catch (t: Throwable) {
             Log.e(TAG, "Decoder connection throwable $decoder", t)
         } finally {
@@ -548,6 +541,20 @@ class DecoderService : Service() {
 
     override fun onBind(intent: Intent): IBinder? {
         return myBinder
+    }
+
+    fun disconnectAllDecoders() {
+        decoders.forEach {d ->
+             d.connection?.let { c->
+                 if (c.isConnected) {
+                     try {
+                         c.close()
+                     } catch (e: Exception) {
+                         Log.i(TAG,"Disconnection issue for decoder $d, error $e")
+                     }
+                 }
+             }
+        }
     }
 
     fun connectDecoder(address: String, notifyError: Boolean = true): Boolean {

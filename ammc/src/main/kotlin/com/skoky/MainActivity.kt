@@ -117,8 +117,6 @@ class MainActivity : AppCompatActivity(),
 
         setContentView(R.layout.main)
 
-        openStartupFragment()
-
         setSupportActionBar(toolbar)
         val actionbar: ActionBar? = supportActionBar
         actionbar?.apply {
@@ -156,11 +154,10 @@ class MainActivity : AppCompatActivity(),
 
     @Suppress("UNUSED_PARAMETER")
     fun connectOrDisconnect(view: View) {
-        val ds = app.decoderService
-        if (ds.isDecoderConnected()) {
-            ds.disconnectAllDecoders()
+        if (app.decoderService.isDecoderConnected()) {
+            app.decoderService.disconnectAllDecoders()
         } else {
-            ds.connectDecoderByUUID(firstDecoderId.tag as String)
+            app.decoderService.connectDecoderByUUID(firstDecoderId.tag as String)
         }
 
     }
@@ -375,6 +372,7 @@ class MainActivity : AppCompatActivity(),
             Log.w(TAG, "Decoder service bound")
             // FIXME connect last decoder Log.d(TAG, "Service -> " + it.connectDecoder("aDecoder"))
 
+            openStartupFragment()
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
