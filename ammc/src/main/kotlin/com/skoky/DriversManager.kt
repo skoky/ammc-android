@@ -1,5 +1,7 @@
 package com.skoky
 
+import android.app.AlertDialog
+import android.content.Context
 import android.util.Log
 import com.google.firebase.firestore.Query.Direction.ASCENDING
 import com.skoky.MyApp.Companion.suffix
@@ -13,21 +15,24 @@ data class Driver(
 
 class DriversManager(val app: MyApp) {
 
-    fun saveNewTransponder(transponder: String, driverName: String) {
-        Log.d(TAG, "Saving $transponder")
-
-        val driversDb = app.firestore.collection("drivers$suffix")
-        val driverQuery = driversDb.whereEqualTo("transponder", transponder)
-
-        driverQuery.get().addOnCompleteListener { result ->
-            if (result.isSuccessful) {
-                saveTransponder(transponder, driverName) {}
-            }
+    fun delete(transponder: String, context: Context, doneHandler: (String) -> Unit) {
+        if (transponder.isEmpty()) {
+            doneHandler(transponder)
+            return
         }
+        AlertDialog.Builder(context)
+                .setTitle("Are you sure to delete name to transponder $transponder?")
+                .setPositiveButton(R.string.yes) { _, _ ->
+                    deleteAfterYes(transponder, doneHandler)
+                }
+                .setNegativeButton(R.string.no) { dialog, _ ->
+                    dialog.dismiss()
+                }.create().show()
     }
 
-    fun delete(transponder: String, doneHandler: (String) -> Unit) {
-        app.firestore.collection("drivers").whereEqualTo("transponder$suffix", transponder).get()
+    private fun deleteAfterYes(transponder: String,doneHandler: (String) -> Unit) {
+
+        app.firestore.collection("drivers$suffix").whereEqualTo("transponder", transponder).get()
                 .addOnSuccessListener { qry ->
                     if (qry.documents.isNotEmpty()) {
                         val d = qry.documents.first()!!.id

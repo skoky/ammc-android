@@ -125,7 +125,7 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
             if (it.transponder == transOrDriver) {
                 it.driverName = newDriverName
                 notifyDataSetChanged()
-                app.drivers.saveNewTransponder(it.transponder, newDriverName)
+                app.drivers.saveTransponder(it.transponder, newDriverName) {}
                 return
             }
         }
@@ -134,7 +134,7 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
             if (it.driverName == transOrDriver) {
                 it.driverName = newDriverName
                 notifyDataSetChanged()
-                app.drivers.saveNewTransponder(it.transponder, newDriverName)
+                app.drivers.saveTransponder(it.transponder, newDriverName) {}
                 return
             }
         }

@@ -155,7 +155,7 @@ class MainActivity : AppCompatActivity(),
         Tools.wakeLock(this, hasFocus)
     }
 
-    private fun openStartupFragment() {
+    fun openStartupFragment() {
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.screen_container, StartupFragment())
         fragmentTransaction.commit()
