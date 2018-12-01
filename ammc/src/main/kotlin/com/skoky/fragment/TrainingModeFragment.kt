@@ -105,7 +105,7 @@ class TrainingModeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        activity!!.findViewById<View>(R.id.miHome).visibility = VISIBLE     // FIXME does not work :(
+        activity!!.findViewById<View>(R.id.miHome).visibility = VISIBLE
     }
 
     fun openTransponderDialog(startRace: Boolean) {

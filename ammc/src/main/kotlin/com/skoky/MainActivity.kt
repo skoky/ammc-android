@@ -39,6 +39,7 @@ import kotlinx.android.synthetic.main.main.*
 import kotlinx.android.synthetic.main.select_decoder.*
 import kotlinx.android.synthetic.main.startup_content.*
 import org.jetbrains.anko.defaultSharedPreferences
+import org.jetbrains.anko.toast
 
 
 class MainActivity : AppCompatActivity(),
@@ -48,17 +49,9 @@ class MainActivity : AppCompatActivity(),
         ConsoleModeFragment.OnListFragmentInteractionListener,
         ConsoleModeVostokFragment.OnListFragmentInteractionListener {
 
-    override fun onListFragmentInteraction(item: ConsoleModel?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onListFragmentInteraction(item: Racer?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onListFragmentInteraction(item: TrainingLap?) {
-        Log.w(TAG, "Interaction $item")
-    }
+    override fun onListFragmentInteraction(item: ConsoleModel?) {}
+    override fun onListFragmentInteraction(item: Racer?) {}
+    override fun onListFragmentInteraction(item: TrainingLap?) {}
 
     private lateinit var app: MyApp
     private var mAdView: AdView? = null
@@ -67,7 +60,7 @@ class MainActivity : AppCompatActivity(),
         super.onPostResume()
 
         app.firebaseAnalytics = FirebaseAnalytics.getInstance(this)
-        MobileAds.initialize(this,"ca-app-pub-7655373768605194~7466307464")
+        MobileAds.initialize(this, "ca-app-pub-7655373768605194~7466307464")
 
         app.firestore = FirebaseFirestore.getInstance()
         val settings = FirebaseFirestoreSettings.Builder()
@@ -80,19 +73,13 @@ class MainActivity : AppCompatActivity(),
         app.drivers = DriversManager(app)
 
         auth.signInWithEmailAndPassword("skokys@gmail.com", "sfsadfhads8923jhkwdKJGJKHDKJl!")
-                .addOnCompleteListener {
-
-                    Log.d(TAG, "Saved login ${it.result}")
-                    try {
-                        if (it.isSuccessful) {
-                            app.user = auth.currentUser
-                            Log.i(TAG,"Auth user ${app.user!!.isAnonymous}")
-                        }
-                    } catch (e: Exception) {
-                        app.user = null     // TODO handle not login
-                    }
+                .addOnSuccessListener { result ->
+                    Log.d(TAG, "Saved login ${result}")
+                    app.user = auth.currentUser
+                }.addOnFailureListener {
+                    toast("Cloud login issue. Update and restart app")
+                    finish()
                 }
-
 
         nav_view.setNavigationItemSelectedListener { menuItem ->
             drawer_layout.closeDrawers()
@@ -120,8 +107,8 @@ class MainActivity : AppCompatActivity(),
         val adRequest = AdRequest.Builder().build()
         mAdView?.loadAd(adRequest)
 
-        app.options["badmsg"] = defaultSharedPreferences.getBoolean("badmsg",true)
-        app.options["driversync"] = defaultSharedPreferences.getBoolean("driversync",true)
+        app.options["badmsg"] = defaultSharedPreferences.getBoolean("badmsg", true)
+        app.options["driversync"] = defaultSharedPreferences.getBoolean("driversync", true)
     }
 
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -291,13 +278,13 @@ class MainActivity : AppCompatActivity(),
     fun optionsDisableBadMsgReporting(view: View) {
         val c = view as CheckBox
         app.options["badmsg"] = c.isChecked
-        defaultSharedPreferences.edit().putBoolean("badmsg",c.isChecked).apply()
+        defaultSharedPreferences.edit().putBoolean("badmsg", c.isChecked).apply()
     }
 
     fun optionsDriversSync(view: View) {
         val c = view as CheckBox
         app.options["driversync"] = c.isChecked
-        defaultSharedPreferences.edit().putBoolean("driversync",c.isChecked).apply()
+        defaultSharedPreferences.edit().putBoolean("driversync", c.isChecked).apply()
     }
 
     private lateinit var consoleFragment: ConsoleModeFragment
