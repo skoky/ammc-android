@@ -10,6 +10,13 @@
         <item name="android:fontFamily">sans-serif</item>
     </style>
 
+    <style name="amm_text_white_edittext">
+        <item name="android:textColor">@color/amm_white</item>
+        <item name="android:textSize">20dp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:ems">15</item>
+    </style>
+
     <style name="amm_spinner">
         <item name="android:colorBackground">@color/amm_grey</item>
     </style>

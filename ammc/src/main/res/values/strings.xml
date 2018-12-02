@@ -6,19 +6,30 @@
     <string name="querying_decoders">Querying decoders...</string>
     <string name="show_more_decoders">More decoders >>></string>
     <string name="connect">Connect</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
     <string name="disconnect">Disconnect</string>
     <string name="decoder_console_mode">Decoder console mode</string>
     <string name="racing_mode">Racing mode</string>
+    <string name="drivers_editor">Drivers editor</string>
+    <string name="bad_msg">Bad messages reporting</string>
+    <string name="drivers_sync">Drivers name sync</string>
+    <string name="options">Options</string>
     <string name="training_mode">Training mode</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
     <string name="training_mode_text">Tracks your transponder times from decoder during training</string>
     <string name="label_open"><![CDATA[Open >>>]]></string>
+    <string name="drivers_editor_text">Assign names to your transponders; sharing via cloud</string>
     <string name="racing_mode_text">Tracks all racers from decoders and show results in timing table</string>
+    <string name="bad_msg_long">Enables bad messages from decoder reporting to us for continues improvements of the application</string>
+    <string name="drivers_sync_long">Enables drivers names sync to transponder code via cloud. Once entered, will sync with other timers with the same application</string>
     <string name="decoder_not_connected">Decoder not connected</string>
     <string name="tap"><![CDATA[<transponder>]]></string>
     <string name="select_label">Select transponder to watch</string>
     <string name="select_decoder_label">Select decoder to connect</string>
+    <string name="update_driver_name">Update driver name for the transponder</string>
+    <string name="driver_name">Driver</string>
     <string name="no_transponder">No transponder visible from decoders so far. Pass loop at least once to register transponder</string>
     <string name="or_connect_directly_to_decoder_by_ip_address">Or connect directly to decoder by IP address</string>
     <string name="help_connecting">Help connecting</string>
@@ -34,4 +45,7 @@
     <string name="well">Well, yes, this is not full timing app of course. But send me an email to describe what you need and we might find a way how to move forward :)</string>
     <string name="send_email">Send e-mail</string>
     <string name="home">Home</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
 </resources>

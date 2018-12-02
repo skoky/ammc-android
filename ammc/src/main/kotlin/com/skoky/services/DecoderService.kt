@@ -7,12 +7,8 @@ import android.os.Build
 import android.os.IBinder
 import android.support.annotation.RequiresApi
 import android.util.Log
-import com.skoky.NetworkBroadcastHandler
-import com.skoky.P98Parser
-import com.skoky.Tools
+import com.skoky.*
 import com.skoky.Tools.P3_DEF_PORT
-import com.skoky.Tools.reportEvent
-import com.skoky.VOSTOK_NAME
 import eu.plib.Parser
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
@@ -53,7 +49,7 @@ fun MutableList<Decoder>.addOrUpdate(decoder: Decoder) {
     this.forEach { d ->
         if (d.uuid == decoder.uuid) {
             if (decoder.decoderId != d.decoderId)
-                Log.d("D","DecodersX: decoder ID to update ${decoder.decoderId} -> ${d.decoderId}")
+                Log.i("D", "DecodersX: decoder ID to update ${decoder.decoderId} -> ${d.decoderId}")
             decoder.decoderId?.let { d.decoderId = it }
             decoder.ipAddress?.let { d.ipAddress = it }
             decoder.port?.let { d.port = it }
@@ -120,7 +116,7 @@ class DecoderService : Service() {
         } catch (e: java.lang.Exception) {
             false
         } finally {
-            socket?.let { socket.close() }
+            socket.let { socket.close() }
         }
     }
 
@@ -145,29 +141,15 @@ class DecoderService : Service() {
         }
     }
 
-    fun getDecoders(): List<Decoder> {      // FIXME review if used properly
-        return decoders.toList()
-    }
+    fun getBestFreeDecoder() : Decoder? = decoders.maxBy { it.lastSeen }
 
-    fun isDecoderConnected(): Boolean {
-        return decoders.any { it.connection != null }
-    }
+    fun getDecoders() = decoders.toList()
+//    fun getDecodersByUUID(uuid: String) = decoders.find { it.uuid.toString() == uuid }
 
-    fun getConnectedDecoder(): Decoder? {
-        return decoders.find { d -> d.connection != null && d.connection!!.isConnected() }
-    }
+    fun isDecoderConnected() = decoders.any { it.connection != null }
 
-    fun disconnectDecoderByIpUUID(decoderUUID: String) {
-        val uuid = UUID.fromString(decoderUUID)
-        val found = decoders.find { it.uuid == uuid }
-        found?.let { disconnectDecoder2(it) }
-    }
 
-    fun disconnectAllDecoders() {
-        decoders.forEach {
-            if (it.connection != null) disconnectDecoder2(it)
-        }
-    }
+    fun getConnectedDecoder() = decoders.find { d -> d.connection != null && d.connection!!.isConnected }
 
     fun connectDecoderByUUID(decoderUUIDString: String) {
         val uuid = UUID.fromString(decoderUUIDString)
@@ -201,7 +183,7 @@ class DecoderService : Service() {
                         socket.getOutputStream().write(versionRequest)
                     }
                 } catch (e: Exception) {
-                    socket?.let { it.close() }
+                    socket.let { it.close() }
                     if (notifyError) {
                         Log.e(TAG, "Error connecting decoder", e)
                         uiThread {
@@ -303,7 +285,10 @@ class DecoderService : Service() {
                         if (json.get("recordType").toString().isNotEmpty()) sendBroadcastData(decoder, json)
                         val recordType = json.get("recordType").toString()
                         when (recordType) {
-                            "Passing" -> sendBroadcastPassing(json.toString())
+                            "Passing" -> {
+                                appendDriver(json)
+                                sendBroadcastPassing(json.toString())
+                            }
                             "Version" -> {
                                 val decoderType = json.get("decoderType-text") as? String
                                 decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
@@ -316,10 +301,23 @@ class DecoderService : Service() {
 //                                    decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis()))
 //                                }
                             }
+                            "NetworkSettings" -> {
+                            }
+                            "AuxiliarySettings" -> {
+                            }
+                            "ServerSettings" -> {
+                            }
+                            "Timeline" -> {
+                            }
+                            "Signals" -> {
+                            }
+                            "LoopTrigger" -> {
+                            }
+                            "GPS" -> {
+                            }
                             else -> {
-                                doAsync {
-                                    reportEvent(application, "tcp_unknown_data", Arrays.toString(buffer.copyOf(read)))
-                                }
+                                CloudDB.badMessageReport(application as MyApp, "tcp_unknown_data",
+                                        Arrays.toString(buffer.copyOf(read)))
                                 Log.w(TAG, "received unknown data $json")
                             }
                         }
@@ -339,7 +337,7 @@ class DecoderService : Service() {
             }
             Log.i(TAG, "Connected ${socket.isConnected}, read $read")
         } catch (e: Exception) {
-            Log.w(TAG, "Decoder connection error $decoder", e)
+            Log.w(TAG, "Decoder connection error $decoder -> $e")
         } catch (t: Throwable) {
             Log.e(TAG, "Decoder connection throwable $decoder", t)
         } finally {
@@ -348,6 +346,21 @@ class DecoderService : Service() {
             Log.i(TAG, "Decoder disconnected")
             sendBroadcastDisconnected(decoder)
             decoders.remove(orgDecoder)
+        }
+    }
+
+    private fun appendDriver(json: JSONObject) {
+
+        val transponder = if (json.has("transponderCode"))
+            json.getString("transponderCode")
+        else if (json.has("transponder"))
+            json.getString("transponder")
+        else if (json.has("driverId"))
+            json.getString("driverId")
+        else null
+
+        transponder?.let {
+            (application as MyApp).recentTransponders.add(it)
         }
     }
 
@@ -363,9 +376,7 @@ class DecoderService : Service() {
             JSONObject(P98Parser.parse(msg, decoderIdVostok ?: "-"))
         } else {
             Log.w(TAG, "Invalid msg on TCP " + Arrays.toString(msg))
-            doAsync {
-                reportEvent(application, "tcp_msg_error", Arrays.toString(msg))
-            }
+            CloudDB.badMessageReport(application as MyApp, "tcp_msg_error", Arrays.toString(msg))
             JSONObject("{\"recordType\":\"Error\",\"description\":\"Invalid message\"}")
         }
     }
@@ -377,9 +388,7 @@ class DecoderService : Service() {
         Log.d(TAG, ">> $json")
 
         if (msg.contains("Error")) {
-            doAsync {
-                reportEvent(application, "tcp_msg_with_error", Arrays.toString(msgB))
-            }
+            CloudDB.badMessageReport(application as MyApp, "tcp_msg_with_error", Arrays.toString(msgB))
         }
 
         val decoderId: String?
@@ -396,9 +405,9 @@ class DecoderService : Service() {
             decoders.addOrUpdate(decoder)
         }
 
-        decoder!!.lastSeen = System.currentTimeMillis()
+        decoder.lastSeen = System.currentTimeMillis()
 
-        decoder?.let { d ->
+        decoder.let { d ->
 
             if (json.has("recordType")) when (json.get("recordType")) {
                 "Status" -> {
@@ -420,9 +429,8 @@ class DecoderService : Service() {
                         sendBroadcastData(d, json)
                     }
                 "Error" ->
-                    doAsync {
-                        reportEvent(application, "tcp_error", Arrays.toString(msgB))
-                    }
+                    CloudDB.badMessageReport(application as MyApp, "tcp_error", Arrays.toString(msgB))
+
             } else {
                 Log.w(TAG, "Msg with record type on UDP. Wired! $json")
             }
@@ -533,6 +541,20 @@ class DecoderService : Service() {
 
     override fun onBind(intent: Intent): IBinder? {
         return myBinder
+    }
+
+    fun disconnectAllDecoders() {
+        decoders.forEach {d ->
+             d.connection?.let { c->
+                 if (c.isConnected) {
+                     try {
+                         c.close()
+                     } catch (e: Exception) {
+                         Log.i(TAG,"Disconnection issue for decoder $d, error $e")
+                     }
+                 }
+             }
+        }
     }
 
     fun connectDecoder(address: String, notifyError: Boolean = true): Boolean {

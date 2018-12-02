@@ -8,6 +8,7 @@ import android.content.ServiceConnection
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.IBinder
+import android.support.v4.app.Fragment
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBar
 import android.support.v7.app.AlertDialog
@@ -18,12 +19,16 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.CheckBox
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.skoky.fragment.*
 import com.skoky.fragment.content.ConsoleModel
 import com.skoky.fragment.content.Racer
@@ -33,37 +38,48 @@ import com.skoky.services.DecoderService
 import kotlinx.android.synthetic.main.main.*
 import kotlinx.android.synthetic.main.select_decoder.*
 import kotlinx.android.synthetic.main.startup_content.*
+import org.jetbrains.anko.defaultSharedPreferences
+import org.jetbrains.anko.toast
 
 
 class MainActivity : AppCompatActivity(),
         TrainingModeFragment.OnListFragmentInteractionListener,
         RacingModeFragment.OnListFragmentInteractionListener,
+        DriversFragment.OnListFragmentInteractionListener,
         ConsoleModeFragment.OnListFragmentInteractionListener,
         ConsoleModeVostokFragment.OnListFragmentInteractionListener {
 
-    override fun onListFragmentInteraction(item: ConsoleModel?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onListFragmentInteraction(item: Racer?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onListFragmentInteraction(item: TrainingLap?) {
-        Log.w(TAG, "Interaction $item")
-    }
+    override fun onListFragmentInteraction(item: ConsoleModel?) {}
+    override fun onListFragmentInteraction(item: Racer?) {}
+    override fun onListFragmentInteraction(item: TrainingLap?) {}
 
     private lateinit var app: MyApp
     private var mAdView: AdView? = null
 
-    public override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        app = application as MyApp
+    override fun onPostResume() {
+        super.onPostResume()
 
         app.firebaseAnalytics = FirebaseAnalytics.getInstance(this)
-        MobileAds.initialize(this,"ca-app-pub-7655373768605194~7466307464")
+        MobileAds.initialize(this, "ca-app-pub-7655373768605194~7466307464")
 
-        setContentView(R.layout.main)
+        app.firestore = FirebaseFirestore.getInstance()
+        val settings = FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .setPersistenceEnabled(true)
+                .build()
+        app.firestore.firestoreSettings = settings
+
+        val auth = FirebaseAuth.getInstance()
+        app.drivers = DriversManager(app)
+
+        auth.signInWithEmailAndPassword("skokys@gmail.com", "sfsadfhads8923jhkwdKJGJKHDKJl!")
+                .addOnSuccessListener { result ->
+                    Log.d(TAG, "Saved login $result")
+                    app.user = auth.currentUser
+                }.addOnFailureListener {
+                    toast("Cloud login issue. Update and restart app")
+                    finish()
+                }
 
         nav_view.setNavigationItemSelectedListener { menuItem ->
             drawer_layout.closeDrawers()
@@ -72,6 +88,8 @@ class MainActivity : AppCompatActivity(),
                 R.id.nav_training -> menuItem.isChecked = openTrainingMode(null)
                 R.id.nav_racing -> menuItem.isChecked = openRacingMode(null)
                 R.id.nav_console -> menuItem.isChecked = openConsoleMode(null)
+                R.id.nav_drivers_editor -> menuItem.isChecked = openDriversEditor(null)
+                R.id.nav_options -> menuItem.isChecked = openOptions(null)
                 R.id.nav_connection_help -> menuItem.isChecked = openHelp(null)
                 else -> {
                     menuItem.isChecked = false
@@ -81,17 +99,6 @@ class MainActivity : AppCompatActivity(),
             true
         }
 
-
-        setSupportActionBar(toolbar)
-
-        val actionbar: ActionBar? = supportActionBar
-        actionbar?.apply {
-            setDisplayHomeAsUpEnabled(true)
-            setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp)
-        }
-
-        openStartupFragment()
-
         Log.w(TAG, "Binding service")
         val intent = Intent(this, DecoderService::class.java)
         bindService(intent, decoderServiceConnection, Context.BIND_AUTO_CREATE)
@@ -99,15 +106,32 @@ class MainActivity : AppCompatActivity(),
         mAdView = findViewById<View>(R.id.adView) as AdView?
         val adRequest = AdRequest.Builder().build()
         mAdView?.loadAd(adRequest)
+
+        app.options["badmsg"] = defaultSharedPreferences.getBoolean("badmsg", true)
+        app.options["driversync"] = defaultSharedPreferences.getBoolean("driversync", true)
+    }
+
+    public override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        app = application as MyApp
+
+        setContentView(R.layout.main)
+
+        setSupportActionBar(toolbar)
+        val actionbar: ActionBar? = supportActionBar
+        actionbar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp)
+        }
     }
 
     override fun onBackPressed() {
-        AlertDialog.Builder (this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")
+        AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")
                 .setMessage("Are you sure you want to exit?")
-                .setPositiveButton("Yes")  { _,_ ->
-                        finish()
-                    }
-                .setNegativeButton("No") { _,_ -> }.show()
+                .setPositiveButton("Yes") { _, _ ->
+                    finish()
+                }
+                .setNegativeButton("No") { _, _ -> }.show()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -116,7 +140,7 @@ class MainActivity : AppCompatActivity(),
         Tools.wakeLock(this, hasFocus)
     }
 
-    private fun openStartupFragment() {
+    fun openStartupFragment() {
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.screen_container, StartupFragment())
         fragmentTransaction.commit()
@@ -128,17 +152,17 @@ class MainActivity : AppCompatActivity(),
         return true
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun connectOrDisconnect(view: View) {
-        app.decoderService?.let { ds ->
-            if (ds.isDecoderConnected()) {
-                ds.disconnectAllDecoders()
-            } else {
-                ds.connectDecoderByUUID(firstDecoderId.tag as String)
-            }
-
+        if (app.decoderService.isDecoderConnected()) {
+            app.decoderService.disconnectAllDecoders()
+        } else {
+            app.decoderService.connectDecoderByUUID(firstDecoderId.tag as String)
         }
+
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun doMakeAWish(view: View) {
 
         AlertDialog.Builder(this).setMessage(getString(R.string.well))
@@ -154,15 +178,13 @@ class MainActivity : AppCompatActivity(),
 
     }
 
-    val AMMC_PREFS = "ammcprefs"
-    val LAST_IP = "lastip"
-
+    @Suppress("UNUSED_PARAMETER")
     fun showMoreDecoders(view: View) {
 
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.select_decoder)
 
-        val decodersCopy = app.decoderService!!.getDecoders()
+        val decodersCopy = app.decoderService.getDecoders()
 
         val decoderText = dialog.decoder_address_edittext
         decoderText.setText(getSharedPreferences(AMMC_PREFS, 0).getString(LAST_IP, ""))
@@ -229,10 +251,42 @@ class MainActivity : AppCompatActivity(),
         return true
     }
 
+    private lateinit var driversEditorFragment: DriversFragment
+    fun openDriversEditor(view: View?): Boolean {
+        driversEditorFragment = DriversFragment.newInstance(1)
+        val fragmentTransaction = supportFragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.screen_container, driversEditorFragment)
+        fragmentTransaction.commit()
+
+        return true
+    }
+
+    private lateinit var optionsFragment: OptionsFragment
+    private fun openOptions(view: View?): Boolean {
+        optionsFragment = OptionsFragment.newInstance(1)
+        val fragmentTransaction = supportFragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.screen_container, optionsFragment)
+        fragmentTransaction.commit()
+
+        return true
+    }
+
+    fun optionsDisableBadMsgReporting(view: View) {
+        val c = view as CheckBox
+        app.options["badmsg"] = c.isChecked
+        defaultSharedPreferences.edit().putBoolean("badmsg", c.isChecked).apply()
+    }
+
+    fun optionsDriversSync(view: View) {
+        val c = view as CheckBox
+        app.options["driversync"] = c.isChecked
+        defaultSharedPreferences.edit().putBoolean("driversync", c.isChecked).apply()
+    }
+
     private lateinit var consoleFragment: ConsoleModeFragment
     private lateinit var consoleVostokFragment: ConsoleModeVostokFragment
     fun openConsoleMode(view: View?): Boolean {
-        val decoderUUID = firstDecoderId.tag as? String
+        val decoderUUID = firstDecoderId.tag as? String // FIXME PADA!!!!
 
         if (decoderUUID == null) {
             AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected))
@@ -246,8 +300,8 @@ class MainActivity : AppCompatActivity(),
                         consoleVostokFragment = ConsoleModeVostokFragment.newInstance(1)
                         fragmentTransaction.replace(R.id.screen_container, consoleVostokFragment)
                     } else {
-                        fragmentTransaction.replace(R.id.screen_container, consoleFragment)
                         consoleFragment = ConsoleModeFragment.newInstance(1)
+                        fragmentTransaction.replace(R.id.screen_container, consoleFragment)
                     }
                     fragmentTransaction.commit()
 
@@ -275,7 +329,7 @@ class MainActivity : AppCompatActivity(),
             return if (it.isDecoderConnected()) {
                 racingFragment = RacingModeFragment.newInstance(1)
                 val fragmentTransaction = supportFragmentManager.beginTransaction()
-                fragmentTransaction.replace(R.id.screen_container, racingFragment)
+                fragmentTransaction.replace(R.id.screen_container, racingFragment as Fragment)
                 fragmentTransaction.commit()
                 true
             } else {
@@ -288,21 +342,21 @@ class MainActivity : AppCompatActivity(),
     }
 
     private lateinit var trainingFragment: TrainingModeFragment
+
+    @Suppress("UNUSED_PARAMETER")
     fun openTrainingMode(view: View?): Boolean {
 
-        app.decoderService?.let {
-            return if (it.isDecoderConnected()) {
-                trainingFragment = TrainingModeFragment.newInstance(1)
-                val fragmentTransaction = supportFragmentManager.beginTransaction()
-                fragmentTransaction.replace(R.id.screen_container, trainingFragment)
-                fragmentTransaction.commit()
-                true
-            } else {
-                AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
-                false
-            }
+        return if (app.decoderService.isDecoderConnected()) {
+            trainingFragment = TrainingModeFragment.newInstance(1)
+            val fragmentTransaction = supportFragmentManager.beginTransaction()
+            fragmentTransaction.replace(R.id.screen_container, trainingFragment)
+            fragmentTransaction.commit()
+            true
+        } else {
+            AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
+            false
         }
-        return false
+
     }
 
     private val decoderServiceConnection = object : ServiceConnection {
@@ -312,15 +366,14 @@ class MainActivity : AppCompatActivity(),
             val binder = service as DecoderService.MyLocalBinder
             app.decoderService = binder.getService()
 
-            app.decoderService?.let {
-                Log.w(TAG, "Decoder service bound")
-                // FIXME connect last decoder Log.d(TAG, "Service -> " + it.connectDecoder("aDecoder"))
-            }
+            Log.w(TAG, "Decoder service bound")
+            // FIXME connect last decoder Log.d(TAG, "Service -> " + it.connectDecoder("aDecoder"))
+
+            openStartupFragment()
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
-            app.decoderService = null
-            Log.w(TAG, "Service disconnected?")
+            toast("Service disconnected? This is unexpected stop. Restart the app")
             finish()
         }
     }
@@ -361,6 +414,8 @@ class MainActivity : AppCompatActivity(),
 
     companion object {
         private const val TAG = "MainActivity"
+        private const val AMMC_PREFS = "ammcprefs"
+        private const val LAST_IP = "lastip"
 
         fun decoderLabel(d: Decoder): String {
 

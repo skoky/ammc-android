@@ -5,19 +5,25 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.fragment.RacingModeFragment.OnListFragmentInteractionListener
 import com.skoky.fragment.content.Racer
 import com.skoky.fragment.content.RacingModeModel
 import kotlinx.android.synthetic.main.fragment_racingmode.view.*
 import java.text.SimpleDateFormat
-import kotlin.math.nextDown
 
 
-class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>, private val mListener: OnListFragmentInteractionListener?)
+class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
+                                    private val mListener: OnListFragmentInteractionListener?,
+                                    private val onLongTapListener: (View) -> Unit)
     : RecyclerView.Adapter<RacingModeRecyclerViewAdapter.ViewHolder>() {
 
     private val mOnClickListener: View.OnClickListener
+
+    companion object {
+        const val TAG = "RacingAdapter"
+    }
 
     init {
         mValues.sortByDescending { it.pos }
@@ -32,11 +38,13 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>, pri
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.fragment_racingmode, parent, false)
-
+        view.setOnLongClickListener {
+            onLongTapListener(it); true
+        }
         return ViewHolder(view)
     }
 
-    //    data class Racer(var pos: Int, var transponder: String, var laps: Int, var lastLapTimeMs: Long, val diffMs: Int)
+    //    data class Racer(var pos: Int, var recentTransponders: String, var laps: Int, var lastLapTimeMs: Long, val diffMs: Int)
     private val df = SimpleDateFormat("HH:mm:ss.SSS")
 
     private val r = mutableListOf<Racer>()
@@ -53,7 +61,7 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>, pri
                 val item = mValues[position - 1]
 
                 holder.mPosition.text = item.pos.toString()
-                holder.mTrasView.text = item.transponder
+                holder.mTrasView.text = if (item.driverName.isNullOrBlank()) item.transponder else item.driverName
                 holder.mLastLapTime.text = timeToText(item.lastLapTimeMs)
                 holder.mLapCount.text = "     ${item.laps}"
 
@@ -81,8 +89,73 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>, pri
         mValues = tmm.newPassing(mValues.toList(), transponder, time).toMutableList()
     }
 
+    fun getDriverForTransponder(transOrDriver: CharSequence?): String {
+
+        mValues.forEach {
+            if (it.transponder == transOrDriver) {
+                return it.driverName.orEmpty()
+            }
+        }
+        mValues.forEach {
+            if (it.driverName == transOrDriver) {
+                return it.driverName.orEmpty()
+            }
+        }
+        return ""
+    }
+
+    fun getTransponder(transOrDriver: String): String {
+        mValues.forEach {
+            if (it.transponder == transOrDriver) {
+                return it.transponder
+            }
+        }
+        mValues.forEach {
+            if (it.driverName == transOrDriver) {
+                return it.transponder
+            }
+        }
+        return ""
+    }
+
+
+    fun saveDriverName(app: MyApp, transOrDriver: String, newDriverName: String) {
+
+        mValues.forEach {
+            if (it.transponder == transOrDriver) {
+                it.driverName = newDriverName
+                notifyDataSetChanged()
+                app.drivers.saveTransponder(it.transponder, newDriverName) {}
+                return
+            }
+        }
+
+        mValues.forEach {
+            if (it.driverName == transOrDriver) {
+                it.driverName = newDriverName
+                notifyDataSetChanged()
+                app.drivers.saveTransponder(it.transponder, newDriverName) {}
+                return
+            }
+        }
+    }
+
     fun clearResults() {
         mValues = mutableListOf()
     }
 
+    fun updateDriverName(app: MyApp, transponder: String) {
+
+        mValues.forEach { d ->
+            if (d.transponder == transponder) {
+                if (d.driverName.isNullOrEmpty()) {
+                    app.drivers.getDriverForTransponderLastByDate(transponder) { foundDName ->
+                        d.driverName = foundDName
+                        notifyDataSetChanged()
+                    }
+                }
+            }
+        }
+
+    }
 }

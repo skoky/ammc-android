@@ -101,9 +101,9 @@ class ConsoleModeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         activity!!.findViewById<View>(R.id.miHome).visibility = VISIBLE     // FIXME does not work :(
         val app = activity!!.application as MyApp
-        val connectedDecoder = app.decoderService?.getDecoders()?.find { it.connection != null }
+        val connectedDecoder = app.decoderService.getConnectedDecoder()
 
-        app.decoderService?.exploreDecoder(connectedDecoder?.uuid!!)
+        app.decoderService.exploreDecoder(connectedDecoder?.uuid!!)
         refreshImage.setOnClickListener {
             doRefresh()
         }
@@ -118,8 +118,8 @@ class ConsoleModeFragment : Fragment() {
         }
         updating = false
         val app = activity!!.application as MyApp
-        val connectedDecoder = app.decoderService?.getDecoders()?.find { it.connection != null }
-        app.decoderService?.exploreDecoder(connectedDecoder?.uuid!!)
+        val connectedDecoder = app.decoderService.getConnectedDecoder()
+        app.decoderService.exploreDecoder(connectedDecoder?.uuid!!)
     }
 
     override fun onAttach(context: Context) {

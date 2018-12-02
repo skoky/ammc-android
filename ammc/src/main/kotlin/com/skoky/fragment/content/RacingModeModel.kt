@@ -3,13 +3,13 @@ package com.skoky.fragment.content
 import com.skoky.fragment.Time
 import org.jetbrains.anko.collections.forEachWithIndex
 
-data class Racer(var pos: Int, val transponder: String, var laps: Int, var lastTimeMs: Long, var lastLapTimeMs: Int)
+data class Racer(var pos: Int, val transponder: String, var driverName: String?, var laps: Int, var lastTimeMs: Long, var lastLapTimeMs: Int)
 
 class RacingModeModel {
 
     fun newPassing(values: List<Racer>, transponder: String, time: Time): List<Racer> {
 
-        val found = values.find { it.transponder == transponder.toString() }
+        val found = values.find { it.transponder == transponder }
         val m = values.toMutableList()
         if (found != null) {
             val i = m.indexOf(found)
@@ -20,7 +20,7 @@ class RacingModeModel {
             m[i] = found
 
         } else {
-            m.add(Racer(values.size + 1, transponder.toString(), 0, time.us/1000, 0))
+            m.add(Racer(values.size + 1, transponder, null, 0, time.us/1000, 0))
         }
 
         // TODO calculate diff from first
@@ -33,7 +33,6 @@ class RacingModeModel {
 
         return sorted
     }
-
 
     companion object {
         private const val TAG = "RacingModeModel"

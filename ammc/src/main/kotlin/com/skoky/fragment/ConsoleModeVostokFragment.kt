@@ -24,7 +24,6 @@ import com.skoky.services.DecoderService.Companion.DECODER_DISCONNECTED
 import kotlinx.android.synthetic.main.fragment_consolemode_list.*
 import org.jetbrains.anko.childrenSequence
 import org.json.JSONObject
-import java.util.*
 
 
 class ConsoleModeVostokFragment : Fragment() {
@@ -97,14 +96,13 @@ class ConsoleModeVostokFragment : Fragment() {
         return false
     }
 
-    var decoderId: UUID? = null
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         activity!!.findViewById<View>(R.id.miHome).visibility = VISIBLE     // FIXME does not work :(
         val app = activity!!.application as MyApp
-        val connectedDecoder = app.decoderService?.getDecoders()?.find { it.connection != null }
+        val connectedDecoder = app.decoderService.getConnectedDecoder()
 
-        app.decoderService?.exploreDecoder(connectedDecoder?.uuid!!)
+        app.decoderService.exploreDecoder(connectedDecoder?.uuid!!)
         refreshImage.visibility = INVISIBLE
     }
 

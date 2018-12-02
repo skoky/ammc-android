@@ -3,18 +3,23 @@ package com.skoky
 import android.app.Application
 import android.os.PowerManager
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
 import com.skoky.services.DecoderService
-import java.lang.ref.WeakReference
 
-/**
- * Called automatically when you base your application on the AngApplication in your AndroidManifest.xml
- */
 class MyApp : Application() {
 
-    var decoderService: DecoderService? = null
+    lateinit var decoderService: DecoderService
     lateinit var firebaseAnalytics: FirebaseAnalytics
+    lateinit var drivers: DriversManager
+    var user: FirebaseUser? = null
+    lateinit var firestore: FirebaseFirestore
+    val options = mutableMapOf<String,Any>("badmsg" to true, "driversync" to true)
+
+    val recentTransponders = hashSetOf<String>()
 
     companion object {
+        val suffix = if (BuildConfig.DEBUG) "_debug" else ""
         var wakeLock: PowerManager.WakeLock? = null
     }
 }
