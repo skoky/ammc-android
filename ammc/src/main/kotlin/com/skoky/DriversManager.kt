@@ -1,7 +1,5 @@
 package com.skoky
 
-import android.app.AlertDialog
-import android.content.Context
 import android.util.Log
 import com.google.firebase.firestore.Query.Direction.ASCENDING
 import com.skoky.MyApp.Companion.suffix
@@ -15,22 +13,7 @@ data class Driver(
 
 class DriversManager(val app: MyApp) {
 
-    fun delete(transponder: String, context: Context, doneHandler: (String) -> Unit) {
-        if (transponder.isEmpty()) {
-            doneHandler(transponder)
-            return
-        }
-        AlertDialog.Builder(context)
-                .setTitle("Are you sure to delete name to transponder $transponder?")
-                .setPositiveButton(R.string.yes) { _, _ ->
-                    deleteAfterYes(transponder, doneHandler)
-                }
-                .setNegativeButton(R.string.no) { dialog, _ ->
-                    dialog.dismiss()
-                }.create().show()
-    }
-
-    private fun deleteAfterYes(transponder: String,doneHandler: (String) -> Unit) {
+    fun deleteAfterYes(transponder: String,doneHandler: (String) -> Unit) {
 
         app.firestore.collection("drivers$suffix").whereEqualTo("transponder", transponder).get()
                 .addOnSuccessListener { qry ->

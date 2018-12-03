@@ -1,5 +1,6 @@
 package com.skoky.fragment
 
+import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -38,7 +39,7 @@ class DriversFragment : FragmentCommon() {
 
         val enabled = (activity!!.application as MyApp).options["driversync"] as Boolean
         if (!enabled) {
-            Toast.makeText(activity,"Enabled Cloud sync to use Drivers Editor",Toast.LENGTH_LONG).show()
+            Toast.makeText(activity, "Enabled Cloud sync to use Drivers Editor", Toast.LENGTH_LONG).show()
             val a = (activity as MainActivity)
             a.openStartupFragment()
             return null
@@ -51,7 +52,7 @@ class DriversFragment : FragmentCommon() {
         val transponders = app.recentTransponders.map { DriverPair(it, "") }.toMutableList()
 
         transponders.forEach { p ->
-            addRow(inflater, container, app, ll, p,true, activity!!)
+            addRow(inflater, container, app, ll, p, true, activity!!)
         }
         return view
     }
@@ -70,6 +71,7 @@ class DriversFragment : FragmentCommon() {
             } else {
                 if (rows.containsKey(t)) {
                     (rows[t]!!.getChildAt(1) as EditText).setText(d)
+                    (rows[t]!!.getChildAt(1) as EditText).tag = false
                 } else
                     addRow(LayoutInflater.from(activity), view, app, ll, DriverPair(t, d), false, activity!!)
             }
@@ -80,11 +82,11 @@ class DriversFragment : FragmentCommon() {
         val app = activity!!.application as MyApp
         val sv = activity!!.findViewById<ScrollView>(R.id.sv)
         val ll = activity!!.findViewById<LinearLayout>(R.id.driversList)
-        addRow(LayoutInflater.from(activity), sv, app, ll, DriverPair("", ""),true, activity!!)
+        addRow(LayoutInflater.from(activity), sv, app, ll, DriverPair("", ""), true, activity!!)
     }
 
     private fun saveDriverName(t: String, v: View) {
-        Log.d(TAG,"Driver tag ${v.tag}")
+        Log.d(TAG, "Driver tag ${v.tag}")
         if (t.trim().isNotEmpty() && v.tag != false) {
             val driverNameToSave = (v as EditText).text.toString()
             if (driverNameToSave.trim().isNotEmpty()) {
@@ -111,13 +113,23 @@ class DriversFragment : FragmentCommon() {
         edd.setOnFocusChangeListener { v, hasFocus ->
             if (!hasFocus) saveDriverName(edt.text.toString(), v)
         }
-        edd.tag=false
+        edd.tag = false
         edd.addTextChangedListener(EditTextWatcher(edd))
 
         newView.findViewById<ImageView>(R.id.deleteImage).setOnClickListener {
-            app.drivers.delete(p.t, context) {
-                ll.removeView(newView)
-                Log.d(TAG, "Driver view removed")
+
+            if (edd.text.toString().trim().isNotEmpty()) {
+                AlertDialog.Builder(context)
+                        .setTitle("Are you sure to delete name to transponder ${p.t}?")
+                        .setPositiveButton(R.string.yes) { _, _ ->
+                            app.drivers.deleteAfterYes(p.t) {
+                                ll.removeView(newView)
+                                Log.d(TAG, "Driver view removed")
+                            }
+                        }
+                        .setNegativeButton(R.string.no) { dialog, _ ->
+                            dialog.dismiss()
+                        }.create().show()
             }
         }
         if (top) ll.addView(newView, 1) else ll.addView(newView)
@@ -128,9 +140,11 @@ class DriversFragment : FragmentCommon() {
         override fun afterTextChanged(s: Editable?) {}
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            editText.tag=true
+            Log.d(TAG, "Text changed $s")
+            editText.tag = true
         }
     }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is OnListFragmentInteractionListener) {
