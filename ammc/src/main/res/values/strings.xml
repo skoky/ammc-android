@@ -25,6 +25,7 @@
     <string name="bad_msg_long">Enables bad messages from decoder reporting to us for continues improvements of the application</string>
     <string name="drivers_sync_long">Enables drivers names sync to transponder code via cloud. Once entered, will sync with other timers with the same application</string>
     <string name="decoder_not_connected">Decoder not connected</string>
+    <string name="decoder_re_connected">Decoder re-connected</string>
     <string name="tap"><![CDATA[<transponder>]]></string>
     <string name="select_label">Select transponder to watch</string>
     <string name="select_decoder_label">Select decoder to connect</string>

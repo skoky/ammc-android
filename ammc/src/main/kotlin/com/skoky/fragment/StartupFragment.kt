@@ -1,12 +1,10 @@
 package com.skoky.fragment
 
-
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -22,7 +20,7 @@ import com.skoky.services.DecoderService.Companion.DECODER_CONNECT
 import com.skoky.services.DecoderService.Companion.DECODER_DISCONNECTED
 import kotlinx.android.synthetic.main.startup_content.*
 
-class StartupFragment : Fragment() {
+class StartupFragment : FragmentCommon() {
 
     //    private var decoderFoundText: TextView? = null
     private lateinit var connectReceiverDisconnect: BroadcastReceiver
@@ -59,6 +57,7 @@ class StartupFragment : Fragment() {
             }
         }
 
+        registerConnectionHandlers()
     }
 
     private fun visualStateHandler2(foundDecoder: Decoder?) {

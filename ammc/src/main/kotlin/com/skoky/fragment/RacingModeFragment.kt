@@ -22,7 +22,6 @@ import com.skoky.R
 import com.skoky.Tools
 import com.skoky.fragment.content.Racer
 import com.skoky.fragment.content.RacingModeModel
-import com.skoky.services.DecoderService.Companion.DECODER_DISCONNECTED
 import com.skoky.services.DecoderService.Companion.DECODER_PASSING
 import kotlinx.android.synthetic.main.fragment_racingmode_list.view.*
 import org.jetbrains.anko.childrenSequence
@@ -38,7 +37,6 @@ class RacingModeFragment : FragmentCommon() {
 
     private var listener: OnListFragmentInteractionListener? = null
     private lateinit var receiver: BroadcastReceiver
-    private lateinit var disconnectReceiver: BroadcastReceiver
 
     private var startStopButtonM: Button? = null
 
@@ -103,11 +101,7 @@ class RacingModeFragment : FragmentCommon() {
         startStopButtonM = view.startStopButton
         startStopButtonM!!.setOnClickListener { doStartStopDialog() }
 
-        disconnectReceiver = ConnectionReceiver {
-            Log.i(TAG, "Disconnected")
-            //AlertDialog.Builder(context).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
-        }
-        context!!.registerReceiver(disconnectReceiver, IntentFilter(DECODER_DISCONNECTED))
+        registerConnectionHandlers()
 
         return view
     }
@@ -204,7 +198,6 @@ class RacingModeFragment : FragmentCommon() {
     override fun onDetach() {
         super.onDetach()
         context?.unregisterReceiver(receiver)
-        context?.unregisterReceiver(disconnectReceiver)
     }
 
 

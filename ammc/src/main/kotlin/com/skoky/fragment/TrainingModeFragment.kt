@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -22,7 +21,6 @@ import com.skoky.R
 import com.skoky.Tools
 import com.skoky.fragment.content.TrainingLap
 import com.skoky.fragment.content.TrainingModeModel
-import com.skoky.services.DecoderService.Companion.DECODER_DISCONNECTED
 import com.skoky.services.DecoderService.Companion.DECODER_PASSING
 import kotlinx.android.synthetic.main.fragment_trainingmode_list.*
 import kotlinx.android.synthetic.main.fragment_trainingmode_list.view.*
@@ -32,13 +30,12 @@ import org.json.JSONObject
 import java.util.concurrent.Future
 
 
-class TrainingModeFragment : Fragment() {
+class TrainingModeFragment : FragmentCommon() {
 
     private var columnCount = 1
 
     private var listener: OnListFragmentInteractionListener? = null
     private lateinit var receiver: BroadcastReceiver
-    private lateinit var disconnectReceiver: BroadcastReceiver
 
     private var startStopButtonM: Button? = null
 
@@ -93,11 +90,7 @@ class TrainingModeFragment : Fragment() {
         startStopButtonM = view.startStopButton
         startStopButtonM!!.setOnClickListener { doStartStopDialog() }
 
-        disconnectReceiver = ConnectionReceiver {
-            Log.i(TAG, "Disconnected")
-            //AlertDialog.Builder(context).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
-        }
-        context!!.registerReceiver(disconnectReceiver, IntentFilter(DECODER_DISCONNECTED))
+        registerConnectionHandlers()
 
         return view
     }
@@ -201,7 +194,6 @@ class TrainingModeFragment : Fragment() {
     override fun onDetach() {
         super.onDetach()
         context?.unregisterReceiver(receiver)
-        context?.unregisterReceiver(disconnectReceiver)
     }
 
     interface OnListFragmentInteractionListener {

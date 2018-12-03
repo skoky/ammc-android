@@ -1,15 +1,66 @@
 package com.skoky.fragment
 
 import android.app.Application
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.util.Log
+import android.widget.Toast
 import com.skoky.CloudDB
 import com.skoky.MyApp
+import com.skoky.R
+import com.skoky.services.DecoderService
 import org.json.JSONObject
 
 
 data class Time(val us: Long)
 
+
+class DataReceiver(val handler: (String) -> Unit) : BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: Intent?) {
+        handler(intent!!.getStringExtra("Data")!!)
+    }
+}
+
+
+class ConnectionReceiver(val handler: () -> Unit) : BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: Intent?) {
+        handler()
+    }
+}
+
+lateinit var disconnectReceiver: ConnectionReceiver
+lateinit var connectReceiver: ConnectionReceiver
+
 open class FragmentCommon : android.support.v4.app.Fragment() {
+
+    companion object {
+        val TAG = FragmentCommon::class.simpleName
+    }
+    fun registerConnectionHandlers() {
+
+        disconnectReceiver = ConnectionReceiver {
+            Log.i(ConsoleModeFragment.TAG, "Disconnected")
+            Toast.makeText(activity, getString(R.string.decoder_not_connected), Toast.LENGTH_LONG).show()
+        }
+        connectReceiver = ConnectionReceiver {
+            Log.i(ConsoleModeFragment.TAG, "Connected")
+            Toast.makeText(activity, getString(R.string.decoder_re_connected), Toast.LENGTH_SHORT).show()
+        }
+        context!!.registerReceiver(disconnectReceiver, IntentFilter(DecoderService.DECODER_DISCONNECTED))
+        context!!.registerReceiver(connectReceiver, IntentFilter(DecoderService.DECODER_CONNECT))
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        try {
+            context?.unregisterReceiver(connectReceiver)
+            context?.unregisterReceiver(disconnectReceiver)
+        } catch (e:Exception) {
+            Log.d(TAG,"Receiver not registered")
+        }
+    }
 
     fun getTimeFromPassingJson(json: JSONObject): Time {
         return when {

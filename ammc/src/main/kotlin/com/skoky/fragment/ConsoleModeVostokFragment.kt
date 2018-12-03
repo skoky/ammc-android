@@ -5,8 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -20,16 +18,14 @@ import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.fragment.content.ConsoleModel
 import com.skoky.services.DecoderService.Companion.DECODER_DATA
-import com.skoky.services.DecoderService.Companion.DECODER_DISCONNECTED
 import kotlinx.android.synthetic.main.fragment_consolemode_list.*
 import org.jetbrains.anko.childrenSequence
 import org.json.JSONObject
 
 
-class ConsoleModeVostokFragment : Fragment() {
+class ConsoleModeVostokFragment : FragmentCommon() {
 
     private var listener: OnListFragmentInteractionListener? = null
-    private lateinit var disconnectReceiver: BroadcastReceiver
     private lateinit var dataHandler: BroadcastReceiver
 
     class ConnectionReceiver(val handler: () -> Unit) : BroadcastReceiver() {
@@ -48,11 +44,7 @@ class ConsoleModeVostokFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_consolemode_list, container, false)
 
-        disconnectReceiver = ConnectionReceiver {
-            Log.i(TAG, "Disconnected")
-            context?.let { AlertDialog.Builder(it).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show() }
-        }
-        context!!.registerReceiver(disconnectReceiver, IntentFilter(DECODER_DISCONNECTED))
+        registerConnectionHandlers()
 
         val ll = (view as ScrollView).childrenSequence().first() as LinearLayout
         dataHandler = DataReceiver {
@@ -123,7 +115,6 @@ class ConsoleModeVostokFragment : Fragment() {
     override fun onDetach() {
         super.onDetach()
         context?.unregisterReceiver(dataHandler)
-        context?.unregisterReceiver(disconnectReceiver)
     }
 
     companion object {

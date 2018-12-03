@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +12,7 @@ import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.fragment.content.ConsoleModel
 
-class OptionsFragment : Fragment() {
+class OptionsFragment : FragmentCommon() {
 
     private var listener: OnListFragmentInteractionListener? = null
 

@@ -1,16 +1,14 @@
 package com.skoky.fragment
 
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
-import com.skoky.MyApp
 import com.skoky.R
 
 
-class HelpFragment : Fragment() {
+class HelpFragment : FragmentCommon() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
