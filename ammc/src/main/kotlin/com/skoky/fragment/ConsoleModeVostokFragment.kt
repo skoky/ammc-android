@@ -9,7 +9,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.INVISIBLE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -90,7 +89,7 @@ class ConsoleModeVostokFragment : FragmentCommon() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        activity!!.findViewById<View>(R.id.miHome).visibility = VISIBLE     // FIXME does not work :(
+   //     activity!!.findViewById<View>(R.id.miHome).visibility = VISIBLE     // FIXME does not work :(
         val app = activity!!.application as MyApp
         val connectedDecoder = app.decoderService.getConnectedDecoder()
 

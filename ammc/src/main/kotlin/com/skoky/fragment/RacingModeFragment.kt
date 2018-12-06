@@ -12,7 +12,6 @@ import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
@@ -108,7 +107,7 @@ class RacingModeFragment : FragmentCommon() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        activity!!.findViewById<View>(R.id.miHome).visibility = VISIBLE     // FIXME does not work :(
+//        activity!!.findViewById<View>(R.id.miHome).visibility = VISIBLE     // FIXME does not work :(
     }
 
     private fun handleDriverEditDialog(view: View) {
