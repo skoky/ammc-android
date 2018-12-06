@@ -55,6 +55,20 @@ class MainActivity : AppCompatActivity(),
 
     private lateinit var app: MyApp
     private var mAdView: AdView? = null
+    private var mDecoderServiceBound = false
+
+    override fun onStart() {
+        super.onStart()
+        Log.w(TAG, "Binding service")
+        val intent = Intent(this, DecoderService::class.java)
+        bindService(intent, decoderServiceConnection, Context.BIND_AUTO_CREATE)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unbindService(decoderServiceConnection)
+        mDecoderServiceBound = false
+    }
 
     override fun onPostResume() {
         super.onPostResume()
@@ -99,10 +113,6 @@ class MainActivity : AppCompatActivity(),
             true
         }
 
-        Log.w(TAG, "Binding service")
-        val intent = Intent(this, DecoderService::class.java)
-        bindService(intent, decoderServiceConnection, Context.BIND_AUTO_CREATE)
-
         mAdView = findViewById<View>(R.id.adView) as AdView?
         val adRequest = AdRequest.Builder().build()
         mAdView?.loadAd(adRequest)
@@ -110,6 +120,9 @@ class MainActivity : AppCompatActivity(),
         app.options["badmsg"] = defaultSharedPreferences.getBoolean("badmsg", true)
         app.options["driversync"] = defaultSharedPreferences.getBoolean("driversync", true)
     }
+
+    private var serviceBound : Boolean = false
+
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -159,7 +172,6 @@ class MainActivity : AppCompatActivity(),
         } else {
             app.decoderService.connectDecoderByUUID(firstDecoderId.tag as String)
         }
-
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -286,9 +298,7 @@ class MainActivity : AppCompatActivity(),
     private lateinit var consoleFragment: ConsoleModeFragment
     private lateinit var consoleVostokFragment: ConsoleModeVostokFragment
     fun openConsoleMode(view: View?): Boolean {
-        val decoderUUID = firstDecoderId.tag as? String // FIXME PADA!!!!
-
-        if (decoderUUID == null) {
+        if (firstDecoderId.tag == null) {
             AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected))
                     .setCancelable(true).create().show()
             return true
@@ -368,6 +378,7 @@ class MainActivity : AppCompatActivity(),
 
             Log.w(TAG, "Decoder service bound")
             // FIXME connect last decoder Log.d(TAG, "Service -> " + it.connectDecoder("aDecoder"))
+            mDecoderServiceBound = true
 
             openStartupFragment()
         }

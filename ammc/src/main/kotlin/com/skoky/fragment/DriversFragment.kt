@@ -73,7 +73,10 @@ class DriversFragment : FragmentCommon() {
                     (rows[t]!!.getChildAt(1) as EditText).setText(d)
                     (rows[t]!!.getChildAt(1) as EditText).tag = false
                 } else
-                    addRow(LayoutInflater.from(activity), view, app, ll, DriverPair(t, d), false, activity!!)
+                    activity?.let { a ->
+                        addRow(LayoutInflater.from(a), view, app, ll, DriverPair(t, d), false, a)
+                    }
+
             }
         }
     }
@@ -140,8 +143,7 @@ class DriversFragment : FragmentCommon() {
         override fun afterTextChanged(s: Editable?) {}
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            Log.d(TAG, "Text changed $s")
-            editText.tag = true
+            editText.tag=true
         }
     }
 

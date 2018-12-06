@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.fragment.content.ConsoleModel
@@ -75,13 +76,16 @@ class ConsoleModeFragment : FragmentCommon() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-    //    activity!!.findViewById<View>(R.id.miHome).visibility = VISIBLE     // FIXME does not work :(
-        val app = activity!!.application as MyApp
-        val connectedDecoder = app.decoderService.getConnectedDecoder()
+        activity?.let { a ->
+            val app = a.application as MyApp
+            val connectedDecoder = app.decoderService.getConnectedDecoder()
 
-        app.decoderService.exploreDecoder(connectedDecoder?.uuid!!)
-        refreshImage.setOnClickListener {
-            doRefresh()
+            connectedDecoder?.let { decoder ->
+                app.decoderService.exploreDecoder(decoder.uuid)
+                refreshImage.setOnClickListener {
+                    doRefresh()
+                }
+            }
         }
     }
 
@@ -95,7 +99,13 @@ class ConsoleModeFragment : FragmentCommon() {
         updating = false
         val app = activity!!.application as MyApp
         val connectedDecoder = app.decoderService.getConnectedDecoder()
-        app.decoderService.exploreDecoder(connectedDecoder?.uuid!!)
+        if (connectedDecoder==null) {
+            activity?.let {
+                val a = it as MainActivity
+                a.openStartupFragment()
+            }
+        } else
+            app.decoderService.exploreDecoder(connectedDecoder?.uuid!!)
     }
 
     override fun onAttach(context: Context) {
