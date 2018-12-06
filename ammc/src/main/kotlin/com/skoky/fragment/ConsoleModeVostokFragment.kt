@@ -35,7 +35,9 @@ class ConsoleModeVostokFragment : FragmentCommon() {
 
     class DataReceiver(val handler: (String) -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            handler(intent!!.getStringExtra("Data")!!)
+            intent?.let {
+                handler(it.getStringExtra("Data")?:"")
+            }
         }
     }
 
@@ -69,7 +71,7 @@ class ConsoleModeVostokFragment : FragmentCommon() {
             //     }
 
         }
-        context!!.registerReceiver(dataHandler, IntentFilter(DECODER_DATA))
+        context?.let { it.registerReceiver(dataHandler, IntentFilter(DECODER_DATA)) }
 
         return view
     }
@@ -89,12 +91,15 @@ class ConsoleModeVostokFragment : FragmentCommon() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-   //     activity!!.findViewById<View>(R.id.miHome).visibility = VISIBLE     // FIXME does not work :(
-        val app = activity!!.application as MyApp
-        val connectedDecoder = app.decoderService.getConnectedDecoder()
-
-        app.decoderService.exploreDecoder(connectedDecoder?.uuid!!)
         refreshImage.visibility = INVISIBLE
+
+        activity?.let {
+            val app = it.application as MyApp
+            val connectedDecoder = app.decoderService.getConnectedDecoder()
+            connectedDecoder?.let {cd ->
+                app.decoderService.exploreDecoder(cd.uuid)
+            }
+        }
     }
 
     override fun onAttach(context: Context) {

@@ -56,7 +56,7 @@ class ConsoleModeFragment : FragmentCommon() {
                 }
             }
         }
-        context!!.registerReceiver(dataHandler, IntentFilter(DECODER_DATA))
+        context?.let { it.registerReceiver(dataHandler, IntentFilter(DECODER_DATA)) }
 
         return view
     }
@@ -97,15 +97,16 @@ class ConsoleModeFragment : FragmentCommon() {
             if (i.index > 0) (i.value as? TextView)?.text = ""
         }
         updating = false
-        val app = activity!!.application as MyApp
-        val connectedDecoder = app.decoderService.getConnectedDecoder()
-        if (connectedDecoder==null) {
-            activity?.let {
-                val a = it as MainActivity
-                a.openStartupFragment()
-            }
-        } else
-            app.decoderService.exploreDecoder(connectedDecoder?.uuid!!)
+
+        activity?.let {a ->
+            val app = a.application as MyApp
+            val connectedDecoder = app.decoderService.getConnectedDecoder()
+            if (connectedDecoder==null) {
+                    (a as MainActivity).openStartupFragment()
+            } else
+                app.decoderService.exploreDecoder(connectedDecoder?.uuid)
+
+        }
     }
 
     override fun onAttach(context: Context) {

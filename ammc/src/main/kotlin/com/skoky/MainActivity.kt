@@ -298,15 +298,15 @@ class MainActivity : AppCompatActivity(),
     private lateinit var consoleFragment: ConsoleModeFragment
     private lateinit var consoleVostokFragment: ConsoleModeVostokFragment
     fun openConsoleMode(view: View?): Boolean {
-        if (firstDecoderId.tag == null) {
+        app.decoderService?.let { ds ->
+        if (!ds.isDecoderConnected()) {
             AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected))
                     .setCancelable(true).create().show()
             return true
         } else {
-            app.decoderService?.let {
-                return if (it.isDecoderConnected()) {
+                return if (ds.isDecoderConnected()) {
                     val fragmentTransaction = supportFragmentManager.beginTransaction()
-                    if (it.isConnectedDecoderVostok()) {
+                    if (ds.isConnectedDecoderVostok()) {
                         consoleVostokFragment = ConsoleModeVostokFragment.newInstance(1)
                         fragmentTransaction.replace(R.id.screen_container, consoleVostokFragment)
                     } else {
@@ -325,7 +325,6 @@ class MainActivity : AppCompatActivity(),
             return false
         }
     }
-
 
     fun openTransponderDialog(view: View?) {
         if (!trainingFragment.running) {

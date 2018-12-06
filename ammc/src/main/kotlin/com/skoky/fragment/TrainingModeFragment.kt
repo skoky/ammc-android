@@ -36,7 +36,7 @@ class TrainingModeFragment : FragmentCommon() {
     private var listener: OnListFragmentInteractionListener? = null
     private lateinit var receiver: BroadcastReceiver
 
-    private var startStopButtonM: Button? = null
+    lateinit var startStopButtonM: Button
 
     private var tmm: TrainingModeModel = TrainingModeModel()    // a dummy model with no recentTransponders
 
@@ -52,7 +52,9 @@ class TrainingModeFragment : FragmentCommon() {
 
     class PassingDataReceiver(val handler: (String) -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            handler(intent!!.getStringExtra("Passing")!!)
+            intent?.let {
+                handler(it.getStringExtra("Passing"))
+            }
         }
     }
 
@@ -83,42 +85,39 @@ class TrainingModeFragment : FragmentCommon() {
                 }
                 tmm = (adapter as TrainingModeRecyclerViewAdapter).tmm
             }
-            context!!.registerReceiver(receiver, IntentFilter(DECODER_PASSING))
+            context?.let {
+                it.registerReceiver(receiver, IntentFilter(DECODER_PASSING))
+            }
 
         }
+        view.startStopButton.setOnClickListener { doStartStopDialog() }
         startStopButtonM = view.startStopButton
-        startStopButtonM!!.setOnClickListener { doStartStopDialog() }
-
         registerConnectionHandlers()
 
         return view
     }
 
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-  //      activity!!.findViewById<View>(R.id.miHome).visibility = VISIBLE
-    }
-
     fun openTransponderDialog(startRace: Boolean) {
 
-        val app = activity!!.application as MyApp
-        val trs = app.recentTransponders.toTypedArray()
+        activity?.let { act ->
+            val app = act.application as MyApp
+            val trs = app.recentTransponders.toTypedArray()
 
-        val b = android.support.v7.app.AlertDialog.Builder(this.context!!)
-                .setTitle(getString(R.string.select_label))
-        if (trs.isEmpty()) {
-            b.setMessage(getString(R.string.no_transponder))
-        } else {
-            b.setSingleChoiceItems(trs, 0) { dialog, i ->
-                Log.w(TAG, "Selected $i")
-                setSelectedTransponder(trs[i])
-                decoderIdSelector.text = trs[i]
-                if (startRace) doStartStop()
-                dialog.cancel()
+            val b = android.support.v7.app.AlertDialog.Builder(act)
+                    .setTitle(getString(R.string.select_label))
+            if (trs.isEmpty()) {
+                b.setMessage(getString(R.string.no_transponder))
+            } else {
+                b.setSingleChoiceItems(trs, 0) { dialog, i ->
+                    Log.w(TAG, "Selected $i")
+                    setSelectedTransponder(trs[i])
+                    decoderIdSelector.text = trs[i]
+                    if (startRace) doStartStop()
+                    dialog.cancel()
+                }
             }
+            b.create().show()
         }
-        b.create().show()
     }
 
     private fun setSelectedTransponder(transponder: String) {
@@ -137,10 +136,11 @@ class TrainingModeFragment : FragmentCommon() {
 
     private fun doStartStop() {
 
+
         if (running) {
             running = false
             clock.cancel(true)      // TODO calculate exact training timeUs
-            startStopButtonM?.text = getText(R.string.start)
+            startStopButtonM.text = getText(R.string.start)
         } else {    // not running
 
             if (timingContentView.adapter.itemCount == 1) {     // just a label, nothing to clear
@@ -160,17 +160,15 @@ class TrainingModeFragment : FragmentCommon() {
 
     private lateinit var clock: Future<Unit>
 
-    private var trainingStartTime: Long? = null
-
     private fun doStart() {
         (timingContentView.adapter as TrainingModeRecyclerViewAdapter).clearResults()
         running = true
-        startStopButtonM?.text = getText(R.string.stop)
-        trainingStartTime = System.currentTimeMillis()
+        startStopButtonM.text = getText(R.string.stop)
+        val trainingStartTime = System.currentTimeMillis()
 
         clock = doAsync {
             while (true) {
-                val timeMs = System.currentTimeMillis() - trainingStartTime!!
+                val timeMs = System.currentTimeMillis() - trainingStartTime
                 val str = Tools.millisToTimeWithMillis(timeMs)
                 uiThread {
                     clockViewX.text = str

@@ -37,55 +37,69 @@ class DriversFragment : FragmentCommon() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
 
-        val enabled = (activity!!.application as MyApp).options["driversync"] as Boolean
-        if (!enabled) {
-            Toast.makeText(activity, "Enabled Cloud sync to use Drivers Editor", Toast.LENGTH_LONG).show()
-            val a = (activity as MainActivity)
-            a.openStartupFragment()
-            return null
-        }
         val view = inflater.inflate(R.layout.fragment_drivers_list, container, false)
 
-        view.findViewById<ImageView>(R.id.addDriverImage).setOnClickListener { addNewDriverHandler(it) }
-        val ll = (view as ScrollView).childrenSequence().first() as LinearLayout
-        val app = activity!!.application as MyApp
-        val transponders = app.recentTransponders.map { DriverPair(it, "") }.toMutableList()
+        activity?.let { act ->
+            val enabled = (act.application as MyApp).options["driversync"] as Boolean
+            if (!enabled) {
+                Toast.makeText(activity, "Enabled Cloud sync to use Drivers Editor", Toast.LENGTH_LONG).show()
+                val a = (activity as MainActivity)
+                a.openStartupFragment()
+                return null
+            }
 
-        transponders.forEach { p ->
-            addRow(inflater, container, app, ll, p, true, activity!!)
+            view.findViewById<ImageView>(R.id.addDriverImage).setOnClickListener { addNewDriverHandler(it) }
+            val ll = (view as ScrollView).childrenSequence().first() as LinearLayout
+            activity?.let { act2 ->
+                val app = act2.application as MyApp
+                val transponders = app.recentTransponders.map { DriverPair(it, "") }.toMutableList()
+
+                transponders.forEach { p ->
+                    addRow(inflater, container, app, ll, p, true, activity!!)
+                }
+            }
         }
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val enabled = (activity!!.application as MyApp).options["driversync"] as Boolean
-        if (!enabled) return
+        val enabled = activity?.let { (it.application as MyApp).options["driversync"] as Boolean }
+        if (enabled == null || !enabled) return
 
-        val app = activity!!.application as MyApp
         val ll = (view as ScrollView).childrenSequence().first() as LinearLayout
-        app.drivers.driversList() { t, d ->
-            Log.d(TAG, "Driver $t $d")
-            if (t.isEmpty() && d.isEmpty()) {
-                view.findViewById<ProgressBar>(R.id.progressBarDrivers).visibility = GONE
-            } else {
-                if (rows.containsKey(t)) {
-                    (rows[t]!!.getChildAt(1) as EditText).setText(d)
-                    (rows[t]!!.getChildAt(1) as EditText).tag = false
-                } else
-                    activity?.let { a ->
-                        addRow(LayoutInflater.from(a), view, app, ll, DriverPair(t, d), false, a)
-                    }
 
+        activity?.let { act ->
+            val app = act.application as MyApp
+            app.drivers.driversList { t, d ->
+                Log.d(TAG, "Driver $t $d")
+
+                if (t.isEmpty() && d.isEmpty()) { // end of loading
+                    view.findViewById<ProgressBar>(R.id.progressBarDrivers).visibility = GONE
+                } else {
+                    if (rows.containsKey(t)) {
+                        val rows2 = rows[t]
+                        rows2?.let { r ->
+                            (r.getChildAt(1) as EditText).setText(d)
+                            (r.getChildAt(1) as EditText).tag = false
+                        }
+                    } else
+                        activity?.let { a ->
+                            addRow(LayoutInflater.from(a), view, app, ll, DriverPair(t, d), false, a)
+                        }
+                }
             }
+
         }
     }
 
     private fun addNewDriverHandler(view: View) {
-        val app = activity!!.application as MyApp
-        val sv = activity!!.findViewById<ScrollView>(R.id.sv)
-        val ll = activity!!.findViewById<LinearLayout>(R.id.driversList)
-        addRow(LayoutInflater.from(activity), sv, app, ll, DriverPair("", ""), true, activity!!)
+        activity?.let { act ->
+            val app = act.application as MyApp
+            val sv = act.findViewById<ScrollView>(R.id.sv)
+            val ll = act.findViewById<LinearLayout>(R.id.driversList)
+            addRow(LayoutInflater.from(act), sv, app, ll, DriverPair("", ""), true, act)
+        }
     }
 
     private fun saveDriverName(t: String, v: View) {
@@ -93,13 +107,15 @@ class DriversFragment : FragmentCommon() {
         if (t.trim().isNotEmpty() && v.tag != false) {
             val driverNameToSave = (v as EditText).text.toString()
             if (driverNameToSave.trim().isNotEmpty()) {
-                (activity!!.application as MyApp).drivers.saveTransponder(t, driverNameToSave) { err ->
-                    if (err.isEmpty()) {
-                        val et = v as EditText
-                        et.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.baseline_check_24px, 0)
-                        Handler().postDelayed({
-                            et.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
-                        }, 2000)
+                activity?.let { act ->
+                    (act.application as MyApp).drivers.saveTransponder(t, driverNameToSave) { err ->
+                        if (err.isEmpty()) {
+                            val et = v as EditText
+                            et.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.baseline_check_24px, 0)
+                            Handler().postDelayed({
+                                et.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
+                            }, 2000)
+                        }
                     }
                 }
             }
@@ -143,7 +159,7 @@ class DriversFragment : FragmentCommon() {
         override fun afterTextChanged(s: Editable?) {}
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            editText.tag=true
+            editText.tag = true
         }
     }
 

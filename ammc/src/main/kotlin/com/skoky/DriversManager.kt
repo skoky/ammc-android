@@ -13,15 +13,17 @@ data class Driver(
 
 class DriversManager(val app: MyApp) {
 
-    fun deleteAfterYes(transponder: String,doneHandler: (String) -> Unit) {
+    fun deleteAfterYes(transponder: String, doneHandler: (String) -> Unit) {
 
         app.firestore.collection("drivers$suffix").whereEqualTo("transponder", transponder).get()
                 .addOnSuccessListener { qry ->
                     if (qry.documents.isNotEmpty()) {
-                        val d = qry.documents.first()!!.id
-                        app.firestore.collection("drivers$suffix").document(d).delete().addOnSuccessListener {
-                            Log.i(TAG, "Driver $transponder deleted")
-                            doneHandler(transponder)
+                        val d = qry.documents.first()?.id
+                        d?.let {
+                            app.firestore.collection("drivers$suffix").document(it).delete().addOnSuccessListener {
+                                Log.i(TAG, "Driver $transponder deleted")
+                                doneHandler(transponder)
+                            }
                         }
                     } else {
                         Log.i(TAG, "Driver not found for trans $transponder")
@@ -36,11 +38,13 @@ class DriversManager(val app: MyApp) {
                 .addOnSuccessListener { qry ->
 
                     if (qry.documents.isNotEmpty()) {
-                        val d = qry.documents.first()!!.id
-                        app.firestore.collection("drivers$suffix").document(d)
-                                .update("name", driverName, "lastUpdate", System.currentTimeMillis())
-                                .addOnSuccessListener { Log.d(TAG, "Driver update $transponder"); handler("") }
-                                .addOnFailureListener { e -> Log.w(TAG, "Driver not updated $transponder $e"); handler(e.toString()) }
+                        val d = qry.documents.first()?.id
+                        d?.let {
+                            app.firestore.collection("drivers$suffix").document(it)
+                                    .update("name", driverName, "lastUpdate", System.currentTimeMillis())
+                                    .addOnSuccessListener { Log.d(TAG, "Driver update $transponder"); handler("") }
+                                    .addOnFailureListener { e -> Log.w(TAG, "Driver not updated $transponder $e"); handler(e.toString()) }
+                        }
                     } else {
                         val driver = Driver(transponder = transponder, name = driverName, lastUpdate = System.currentTimeMillis())
                         app.firestore.collection("drivers$suffix")
@@ -65,10 +69,8 @@ class DriversManager(val app: MyApp) {
             if (qry.documents.isNotEmpty()) {
                 Log.d(TAG, "Found names for transponder $transponder ${qry.documents.size}")
 
-                val last = qry.documents.maxBy { it.getLong("lastUpdate")!! }
-                val d = last!!.getString("name")
-
-                d?.let {
+                val last = qry.documents.maxBy { it.getLong("lastUpdate") ?: 0 }
+                last?.getString("name")?.let {
                     handler(it)
                 }
             }
@@ -78,13 +80,18 @@ class DriversManager(val app: MyApp) {
     fun driversList(handler: (String, String) -> Unit) {
         app.firestore.collection("drivers$suffix").orderBy("lastUpdate", ASCENDING)
                 .limit(1000).get()
-                .addOnSuccessListener {
-                    it.documents.map { doc ->
-                        handler(doc.getString("transponder")!!, doc.getString("name")!!)
+                .addOnSuccessListener {q ->
+                    q.documents.map { doc ->
+                        val t = doc.getString("transponder")
+                        val n = doc.getString("name")
+                        t?.let {trans ->
+                            if (t.trim().isNotEmpty())
+                                handler(trans, n ?: "")
+                        }
                     }
                 }.addOnCompleteListener {
-                    Log.d(TAG,"Driver done")
-                    handler("","")
+                    Log.d(TAG, "Driver done")
+                    handler("", "")
                 }
     }
 

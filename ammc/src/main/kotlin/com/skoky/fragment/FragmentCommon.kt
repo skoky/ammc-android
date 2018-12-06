@@ -19,7 +19,9 @@ data class Time(val us: Long)
 
 class DataReceiver(val handler: (String) -> Unit) : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-        handler(intent!!.getStringExtra("Data")!!)
+        intent?.let {
+            handler(it.getStringExtra("Data"))
+        }
     }
 }
 
@@ -38,6 +40,7 @@ open class FragmentCommon : android.support.v4.app.Fragment() {
     companion object {
         val TAG = FragmentCommon::class.simpleName
     }
+
     fun registerConnectionHandlers() {
 
         disconnectReceiver = ConnectionReceiver {
@@ -48,8 +51,11 @@ open class FragmentCommon : android.support.v4.app.Fragment() {
             Log.i(ConsoleModeFragment.TAG, "Connected")
             Toast.makeText(activity, getString(R.string.decoder_re_connected), Toast.LENGTH_SHORT).show()
         }
-        context!!.registerReceiver(disconnectReceiver, IntentFilter(DecoderService.DECODER_DISCONNECTED))
-        context!!.registerReceiver(connectReceiver, IntentFilter(DecoderService.DECODER_CONNECT))
+        context?.let {
+            it.registerReceiver(disconnectReceiver, IntentFilter(DecoderService.DECODER_DISCONNECTED))
+            it.registerReceiver(connectReceiver, IntentFilter(DecoderService.DECODER_CONNECT))
+
+        }
     }
 
     override fun onDetach() {
@@ -57,8 +63,8 @@ open class FragmentCommon : android.support.v4.app.Fragment() {
         try {
             context?.unregisterReceiver(connectReceiver)
             context?.unregisterReceiver(disconnectReceiver)
-        } catch (e:Exception) {
-            Log.d(TAG,"Receiver not registered")
+        } catch (e: Exception) {
+            Log.d(TAG, "Receiver not registered")
         }
     }
 
@@ -70,7 +76,9 @@ open class FragmentCommon : android.support.v4.app.Fragment() {
                 Time((json.get("msecs_since_start") as Integer).toLong() * 1000)
             else -> {
                 Log.w(TrainingModeFragment.TAG, "No time in passing record $json")
-                CloudDB.badMessageReport(activity!!.application as MyApp, "passing-no-time", json.toString())
+                activity?.let {
+                    CloudDB.badMessageReport(it.application as MyApp, "passing-no-time", json.toString())
+                }
                 return Time(0L)
             }
         }

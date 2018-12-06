@@ -37,7 +37,7 @@ class RacingModeFragment : FragmentCommon() {
     private var listener: OnListFragmentInteractionListener? = null
     private lateinit var receiver: BroadcastReceiver
 
-    private var startStopButtonM: Button? = null
+    private lateinit var startStopButtonM: Button
 
     private var tmm: RacingModeModel = RacingModeModel()    // a dummy model with no recentTransponders
     private val transponders = mutableListOf<String>()
@@ -56,7 +56,9 @@ class RacingModeFragment : FragmentCommon() {
 
     class PassingDataReceiver(val handler: (String) -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            handler(intent!!.getStringExtra("Passing")!!)
+            intent?.let {
+                handler(it.getStringExtra("Passing")?:"")
+            }
         }
     }
 
@@ -77,6 +79,7 @@ class RacingModeFragment : FragmentCommon() {
             receiver = PassingDataReceiver { data ->
                 val json = JSONObject(data)
                 Log.i(TAG, "Received passing $data")
+
                 val transponder = FragmentCommon().getTransponderFromPassingJson(activity!!.application, json)
                 val time = FragmentCommon().getTimeFromPassingJson(json)
 
@@ -84,8 +87,10 @@ class RacingModeFragment : FragmentCommon() {
                     (adapter as RacingModeRecyclerViewAdapter).addRecord(transponder, time)
                     adapter.notifyDataSetChanged()
                     doAsync {
-                        val myApp = activity!!.application as MyApp
-                        (adapter as RacingModeRecyclerViewAdapter).updateDriverName(myApp, transponder)
+                        activity?.let {
+                            val myApp = it.application as MyApp
+                            (adapter as RacingModeRecyclerViewAdapter).updateDriverName(myApp, transponder)
+                        }
                     }
                 }
                 tmm = (adapter as RacingModeRecyclerViewAdapter).tmm
@@ -94,20 +99,17 @@ class RacingModeFragment : FragmentCommon() {
                     transponders.add(transponder)
                 }
             }
-            context!!.registerReceiver(receiver, IntentFilter(DECODER_PASSING))
+            context?.let {
+                it.registerReceiver(receiver, IntentFilter(DECODER_PASSING))
+            }
 
         }
+        view.startStopButton.setOnClickListener { doStartStopDialog() }
         startStopButtonM = view.startStopButton
-        startStopButtonM!!.setOnClickListener { doStartStopDialog() }
 
         registerConnectionHandlers()
 
         return view
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-//        activity!!.findViewById<View>(R.id.miHome).visibility = VISIBLE     // FIXME does not work :(
     }
 
     private fun handleDriverEditDialog(view: View) {
@@ -122,8 +124,10 @@ class RacingModeFragment : FragmentCommon() {
         val driverET = dialog.findViewById<EditText>(R.id.driver_name_edit_text)
         dialog.findViewById<Button>(R.id.cancel_button).setOnClickListener { dialog.dismiss() }
         dialog.findViewById<Button>(R.id.save_button).setOnClickListener {
-            val app = activity!!.application as MyApp
-            mAdapter.saveDriverName(app, transET.text.toString(), driverET.text.toString())
+            activity?.let { act ->
+                val app = act.application as MyApp
+                mAdapter.saveDriverName(app, transET.text.toString(), driverET.text.toString())
+            }
             dialog.dismiss()
         }
 
@@ -141,12 +145,17 @@ class RacingModeFragment : FragmentCommon() {
     private fun doStartStop() {
 
         if (running) {
-            Tools.wakeLock(context!!, false)
+            context?.let {
+                Tools.wakeLock(it, false)
+            }
             running = false
             clock.cancel(true)      // TODO calculate exact training timeUs
             startStopButtonM?.text = getText(R.string.start)
         } else {    // not running
-            Tools.wakeLock(context!!, true)
+            context?.let {
+                Tools.wakeLock(it, true)
+            }
+
             if (timingContentView.adapter.itemCount == 1) {     // just a label, nothing to clear
                 doStart()
             } else {
@@ -164,17 +173,15 @@ class RacingModeFragment : FragmentCommon() {
 
     private lateinit var clock: Future<Unit>
 
-    private var racingStartTime: Long? = null
-
     private fun doStart() {
         (timingContentView.adapter as RacingModeRecyclerViewAdapter).clearResults()
         running = true
         startStopButtonM?.text = getText(R.string.stop)
-        racingStartTime = System.currentTimeMillis()
+        val racingStartTime = System.currentTimeMillis()
 
         clock = doAsync {
             while (true) {
-                val timeMs = System.currentTimeMillis() - racingStartTime!!
+                val timeMs = System.currentTimeMillis() - racingStartTime
                 val str = Tools.millisToTimeWithMillis(timeMs)
                 uiThread {
                     clockViewX.text = str
