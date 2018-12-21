@@ -139,6 +139,7 @@ class RacingModeFragment : FragmentCommon() {
     }
 
     private var running = false
+    private var preStartDelay = false
     private fun doStartStopDialog() {
         doStartStop()
     }
@@ -146,14 +147,18 @@ class RacingModeFragment : FragmentCommon() {
         context?.let {
             Tools.wakeLock(it, false)
         }
+        if (preStartDelay) {
+            clockViewX.text = ""
+        }
         running = false
+        preStartDelay = false
         clock.cancel(true)      // TODO calculate exact training timeUs
         startStopButtonM?.text = getText(R.string.start)
     }
 
     private fun doStartStop() {
 
-        if (running) {
+        if (running || preStartDelay) {
             doStop()
         } else {    // not running
             context?.let {
@@ -190,6 +195,7 @@ class RacingModeFragment : FragmentCommon() {
     }
 
     private fun doStartDelay(delaySecs: Int) {
+        preStartDelay = true
         (timingContentView.adapter as RacingModeRecyclerViewAdapter).clearResults()
         startStopButtonM?.text = getText(R.string.stop)
 
@@ -219,6 +225,7 @@ class RacingModeFragment : FragmentCommon() {
         val limitRaceDuration = ma.getRaceDurationFlag()
 
         (timingContentView.adapter as RacingModeRecyclerViewAdapter).clearResults()
+        preStartDelay = false
         running = true
         startStopButtonM?.text = getText(R.string.stop)
         val racingStartTime = System.currentTimeMillis()

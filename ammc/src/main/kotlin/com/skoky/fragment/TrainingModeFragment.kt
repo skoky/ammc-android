@@ -126,6 +126,7 @@ class TrainingModeFragment : FragmentCommon() {
     }
 
     var running = false
+    var preStartDelay = false
     private fun doStartStopDialog() {
 
         if (tmm.getSelectedTransponder() == null) {
@@ -137,11 +138,8 @@ class TrainingModeFragment : FragmentCommon() {
 
     private fun doStartStop() {
 
-
-        if (running) {
-            running = false
-            clock.cancel(true)      // TODO calculate exact training timeUs
-            startStopButtonM.text = getText(R.string.start)
+        if (running || preStartDelay) {
+            doStop()
         } else {    // not running
 
             if (timingContentView.adapter.itemCount == 1) {     // just a label, nothing to clear
@@ -161,6 +159,15 @@ class TrainingModeFragment : FragmentCommon() {
 
     private lateinit var clock: Future<Unit>
 
+    private fun doStop() {
+        if (preStartDelay) {
+            clockViewX.text = ""
+        }
+        running = false
+        preStartDelay = false
+        clock.cancel(true)      // TODO calculate exact training timeUs
+        startStopButtonM.text = getText(R.string.start)
+    }
     private fun doStart() {
 
         val ma = (activity as MainActivity)
@@ -174,6 +181,7 @@ class TrainingModeFragment : FragmentCommon() {
     }
 
     private fun doStartDelay(delaySecs: Int) {
+        preStartDelay = true
         (timingContentView.adapter as TrainingModeRecyclerViewAdapter).clearResults()
         startStopButtonM.text = getText(R.string.stop)
 
@@ -199,6 +207,7 @@ class TrainingModeFragment : FragmentCommon() {
 
     private fun doStartNow() {
         (timingContentView.adapter as TrainingModeRecyclerViewAdapter).clearResults()
+        preStartDelay = false
         running = true
         startStopButtonM.text = getText(R.string.stop)
         val trainingStartTime = System.currentTimeMillis()
