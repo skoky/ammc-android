@@ -168,6 +168,7 @@ class TrainingModeFragment : FragmentCommon() {
         clock.cancel(true)      // TODO calculate exact training timeUs
         startStopButtonM.text = getText(R.string.start)
     }
+
     private fun doStart() {
 
         val ma = (activity as MainActivity)

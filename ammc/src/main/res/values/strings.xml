@@ -17,6 +17,7 @@
     <string name="minLapTime">Min. lap time</string>
     <string name="startup_delay">Startup Delay</string>
     <string name="race_duration">Race Duration</string>
+    <string name="include_min_lap_tim">include min. lap time</string>
     <string name="secs">secs</string>
     <string name="mins">mins</string>
     <string name="options">Options</string>

@@ -223,6 +223,10 @@ class RacingModeFragment : FragmentCommon() {
         val ma = (activity as MainActivity)
         val raceDurationMins = ma.getRaceDurationValueFlag()
         val limitRaceDuration = ma.getRaceDurationFlag()
+        val includeMinLapTime = ma.getIncludeMinLapTimeFlag()
+        val minLapTime = ma.getMinLapTimeFlag()
+
+        val totalRaceTime = if (includeMinLapTime) raceDurationMins*60+minLapTime else raceDurationMins*60
 
         (timingContentView.adapter as RacingModeRecyclerViewAdapter).clearResults()
         preStartDelay = false
@@ -234,9 +238,9 @@ class RacingModeFragment : FragmentCommon() {
         clock = doAsync {
 
             if (limitRaceDuration) {
-                while ((System.currentTimeMillis()-racingStartTime) / 1000 <= raceDurationMins*60) {
+                while ((System.currentTimeMillis()-racingStartTime) / 1000 <= totalRaceTime) {
                     val timeMs = System.currentTimeMillis() - racingStartTime
-                    val str = "${Tools.millisToTimeWithMillis(timeMs)} / ${raceDurationMins}mins"
+                    val str = "${Tools.millisToTimeWithMillis(timeMs)} / ${Tools.millisToTime((totalRaceTime*1000).toLong())}"
                     uiThread {
                         clockViewX.text = str
                     }
@@ -244,7 +248,7 @@ class RacingModeFragment : FragmentCommon() {
                 }
                 uiThread {
                     doStop()
-                    clockViewX.text = Tools.millisToTimeWithMillis((raceDurationMins*60*1000).toLong())
+                    clockViewX.text = Tools.millisToTimeWithMillis((totalRaceTime*1000).toLong())
                 }
 
             } else {

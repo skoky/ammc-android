@@ -32,6 +32,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.skoky.Const.badMsgK
 import com.skoky.Const.driversyncK
+import com.skoky.Const.includeMinLapTimeK
+import com.skoky.Const.minLapTimeK
 import com.skoky.Const.raceDurationK
 import com.skoky.Const.raceDurationValueK
 import com.skoky.Const.startupDelayK
@@ -308,6 +310,12 @@ class MainActivity : AppCompatActivity(),
         saveIntValue(startupDelayValue, raceDurationValueK)
     }
 
+    fun optionsIncludeMinLapTime(view: View) {
+        val c = view as CheckBox
+        saveIncludeMinLapTime(c)
+        saveIntValue(startupDelayValue, includeMinLapTimeK)
+    }
+
     fun optionsStartupDelay(view: View) {
         val c = view as CheckBox
         saveStartupDelay(c)
@@ -317,6 +325,7 @@ class MainActivity : AppCompatActivity(),
 
     private fun saveStartupDelay(checkbox: CheckBox) = defaultSharedPreferences.edit().putBoolean(startupDelayK, checkbox.isChecked).apply()
     private fun saveRaceDuration(checkbox: CheckBox) = defaultSharedPreferences.edit().putBoolean(raceDurationK, checkbox.isChecked).apply()
+    private fun saveIncludeMinLapTime(checkbox: CheckBox) = defaultSharedPreferences.edit().putBoolean(includeMinLapTimeK, checkbox.isChecked).apply()
 
     fun saveIntValue(delayText: EditText, key: String) = try {
             val delay = (Integer.valueOf(delayText.text.toString()))
@@ -338,9 +347,13 @@ class MainActivity : AppCompatActivity(),
         if (show) {
             raceDurationValue.visibility = View.VISIBLE
             textRaceDuration2.visibility = View.VISIBLE
+            textRaceDurationOption2.visibility = View.VISIBLE
+            checkIncludeMinLapTime.visibility = View.VISIBLE
         } else {
             raceDurationValue.visibility = View.GONE
             textRaceDuration2.visibility = View.GONE
+            textRaceDurationOption2.visibility = View.INVISIBLE
+            checkIncludeMinLapTime.visibility = View.INVISIBLE
         }
     }
 
@@ -421,6 +434,8 @@ class MainActivity : AppCompatActivity(),
     fun getStartupDelayValueFlag() = defaultSharedPreferences.getInt(startupDelayValueK, 3)
     fun getRaceDurationFlag() = defaultSharedPreferences.getBoolean(raceDurationK, false)
     fun getRaceDurationValueFlag() = defaultSharedPreferences.getInt(raceDurationValueK, 5)
+    fun getIncludeMinLapTimeFlag() = defaultSharedPreferences.getBoolean(includeMinLapTimeK, false)
+    fun getMinLapTimeFlag() = defaultSharedPreferences.getInt(minLapTimeK, 20)
 
 
     private val decoderServiceConnection = object : ServiceConnection {

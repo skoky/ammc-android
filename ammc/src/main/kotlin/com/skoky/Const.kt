@@ -1,10 +1,12 @@
 package com.skoky
 
 object Const {
-    val badMsgK = "badmsg"
-    val driversyncK = "driversync"
-    val startupDelayK = "startupDelay"
-    val startupDelayValueK = "startupDelayValue"
-    val raceDurationK = "raceDuration"
-    val raceDurationValueK = "raceDurationValue"
+    const val badMsgK = "badmsg"
+    const val driversyncK = "driversync"
+    const val startupDelayK = "startupDelay"
+    const val startupDelayValueK = "startupDelayValue"
+    const val raceDurationK = "raceDuration"
+    const val raceDurationValueK = "raceDurationValue"
+    const val includeMinLapTimeK = "includeMinLapTime"
+    const val minLapTimeK = "minLapTime"
 }
