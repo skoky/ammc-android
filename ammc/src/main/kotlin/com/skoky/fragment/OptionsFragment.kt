@@ -34,22 +34,20 @@ class OptionsFragment : FragmentCommon() {
         super.onViewCreated(view, savedInstanceState)
 
 
-        activity?.let {
-            val app = it.application as MyApp
+        activity?.let { a ->
+            val app = a.application as MyApp
+            val ma = (a as MainActivity)
 
-            val startupDelay = app.options["startupDelay"] as? Boolean
-            startupDelay?.let { d ->
-                checkStartupDelay.isChecked = d
-                startupDelayValue.setText(app.options["startupDelayValue"].toString())
-                (activity as MainActivity).showHideStartupDelayValue(d)
-            }
+            checkStartupDelay.isChecked = ma.getStartupDelayFlag()
+//            a.findViewById<EditText>(R.id.startupDelayValue)?.let { it.setText(ma.getStartupDelayValueFlag()) }  // FIXME does nto work !!!
+            ma.showHideStartupDelayValue(ma.getStartupDelayFlag())
 
             startupDelayValue.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
-                (activity as MainActivity).saveStartupDelayValue(startupDelayValue)
+                ma.saveStartupDelayValue(startupDelayValue)
             }
 
-            it.findViewById<CheckBox>(R.id.checkDriverSync)?.isChecked = app.options["driversync"] as Boolean
-            it.findViewById<CheckBox>(R.id.checkBadMsg)?.isChecked = app.options["badmsg"] as Boolean
+            a.findViewById<CheckBox>(R.id.checkDriverSync)?.isChecked = ma.getDriverSyncFlag()
+            a.findViewById<CheckBox>(R.id.checkBadMsg)?.isChecked = ma.getBadMsgFlag()
         }
 
     }

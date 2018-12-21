@@ -119,15 +119,10 @@ class MainActivity : AppCompatActivity(),
         val adRequest = AdRequest.Builder().build()
         mAdView?.loadAd(adRequest)
 
-        app.options["badmsg"] = defaultSharedPreferences.getBoolean("badmsg", true)
-        app.options["driversync"] = defaultSharedPreferences.getBoolean("driversync", true)
-        app.options["startupDelay"] = defaultSharedPreferences.getBoolean("startupDelay", false)
-        app.options["startupDelayValue"] = defaultSharedPreferences.getInt("startupDelayValue", 3)
-
+        app.badMsgReport = getBadMsgFlag()
     }
 
     private var serviceBound: Boolean = false
-
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -290,13 +285,13 @@ class MainActivity : AppCompatActivity(),
 
     fun optionsDisableBadMsgReporting(view: View) {
         val c = view as CheckBox
-        app.options["badmsg"] = c.isChecked
-        defaultSharedPreferences.edit().putBoolean("badmsg", c.isChecked).apply()
+        val reportBadMsg = c.isChecked
+        defaultSharedPreferences.edit().putBoolean("badmsg", reportBadMsg).apply()
+        app.badMsgReport = reportBadMsg
     }
 
     fun optionsDriversSync(view: View) {
         val c = view as CheckBox
-        app.options["driversync"] = c.isChecked
         defaultSharedPreferences.edit().putBoolean("driversync", c.isChecked).apply()
     }
 
@@ -315,14 +310,16 @@ class MainActivity : AppCompatActivity(),
     }
 
     fun saveStartupDelay(checkbox: CheckBox) {
-        app.options["startupDelay"] = checkbox.isChecked
         defaultSharedPreferences.edit().putBoolean("startupDelay", checkbox.isChecked).apply()
     }
 
     fun saveStartupDelayValue(delayText: EditText) {
-        val delay = Integer.valueOf(delayText.text.toString())
-        app.options["startupDelayValue"] = delay
-        defaultSharedPreferences.edit().putInt("startupDelayValue", delay).apply()
+        try {
+            val delay = (Integer.valueOf(delayText.text.toString()))
+            defaultSharedPreferences.edit().putInt("startupDelayValue", delay).apply()
+        } catch (e: Exception) {
+        }
+
     }
 
     fun showHideStartupDelayValue(show: Boolean) {
@@ -405,6 +402,12 @@ class MainActivity : AppCompatActivity(),
         }
 
     }
+
+    fun getBadMsgFlag() = defaultSharedPreferences.getBoolean("badmsg", false)
+    fun getDriverSyncFlag() = defaultSharedPreferences.getBoolean("driversync", true)
+    fun getStartupDelayFlag() = defaultSharedPreferences.getBoolean("startupDelay", false)
+    fun getStartupDelayValueFlag() = defaultSharedPreferences.getInt("startupDelayValue", 3)
+
 
     private val decoderServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName,

@@ -15,6 +15,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.Tools
@@ -161,6 +162,42 @@ class TrainingModeFragment : FragmentCommon() {
     private lateinit var clock: Future<Unit>
 
     private fun doStart() {
+
+        val ma = (activity as MainActivity)
+        val startupDelay = ma.getStartupDelayFlag()
+
+        if (startupDelay) {
+            doStartDelay(ma.getStartupDelayValueFlag())
+        } else {
+            doStartNow()
+        }
+    }
+
+    private fun doStartDelay(delaySecs: Int) {
+        (timingContentView.adapter as TrainingModeRecyclerViewAdapter).clearResults()
+        startStopButtonM.text = getText(R.string.stop)
+
+        val delayStartTime = System.currentTimeMillis()
+
+        clock = doAsync {
+            while (System.currentTimeMillis() - delayStartTime < delaySecs * 1000) {
+                val diffSecs = (System.currentTimeMillis() - delayStartTime) / 1000
+                val time = delaySecs - diffSecs
+                val str = "Start in ${time}s"
+                uiThread {
+                    clockViewX.text = str
+                }
+                Thread.sleep(30)
+            }
+
+            uiThread {
+                doStartNow()
+            }
+        }
+
+    }
+
+    private fun doStartNow() {
         (timingContentView.adapter as TrainingModeRecyclerViewAdapter).clearResults()
         running = true
         startStopButtonM.text = getText(R.string.stop)
@@ -176,7 +213,6 @@ class TrainingModeFragment : FragmentCommon() {
                 Thread.sleep(30)
             }
         }
-
     }
 
     override fun onAttach(context: Context) {

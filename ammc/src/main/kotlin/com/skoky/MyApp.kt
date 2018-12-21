@@ -14,9 +14,11 @@ class MyApp : Application() {
     lateinit var drivers: DriversManager
     var user: FirebaseUser? = null
     lateinit var firestore: FirebaseFirestore
-    val options = mutableMapOf<String, Any>("badmsg" to true, "driversync" to true, "startupDelay" to false, "startupDelayValue" to 3)
+//    val options = mutableMapOf<String, Any>("badmsg" to true, "driversync" to true, "startupDelay" to false, "startupDelayValue" to 3)
 
     val recentTransponders = hashSetOf<String>()
+
+    var badMsgReport : Boolean = false
 
     companion object {
         val suffix = if (BuildConfig.DEBUG) "_debug" else ""

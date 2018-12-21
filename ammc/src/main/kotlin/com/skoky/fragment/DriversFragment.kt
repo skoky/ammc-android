@@ -40,7 +40,7 @@ class DriversFragment : FragmentCommon() {
         val view = inflater.inflate(R.layout.fragment_drivers_list, container, false)
 
         activity?.let { act ->
-            val enabled = (act.application as MyApp).options["driversync"] as Boolean
+            val enabled = (activity as MainActivity).getDriverSyncFlag()
             if (!enabled) {
                 Toast.makeText(activity, "Enabled Cloud sync to use Drivers Editor", Toast.LENGTH_LONG).show()
                 val a = (activity as MainActivity)
@@ -64,7 +64,7 @@ class DriversFragment : FragmentCommon() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val enabled = activity?.let { (it.application as MyApp).options["driversync"] as Boolean }
+        val enabled = (activity as MainActivity).getDriverSyncFlag()
         if (enabled == null || !enabled) return
 
         val ll = (view as ScrollView).childrenSequence().first() as LinearLayout

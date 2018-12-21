@@ -7,15 +7,15 @@ import java.util.*
 
 object CloudDB {
 
-    fun badMessageReport(app: MyApp, key : String,  bytes: String) {
+    fun badMessageReport(app: MyApp, key: String, bytes: String) {
 
-        val enabled = app.options["badmsg"] as Boolean
-        if (!enabled) return
+
+        if (!app.badMsgReport) return
 
         val formatter = SimpleDateFormat("yy/MM/dd")
         val today = formatter.format(Date())
 
-        val msg = hashMapOf<String,Any>(key to bytes, "len" to bytes.length, "date" to today) as Map<String,String>
+        val msg = hashMapOf<String, Any>(key to bytes, "len" to bytes.length, "date" to today) as Map<String, String>
 
         app.firestore.collection("badmsg$suffix")
                 .add(msg)
@@ -23,6 +23,8 @@ object CloudDB {
                     Log.d(DriversManager.TAG, "Bad msg added with ID: ${it.id}")
                 }
                 .addOnFailureListener {
-                    Log.w(DriversManager.TAG, "Error adding bad msg", it) }
+                    Log.w(DriversManager.TAG, "Error adding bad msg", it)
+                }
     }
+
 }
