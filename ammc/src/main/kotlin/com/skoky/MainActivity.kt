@@ -20,6 +20,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.CheckBox
+import android.widget.EditText
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import com.google.android.gms.ads.AdRequest
@@ -35,6 +36,7 @@ import com.skoky.fragment.content.Racer
 import com.skoky.fragment.content.TrainingLap
 import com.skoky.services.Decoder
 import com.skoky.services.DecoderService
+import kotlinx.android.synthetic.main.fragment_options.*
 import kotlinx.android.synthetic.main.main.*
 import kotlinx.android.synthetic.main.select_decoder.*
 import kotlinx.android.synthetic.main.startup_content.*
@@ -119,9 +121,13 @@ class MainActivity : AppCompatActivity(),
 
         app.options["badmsg"] = defaultSharedPreferences.getBoolean("badmsg", true)
         app.options["driversync"] = defaultSharedPreferences.getBoolean("driversync", true)
+        app.options["startupDelay"] = defaultSharedPreferences.getBoolean("startupDelay", false)
+        app.options["startupDelayValue"] = defaultSharedPreferences.getInt("startupDelayValue", 3)
+
+
     }
 
-    private var serviceBound : Boolean = false
+    private var serviceBound: Boolean = false
 
 
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -295,15 +301,43 @@ class MainActivity : AppCompatActivity(),
         defaultSharedPreferences.edit().putBoolean("driversync", c.isChecked).apply()
     }
 
+    fun optionsStartupDelay(view: View) {
+        val c = view as CheckBox
+        saveStartupDelay(c)
+        showHideStartupDelayValue(c.isChecked)
+        saveStartupDelayValue(startupDelayValue)
+    }
+
+    fun saveStartupDelay(checkbox: CheckBox) {
+        app.options["startupDelay"] = checkbox.isChecked
+        defaultSharedPreferences.edit().putBoolean("startupDelay", checkbox.isChecked).apply()
+    }
+
+    fun saveStartupDelayValue(delayText: EditText) {
+        val delay = Integer.valueOf(delayText.text.toString())
+        app.options["startupDelayValue"] = delay
+        defaultSharedPreferences.edit().putInt("startupDelayValue", delay).apply()
+    }
+
+    fun showHideStartupDelayValue(show: Boolean) {
+        if (show) {
+            startupDelayValue.visibility = View.VISIBLE
+            textStartupDelay2.visibility = View.VISIBLE
+        } else {
+            startupDelayValue.visibility = View.GONE
+            textStartupDelay2.visibility = View.GONE
+        }
+    }
+
     private lateinit var consoleFragment: ConsoleModeFragment
     private lateinit var consoleVostokFragment: ConsoleModeVostokFragment
     fun openConsoleMode(view: View?): Boolean {
         app.decoderService?.let { ds ->
-        if (!ds.isDecoderConnected()) {
-            AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected))
-                    .setCancelable(true).create().show()
-            return true
-        } else {
+            if (!ds.isDecoderConnected()) {
+                AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected))
+                        .setCancelable(true).create().show()
+                return true
+            } else {
                 return if (ds.isDecoderConnected()) {
                     val fragmentTransaction = supportFragmentManager.beginTransaction()
                     if (ds.isConnectedDecoderVostok()) {
@@ -346,8 +380,6 @@ class MainActivity : AppCompatActivity(),
                 false
             }
         }
-        return false
-
     }
 
     private lateinit var trainingFragment: TrainingModeFragment

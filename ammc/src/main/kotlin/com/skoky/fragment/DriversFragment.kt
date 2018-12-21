@@ -110,10 +110,9 @@ class DriversFragment : FragmentCommon() {
                 activity?.let { act ->
                     (act.application as MyApp).drivers.saveTransponder(t, driverNameToSave) { err ->
                         if (err.isEmpty()) {
-                            val et = v as EditText
-                            et.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.baseline_check_24px, 0)
+                            v.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.baseline_check_24px, 0)
                             Handler().postDelayed({
-                                et.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
+                                v.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
                             }, 2000)
                         }
                     }

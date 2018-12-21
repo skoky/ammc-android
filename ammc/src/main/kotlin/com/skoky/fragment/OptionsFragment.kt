@@ -8,9 +8,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.fragment.content.ConsoleModel
+import kotlinx.android.synthetic.main.fragment_options.*
 
 class OptionsFragment : FragmentCommon() {
 
@@ -31,8 +33,21 @@ class OptionsFragment : FragmentCommon() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+
         activity?.let {
             val app = it.application as MyApp
+
+            val startupDelay = app.options["startupDelay"] as? Boolean
+            startupDelay?.let { d ->
+                checkStartupDelay.isChecked = d
+                startupDelayValue.setText(app.options["startupDelayValue"].toString())
+                (activity as MainActivity).showHideStartupDelayValue(d)
+            }
+
+            startupDelayValue.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
+                (activity as MainActivity).saveStartupDelayValue(startupDelayValue)
+            }
+
             it.findViewById<CheckBox>(R.id.checkDriverSync)?.isChecked = app.options["driversync"] as Boolean
             it.findViewById<CheckBox>(R.id.checkBadMsg)?.isChecked = app.options["badmsg"] as Boolean
         }
