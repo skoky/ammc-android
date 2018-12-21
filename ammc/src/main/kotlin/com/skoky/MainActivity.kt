@@ -124,7 +124,6 @@ class MainActivity : AppCompatActivity(),
         app.options["startupDelay"] = defaultSharedPreferences.getBoolean("startupDelay", false)
         app.options["startupDelayValue"] = defaultSharedPreferences.getInt("startupDelayValue", 3)
 
-
     }
 
     private var serviceBound: Boolean = false
@@ -299,6 +298,13 @@ class MainActivity : AppCompatActivity(),
         val c = view as CheckBox
         app.options["driversync"] = c.isChecked
         defaultSharedPreferences.edit().putBoolean("driversync", c.isChecked).apply()
+    }
+
+    fun optionsRaceDuration(view: View) {
+        val c = view as CheckBox
+        saveStartupDelay(c)
+        showHideStartupDelayValue(c.isChecked)
+        saveStartupDelayValue(startupDelayValue)
     }
 
     fun optionsStartupDelay(view: View) {

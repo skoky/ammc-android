@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:name="com.skoky.fragment.DriversFragment"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/sv"
+    android:name="com.skoky.fragment.DriversFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginLeft="16dp"
@@ -40,7 +40,6 @@
                 android:text="@string/secs"
                 android:textAlignment="viewStart"
                 app:layout_constraintEnd_toStartOf="@+id/checkStartupDelay"
-                app:layout_constraintStart_toEndOf="@+id/startupDelayValue"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
@@ -60,12 +59,12 @@
                 style="@style/amm_text_white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
                 android:maxLines="5"
-                android:paddingBottom="10dp"
                 android:paddingLeft="10dp"
+                android:paddingBottom="10dp"
                 android:text="@string/startup_delay_long"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -84,14 +83,163 @@
 
             <EditText
                 android:id="@+id/startupDelayValue"
-                android:layout_width="52dp"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:ems="10"
-                android:text="@string/value_3"
                 android:inputType="numberDecimal"
+                android:textAlignment="viewEnd"
+                app:layout_constraintEnd_toStartOf="@+id/textStartupDelay2"
                 app:layout_constraintStart_toEndOf="@+id/textStartupDelay"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </android.support.constraint.ConstraintLayout>
+
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/constraintLayout4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:background="@drawable/rounded"
+            android:minHeight="100dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/constraintLayout2">
+
+            <TextView
+                android:id="@+id/textRaceDuration2"
+                style="@style/amm_text_white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:padding="10dp"
+                android:text="@string/mins"
+                android:textAlignment="viewStart"
+                app:layout_constraintEnd_toStartOf="@+id/checkRaceDuration"
+                app:layout_constraintStart_toEndOf="@+id/raceDurationValue"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/textRaceDuration"
+                style="@style/amm_text_white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:padding="10dp"
+                android:text="@string/race_duration"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/textRaceDurationOption"
+                style="@style/amm_text_white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:maxLines="5"
+                android:paddingLeft="10dp"
+                android:paddingBottom="10dp"
+                android:text="@string/race_duration_long"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textRaceDuration" />
+
+            <CheckBox
+                android:id="@+id/checkRaceDuration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:onClick="optionsRaceDuration"
+                android:paddingBottom="10dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <EditText
+                android:id="@+id/raceDurationValue"
+                android:layout_width="74dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:ems="10"
+                android:inputType="numberDecimal"
+                android:textAlignment="textEnd"
+                app:layout_constraintStart_toEndOf="@+id/textRaceDuration"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </android.support.constraint.ConstraintLayout>
+
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/constraintLayout5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:background="@drawable/rounded"
+            android:minHeight="100dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/constraintLayout2">
+
+            <TextView
+                android:id="@+id/textMinLapTime"
+                style="@style/amm_text_white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:padding="10dp"
+                android:text="@string/minLapTime"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/textMinLapTime2"
+                style="@style/amm_text_white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:padding="10dp"
+                android:text="@string/secs"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/textMinLapTimeLong"
+                style="@style/amm_text_white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:maxLines="5"
+                android:paddingLeft="10dp"
+                android:paddingBottom="10dp"
+                android:text="@string/min_lap_long"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textMinLapTime" />
+
+            <EditText
+                android:id="@+id/checkMinLapTime"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:inputType="numberDecimal"
+                android:paddingBottom="10dp"
+                android:textAlignment="textEnd"
+                app:layout_constraintEnd_toStartOf="@+id/textMinLapTime2"
+                app:layout_constraintStart_toEndOf="@+id/textMinLapTime"
                 app:layout_constraintTop_toTopOf="parent" />
 
         </android.support.constraint.ConstraintLayout>
@@ -118,20 +266,19 @@
                 android:text="@string/drivers_sync"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:layout_editor_absoluteY="1dp"
-                />
+                tools:layout_editor_absoluteY="1dp" />
 
             <TextView
                 android:id="@+id/textDriversSyncOption"
                 style="@style/amm_text_white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
                 android:maxLines="5"
-                android:paddingBottom="10dp"
                 android:paddingLeft="10dp"
+                android:paddingBottom="10dp"
                 android:text="@string/drivers_sync_long"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -149,6 +296,8 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
         </android.support.constraint.ConstraintLayout>
+
+
 
         <android.support.constraint.ConstraintLayout
             android:id="@+id/constraintLayout1"
@@ -172,20 +321,19 @@
                 android:text="@string/bad_msg"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:layout_editor_absoluteY="1dp"
-                />
+                tools:layout_editor_absoluteY="1dp" />
 
             <TextView
                 android:id="@+id/textBadMsgLong"
                 style="@style/amm_text_white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
                 android:maxLines="5"
-                android:paddingBottom="10dp"
                 android:paddingLeft="10dp"
+                android:paddingBottom="10dp"
                 android:text="@string/bad_msg_long"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

@@ -14,8 +14,11 @@
     <string name="drivers_editor">Drivers editor</string>
     <string name="bad_msg">Bad messages reporting</string>
     <string name="drivers_sync">Drivers name sync</string>
+    <string name="minLapTime">Min. lap time</string>
     <string name="startup_delay">Startup Delay</string>
+    <string name="race_duration">Race Duration</string>
     <string name="secs">secs</string>
+    <string name="mins">mins</string>
     <string name="options">Options</string>
     <string name="training_mode">Training mode</string>
     <string name="start">Start</string>
@@ -26,7 +29,9 @@
     <string name="racing_mode_text">Tracks all racers from decoders and show results in timing table</string>
     <string name="bad_msg_long">Enables bad messages from decoder reporting to us for continues improvements of the application</string>
     <string name="drivers_sync_long">Enables drivers names sync to transponder code via cloud. Once entered, will sync with other timers with the same application</string>
+    <string name="min_lap_long">Minimal lap time for each transponder. Times with less lap time will be ignored</string>
     <string name="startup_delay_long">Delays race startup by few seconds that racer can get ready to start</string>
+    <string name="race_duration_long">Time in minutes of race duration. Total race duration will be plus min lap time. If not enabled, race will go until manual stop</string>
     <string name="decoder_not_connected">Decoder not connected</string>
     <string name="decoder_re_connected">Decoder re-connected</string>
     <string name="tap"><![CDATA[<transponder>]]></string>
