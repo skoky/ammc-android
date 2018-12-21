@@ -30,6 +30,12 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
+import com.skoky.Const.badMsgK
+import com.skoky.Const.driversyncK
+import com.skoky.Const.raceDurationK
+import com.skoky.Const.raceDurationValueK
+import com.skoky.Const.startupDelayK
+import com.skoky.Const.startupDelayValueK
 import com.skoky.fragment.*
 import com.skoky.fragment.content.ConsoleModel
 import com.skoky.fragment.content.Racer
@@ -286,41 +292,37 @@ class MainActivity : AppCompatActivity(),
     fun optionsDisableBadMsgReporting(view: View) {
         val c = view as CheckBox
         val reportBadMsg = c.isChecked
-        defaultSharedPreferences.edit().putBoolean("badmsg", reportBadMsg).apply()
+        defaultSharedPreferences.edit().putBoolean(badMsgK, reportBadMsg).apply()
         app.badMsgReport = reportBadMsg
     }
 
     fun optionsDriversSync(view: View) {
         val c = view as CheckBox
-        defaultSharedPreferences.edit().putBoolean("driversync", c.isChecked).apply()
+        defaultSharedPreferences.edit().putBoolean(driversyncK, c.isChecked).apply()
     }
 
     fun optionsRaceDuration(view: View) {
         val c = view as CheckBox
-        saveStartupDelay(c)
-        showHideStartupDelayValue(c.isChecked)
-        saveStartupDelayValue(startupDelayValue)
+        saveRaceDuration(c)
+        showHideRaceDurationValue(c.isChecked)
+        saveIntValue(startupDelayValue, raceDurationValueK)
     }
 
     fun optionsStartupDelay(view: View) {
         val c = view as CheckBox
         saveStartupDelay(c)
         showHideStartupDelayValue(c.isChecked)
-        saveStartupDelayValue(startupDelayValue)
+        saveIntValue(startupDelayValue,startupDelayValueK)
     }
 
-    fun saveStartupDelay(checkbox: CheckBox) {
-        defaultSharedPreferences.edit().putBoolean("startupDelay", checkbox.isChecked).apply()
-    }
+    private fun saveStartupDelay(checkbox: CheckBox) = defaultSharedPreferences.edit().putBoolean(startupDelayK, checkbox.isChecked).apply()
+    private fun saveRaceDuration(checkbox: CheckBox) = defaultSharedPreferences.edit().putBoolean(raceDurationK, checkbox.isChecked).apply()
 
-    fun saveStartupDelayValue(delayText: EditText) {
-        try {
+    fun saveIntValue(delayText: EditText, key: String) = try {
             val delay = (Integer.valueOf(delayText.text.toString()))
-            defaultSharedPreferences.edit().putInt("startupDelayValue", delay).apply()
+            defaultSharedPreferences.edit().putInt(key, delay).apply()
         } catch (e: Exception) {
         }
-
-    }
 
     fun showHideStartupDelayValue(show: Boolean) {
         if (show) {
@@ -329,6 +331,16 @@ class MainActivity : AppCompatActivity(),
         } else {
             startupDelayValue.visibility = View.GONE
             textStartupDelay2.visibility = View.GONE
+        }
+    }
+
+    fun showHideRaceDurationValue(show: Boolean) {
+        if (show) {
+            raceDurationValue.visibility = View.VISIBLE
+            textRaceDuration2.visibility = View.VISIBLE
+        } else {
+            raceDurationValue.visibility = View.GONE
+            textRaceDuration2.visibility = View.GONE
         }
     }
 
@@ -403,10 +415,12 @@ class MainActivity : AppCompatActivity(),
 
     }
 
-    fun getBadMsgFlag() = defaultSharedPreferences.getBoolean("badmsg", false)
-    fun getDriverSyncFlag() = defaultSharedPreferences.getBoolean("driversync", true)
-    fun getStartupDelayFlag() = defaultSharedPreferences.getBoolean("startupDelay", false)
-    fun getStartupDelayValueFlag() = defaultSharedPreferences.getInt("startupDelayValue", 3)
+    fun getBadMsgFlag() = defaultSharedPreferences.getBoolean(badMsgK, false)
+    fun getDriverSyncFlag() = defaultSharedPreferences.getBoolean(driversyncK, true)
+    fun getStartupDelayFlag() = defaultSharedPreferences.getBoolean(startupDelayK, false)
+    fun getStartupDelayValueFlag() = defaultSharedPreferences.getInt(startupDelayValueK, 3)
+    fun getRaceDurationFlag() = defaultSharedPreferences.getBoolean(raceDurationK, false)
+    fun getRaceDurationValueFlag() = defaultSharedPreferences.getInt(raceDurationValueK, 5)
 
 
     private val decoderServiceConnection = object : ServiceConnection {

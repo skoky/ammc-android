@@ -31,7 +31,7 @@
     <string name="drivers_sync_long">Enables drivers names sync to transponder code via cloud. Once entered, will sync with other timers with the same application</string>
     <string name="min_lap_long">Minimal lap time for each transponder. Times with less lap time will be ignored</string>
     <string name="startup_delay_long">Delays race startup by few seconds that racer can get ready to start</string>
-    <string name="race_duration_long">Time in minutes of race duration. Total race duration will be plus min lap time. If not enabled, race will go until manual stop</string>
+    <string name="race_duration_long">Limits time of the race automatically to pre-set minutes. Total race duration will be plus min lap time. If not enabled, race will go until manual stop</string>
     <string name="decoder_not_connected">Decoder not connected</string>
     <string name="decoder_re_connected">Decoder re-connected</string>
     <string name="tap"><![CDATA[<transponder>]]></string>

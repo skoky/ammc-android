@@ -58,7 +58,7 @@ class RacingModeFragment : FragmentCommon() {
     class PassingDataReceiver(val handler: (String) -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             intent?.let {
-                handler(it.getStringExtra("Passing")?:"")
+                handler(it.getStringExtra("Passing") ?: "")
             }
         }
     }
@@ -142,16 +142,19 @@ class RacingModeFragment : FragmentCommon() {
     private fun doStartStopDialog() {
         doStartStop()
     }
+    private fun doStop() {
+        context?.let {
+            Tools.wakeLock(it, false)
+        }
+        running = false
+        clock.cancel(true)      // TODO calculate exact training timeUs
+        startStopButtonM?.text = getText(R.string.start)
+    }
 
     private fun doStartStop() {
 
         if (running) {
-            context?.let {
-                Tools.wakeLock(it, false)
-            }
-            running = false
-            clock.cancel(true)      // TODO calculate exact training timeUs
-            startStopButtonM?.text = getText(R.string.start)
+            doStop()
         } else {    // not running
             context?.let {
                 Tools.wakeLock(it, true)
@@ -211,19 +214,41 @@ class RacingModeFragment : FragmentCommon() {
 
     private fun doStartNow() {
 
+        val ma = (activity as MainActivity)
+        val raceDurationMins = ma.getRaceDurationValueFlag()
+        val limitRaceDuration = ma.getRaceDurationFlag()
+
         (timingContentView.adapter as RacingModeRecyclerViewAdapter).clearResults()
         running = true
         startStopButtonM?.text = getText(R.string.stop)
         val racingStartTime = System.currentTimeMillis()
 
+
         clock = doAsync {
-            while (true) {
-                val timeMs = System.currentTimeMillis() - racingStartTime
-                val str = Tools.millisToTimeWithMillis(timeMs)
-                uiThread {
-                    clockViewX.text = str
+
+            if (limitRaceDuration) {
+                while ((System.currentTimeMillis()-racingStartTime) / 1000 <= raceDurationMins*60) {
+                    val timeMs = System.currentTimeMillis() - racingStartTime
+                    val str = "${Tools.millisToTimeWithMillis(timeMs)} / ${raceDurationMins}mins"
+                    uiThread {
+                        clockViewX.text = str
+                    }
+                    Thread.sleep(30)
                 }
-                Thread.sleep(30)
+                uiThread {
+                    doStop()
+                    clockViewX.text = Tools.millisToTimeWithMillis((raceDurationMins*60*1000).toLong())
+                }
+
+            } else {
+                while (true) {
+                    val timeMs = System.currentTimeMillis() - racingStartTime
+                    val str = Tools.millisToTimeWithMillis(timeMs)
+                    uiThread {
+                        clockViewX.text = str
+                    }
+                    Thread.sleep(30)
+                }
             }
         }
 

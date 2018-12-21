@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import com.skoky.Const.startupDelayValueK
 import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
@@ -39,11 +40,17 @@ class OptionsFragment : FragmentCommon() {
             val ma = (a as MainActivity)
 
             checkStartupDelay.isChecked = ma.getStartupDelayFlag()
+            checkRaceDuration.isChecked = ma.getRaceDurationFlag()
 //            a.findViewById<EditText>(R.id.startupDelayValue)?.let { it.setText(ma.getStartupDelayValueFlag()) }  // FIXME does nto work !!!
             ma.showHideStartupDelayValue(ma.getStartupDelayFlag())
+//            a.raceDurationValue.setText(ma.getRaceDurationValueFlag())  // FIXME does not work!
 
             startupDelayValue.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
-                ma.saveStartupDelayValue(startupDelayValue)
+                ma.saveIntValue(startupDelayValue,startupDelayValueK)
+            }
+
+            raceDurationValue.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
+                ma.saveIntValue(startupDelayValue,"raceDurationValue")
             }
 
             a.findViewById<CheckBox>(R.id.checkDriverSync)?.isChecked = ma.getDriverSyncFlag()
