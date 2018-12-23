@@ -9,4 +9,6 @@ object Const {
     const val raceDurationValueK = "raceDurationValue"
     const val includeMinLapTimeK = "includeMinLapTime"
     const val minLapTimeK = "minLapTime"
+    const val transponderSoundK = "transponderSound"
+    const val startStopSoundK = "startStopSound"
 }

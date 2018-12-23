@@ -2,6 +2,8 @@ package com.skoky.services
 
 import android.app.Service
 import android.content.Intent
+import android.media.AudioManager
+import android.media.ToneGenerator
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
@@ -10,6 +12,7 @@ import android.util.Log
 import com.skoky.*
 import com.skoky.Tools.P3_DEF_PORT
 import eu.plib.Parser
+import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
@@ -141,7 +144,7 @@ class DecoderService : Service() {
         }
     }
 
-    fun getBestFreeDecoder() : Decoder? = decoders.maxBy { it.lastSeen }
+    fun getBestFreeDecoder(): Decoder? = decoders.maxBy { it.lastSeen }
 
     fun getDecoders() = decoders.toList()
 
@@ -491,6 +494,10 @@ class DecoderService : Service() {
         intent.putExtra("Passing", jsonData)
         applicationContext.sendBroadcast(intent)
         Log.d(TAG, "Broadcast passing sent $intent")
+
+        if (defaultSharedPreferences.getBoolean(Const.transponderSoundK, true))
+            ToneGenerator(AudioManager.STREAM_ALARM, 100)
+                    .startTone(ToneGenerator.TONE_CDMA_INTERCEPT, 200)
     }
 
 //    private val cache = mutableListOf<JSONObject>()
@@ -543,16 +550,16 @@ class DecoderService : Service() {
     }
 
     fun disconnectAllDecoders() {
-        decoders.forEach {d ->
-             d.connection?.let { c->
-                 if (c.isConnected) {
-                     try {
-                         c.close()
-                     } catch (e: Exception) {
-                         Log.i(TAG,"Disconnection issue for decoder $d, error $e")
-                     }
-                 }
-             }
+        decoders.forEach { d ->
+            d.connection?.let { c ->
+                if (c.isConnected) {
+                    try {
+                        c.close()
+                    } catch (e: Exception) {
+                        Log.i(TAG, "Disconnection issue for decoder $d, error $e")
+                    }
+                }
+            }
         }
     }
 

@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import android.widget.EditText
 import com.skoky.Const.startupDelayValueK
 import com.skoky.MainActivity
 import com.skoky.MyApp
@@ -41,9 +42,10 @@ class OptionsFragment : FragmentCommon() {
 
             checkStartupDelay.isChecked = ma.getStartupDelayFlag()
             checkRaceDuration.isChecked = ma.getRaceDurationFlag()
-//            a.findViewById<EditText>(R.id.startupDelayValue)?.let { it.setText(ma.getStartupDelayValueFlag()) }  // FIXME does nto work !!!
+            a.findViewById<EditText>(R.id.checkMinLapTime)?.let { it.setText(ma.getMinLapTimeFlag().toString()) }
+            a.findViewById<EditText>(R.id.startupDelayValue)?.let { it.setText(ma.getStartupDelayValueFlag().toString()) }
             ma.showHideStartupDelayValue(ma.getStartupDelayFlag())
-//            a.raceDurationValue.setText(ma.getRaceDurationValueFlag())  // FIXME does not work!
+            a.findViewById<EditText>(R.id.raceDurationValue)?.let { it.setText(ma.getRaceDurationValueFlag().toString()) }
 
             startupDelayValue.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
                 ma.saveIntValue(startupDelayValue,startupDelayValueK)
@@ -55,8 +57,9 @@ class OptionsFragment : FragmentCommon() {
 
             a.findViewById<CheckBox>(R.id.checkDriverSync)?.isChecked = ma.getDriverSyncFlag()
             a.findViewById<CheckBox>(R.id.checkBadMsg)?.isChecked = ma.getBadMsgFlag()
+            a.findViewById<CheckBox>(R.id.checkTransponderSound).isChecked = ma.getTransponderSoundFlag()
+            a.findViewById<CheckBox>(R.id.checkStartStopSound).isChecked = ma.getStartStopSoundFlag()
         }
-
     }
 
     interface OnListFragmentInteractionListener {

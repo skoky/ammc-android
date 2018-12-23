@@ -36,8 +36,10 @@ import com.skoky.Const.includeMinLapTimeK
 import com.skoky.Const.minLapTimeK
 import com.skoky.Const.raceDurationK
 import com.skoky.Const.raceDurationValueK
+import com.skoky.Const.startStopSoundK
 import com.skoky.Const.startupDelayK
 import com.skoky.Const.startupDelayValueK
+import com.skoky.Const.transponderSoundK
 import com.skoky.fragment.*
 import com.skoky.fragment.content.ConsoleModel
 import com.skoky.fragment.content.Racer
@@ -303,6 +305,16 @@ class MainActivity : AppCompatActivity(),
         defaultSharedPreferences.edit().putBoolean(driversyncK, c.isChecked).apply()
     }
 
+    fun optionsTransponderSound(view: View) {
+        val c = view as CheckBox
+        defaultSharedPreferences.edit().putBoolean(transponderSoundK, c.isChecked).apply()
+    }
+
+    fun optionsStartStopSound(view: View) {
+        val c = view as CheckBox
+        defaultSharedPreferences.edit().putBoolean(startStopSoundK, c.isChecked).apply()
+    }
+
     fun optionsRaceDuration(view: View) {
         val c = view as CheckBox
         saveRaceDuration(c)
@@ -343,7 +355,7 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    fun showHideRaceDurationValue(show: Boolean) {
+    private fun showHideRaceDurationValue(show: Boolean) {
         if (show) {
             raceDurationValue.visibility = View.VISIBLE
             textRaceDuration2.visibility = View.VISIBLE
@@ -436,7 +448,8 @@ class MainActivity : AppCompatActivity(),
     fun getRaceDurationValueFlag() = defaultSharedPreferences.getInt(raceDurationValueK, 5)
     fun getIncludeMinLapTimeFlag() = defaultSharedPreferences.getBoolean(includeMinLapTimeK, false)
     fun getMinLapTimeFlag() = defaultSharedPreferences.getInt(minLapTimeK, 20)
-
+    fun getTransponderSoundFlag() = defaultSharedPreferences.getBoolean(transponderSoundK, true)
+    fun getStartStopSoundFlag() = defaultSharedPreferences.getBoolean(startStopSoundK, true)
 
     private val decoderServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName,

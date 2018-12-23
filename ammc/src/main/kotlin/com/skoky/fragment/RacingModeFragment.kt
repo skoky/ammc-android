@@ -5,6 +5,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.AudioManager
+import android.media.ToneGenerator
+import android.media.ToneGenerator.TONE_CDMA_NETWORK_BUSY
+import android.media.ToneGenerator.TONE_DTMF_7
 import android.os.Bundle
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
@@ -144,6 +148,10 @@ class RacingModeFragment : FragmentCommon() {
         doStartStop()
     }
     private fun doStop() {
+        val ma = (activity as MainActivity)
+        if (ma.getStartStopSoundFlag())
+            ToneGenerator(AudioManager.STREAM_ALARM, 100).startTone(TONE_CDMA_NETWORK_BUSY, 1000)
+
         context?.let {
             Tools.wakeLock(it, false)
         }
@@ -198,18 +206,24 @@ class RacingModeFragment : FragmentCommon() {
         preStartDelay = true
         (timingContentView.adapter as RacingModeRecyclerViewAdapter).clearResults()
         startStopButtonM?.text = getText(R.string.stop)
+        val ma = (activity as MainActivity)
 
         val delayStartTime = System.currentTimeMillis()
         clock = doAsync {
             while (System.currentTimeMillis() - delayStartTime < delaySecs * 1000) {
                 val diffSecs = (System.currentTimeMillis() - delayStartTime) / 1000
                 val time = delaySecs - diffSecs
+                if (ma.getStartStopSoundFlag())
+                    if (time == 1.toLong() || time == 2.toLong()) ToneGenerator(AudioManager.STREAM_ALARM, 100).startTone(TONE_DTMF_7, 200)
+
                 val str = "Start in ${time}s"
                 uiThread {
                     clockViewX.text = str
                 }
-                Thread.sleep(30)
+                Thread.sleep(1000)
             }
+            if (ma.getStartStopSoundFlag())
+                ToneGenerator(AudioManager.STREAM_ALARM, 100).startTone(TONE_DTMF_7, 600)
 
             uiThread {
                 doStartNow()
@@ -234,7 +248,6 @@ class RacingModeFragment : FragmentCommon() {
         startStopButtonM?.text = getText(R.string.stop)
         val racingStartTime = System.currentTimeMillis()
 
-
         clock = doAsync {
 
             if (limitRaceDuration) {
@@ -256,6 +269,7 @@ class RacingModeFragment : FragmentCommon() {
                     val timeMs = System.currentTimeMillis() - racingStartTime
                     val str = Tools.millisToTimeWithMillis(timeMs)
                     uiThread {
+                        doStop()
                         clockViewX.text = str
                     }
                     Thread.sleep(30)
