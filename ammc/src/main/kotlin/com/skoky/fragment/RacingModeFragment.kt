@@ -5,8 +5,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.media.AudioManager
-import android.media.ToneGenerator
 import android.media.ToneGenerator.TONE_CDMA_NETWORK_BUSY
 import android.media.ToneGenerator.TONE_DTMF_7
 import android.os.Bundle
@@ -24,6 +22,8 @@ import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.Tools
+import com.skoky.Wrapped.sleep
+import com.skoky.Wrapped.tone
 import com.skoky.fragment.content.Racer
 import com.skoky.fragment.content.RacingModeModel
 import com.skoky.services.DecoderService.Companion.DECODER_PASSING
@@ -88,7 +88,7 @@ class RacingModeFragment : FragmentCommon() {
                 val transponder = FragmentCommon().getTransponderFromPassingJson(activity!!.application, json)
                 val time = FragmentCommon().getTimeFromPassingJson(json)
 
-                if (running) {
+                if (raceRunning) {
                     (adapter as RacingModeRecyclerViewAdapter).addRecord(transponder, time)
                     adapter.notifyDataSetChanged()
                     doAsync {
@@ -142,33 +142,34 @@ class RacingModeFragment : FragmentCommon() {
         }
     }
 
-    private var running = false
-    private var preStartDelay = false
+    private var raceRunning = false
+    private var preStartDelayRunning = false
     private fun doStartStopDialog() {
         doStartStop()
     }
+
     private fun doStop() {
         val ma = (activity as MainActivity)
         if (ma.getStartStopSoundFlag())
-            ToneGenerator(AudioManager.STREAM_ALARM, 100).startTone(TONE_CDMA_NETWORK_BUSY, 1000)
+            tone(TONE_CDMA_NETWORK_BUSY, 1000)
 
         context?.let {
             Tools.wakeLock(it, false)
         }
-        if (preStartDelay) {
+        if (preStartDelayRunning) {
             clockViewX.text = ""
         }
-        running = false
-        preStartDelay = false
-        clock.cancel(true)      // TODO calculate exact training timeUs
+        raceRunning = false
+        preStartDelayRunning = false
+        clock?.cancel(true)      // TODO calculate exact training timeUs
         startStopButtonM?.text = getText(R.string.start)
     }
 
     private fun doStartStop() {
 
-        if (running || preStartDelay) {
+        if (raceRunning || preStartDelayRunning) {
             doStop()
-        } else {    // not running
+        } else {    // not raceRunning
             context?.let {
                 Tools.wakeLock(it, true)
             }
@@ -188,7 +189,7 @@ class RacingModeFragment : FragmentCommon() {
 
     }
 
-    private lateinit var clock: Future<Unit>
+    private var clock: Future<Unit>? = null
 
     private fun doStart() {
 
@@ -203,30 +204,33 @@ class RacingModeFragment : FragmentCommon() {
     }
 
     private fun doStartDelay(delaySecs: Int) {
-        preStartDelay = true
+        preStartDelayRunning = true
         (timingContentView.adapter as RacingModeRecyclerViewAdapter).clearResults()
         startStopButtonM?.text = getText(R.string.stop)
         val ma = (activity as MainActivity)
+        var isInterrupted = false
 
         val delayStartTime = System.currentTimeMillis()
         clock = doAsync {
-            while (System.currentTimeMillis() - delayStartTime < delaySecs * 1000) {
+            while (System.currentTimeMillis() - delayStartTime < delaySecs * 1000 && preStartDelayRunning && !isInterrupted) {
                 val diffSecs = (System.currentTimeMillis() - delayStartTime) / 1000
                 val time = delaySecs - diffSecs
                 if (ma.getStartStopSoundFlag())
-                    if (time == 1.toLong() || time == 2.toLong()) ToneGenerator(AudioManager.STREAM_ALARM, 100).startTone(TONE_DTMF_7, 200)
+                    if (time == 1.toLong() || time == 2.toLong()) tone(TONE_DTMF_7, 200)
 
                 val str = "Start in ${time}s"
                 uiThread {
                     clockViewX.text = str
                 }
-                Thread.sleep(1000)
+                isInterrupted = sleep(1000)
             }
-            if (ma.getStartStopSoundFlag())
-                ToneGenerator(AudioManager.STREAM_ALARM, 100).startTone(TONE_DTMF_7, 600)
+            if (!isInterrupted) {
+                if (ma.getStartStopSoundFlag()) tone(TONE_DTMF_7, 600)
 
-            uiThread {
-                doStartNow()
+                if (preStartDelayRunning)
+                    uiThread {
+                        doStartNow()
+                    }
             }
         }
 
@@ -240,43 +244,50 @@ class RacingModeFragment : FragmentCommon() {
         val includeMinLapTime = ma.getIncludeMinLapTimeFlag()
         val minLapTime = ma.getMinLapTimeFlag()
 
-        val totalRaceTime = if (includeMinLapTime) raceDurationMins*60+minLapTime else raceDurationMins*60
+        val totalRaceTime = if (includeMinLapTime) raceDurationMins * 60 + minLapTime else raceDurationMins * 60
 
         (timingContentView.adapter as RacingModeRecyclerViewAdapter).clearResults()
-        preStartDelay = false
-        running = true
+        preStartDelayRunning = false
+        raceRunning = true
         startStopButtonM?.text = getText(R.string.stop)
         val racingStartTime = System.currentTimeMillis()
-
+        var isInterrupted = false
         clock = doAsync {
 
             if (limitRaceDuration) {
-                while ((System.currentTimeMillis()-racingStartTime) / 1000 <= totalRaceTime) {
+                while ((System.currentTimeMillis() - racingStartTime) / 1000 <= totalRaceTime && raceRunning && !isInterrupted) {
                     val timeMs = System.currentTimeMillis() - racingStartTime
-                    val str = "${Tools.millisToTimeWithMillis(timeMs)} / ${Tools.millisToTime((totalRaceTime*1000).toLong())}"
+                    val str = "${Tools.millisToTimeWithMillis(timeMs)} / ${Tools.millisToTime((totalRaceTime * 1000).toLong())}"
                     uiThread {
                         clockViewX.text = str
                     }
-                    Thread.sleep(30)
+                    isInterrupted = sleep(30)
                 }
-                uiThread {
-                    doStop()
-                    clockViewX.text = Tools.millisToTimeWithMillis((totalRaceTime*1000).toLong())
+                if (!isInterrupted) {
+                    uiThread {
+                        doStop()
+                        clockViewX.text = Tools.millisToTimeWithMillis((totalRaceTime * 1000).toLong())
+                    }
                 }
 
             } else {
-                while (true) {
+                while (raceRunning && !isInterrupted) {
                     val timeMs = System.currentTimeMillis() - racingStartTime
                     val str = Tools.millisToTimeWithMillis(timeMs)
                     uiThread {
-                        doStop()
                         clockViewX.text = str
                     }
-                    Thread.sleep(30)
+                    isInterrupted = sleep(30)
+                }
+                if (!isInterrupted) {
+                    uiThread {
+                        doStop()
+                        clockViewX.text = Tools.millisToTimeWithMillis((totalRaceTime * 1000).toLong())
+                    }
                 }
             }
         }
-
+        Log.i(TAG, "Loop done")
     }
 
     override fun onAttach(context: Context) {
@@ -291,6 +302,7 @@ class RacingModeFragment : FragmentCommon() {
     override fun onDetach() {
         super.onDetach()
         context?.unregisterReceiver(receiver)
+        clock?.cancel(true)
     }
 
 

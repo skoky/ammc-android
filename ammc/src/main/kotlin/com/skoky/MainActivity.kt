@@ -19,10 +19,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.CheckBox
-import android.widget.EditText
-import android.widget.RadioButton
-import android.widget.RadioGroup
+import android.widget.*
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
@@ -165,6 +162,7 @@ class MainActivity : AppCompatActivity(),
 
     fun openStartupFragment() {
         val fragmentTransaction = supportFragmentManager.beginTransaction()
+        optionsFragment?.let { fragmentTransaction.detach(it) }
         fragmentTransaction.replace(R.id.screen_container, StartupFragment())
         fragmentTransaction.commit()
     }
@@ -209,7 +207,7 @@ class MainActivity : AppCompatActivity(),
         val decodersCopy = app.decoderService.getDecoders()
 
         val decoderText = dialog.decoder_address_edittext
-        decoderText.setText(getSharedPreferences(AMMC_PREFS, 0).getString(LAST_IP, ""))
+        decoderText.setText(defaultSharedPreferences.getString(LAST_IP, ""))
 
         val radioButton = dialog.known_decoders
 
@@ -236,7 +234,7 @@ class MainActivity : AppCompatActivity(),
 
             if (decoderText.text.isNotEmpty()) {
                 val dd = decoderText.text.toString().trim()
-                if (!dd.isBlank()) getSharedPreferences(AMMC_PREFS, 0).edit().putString(LAST_IP, dd).commit()
+                if (!dd.isBlank()) defaultSharedPreferences.edit().putString(LAST_IP, dd).commit()
                 app.decoderService?.let { s -> s.connectDecoder(dd) }
             } else
                 foundDecoder?.let { d3 -> app.decoderService?.let { s -> s.connectDecoder2(d3) } }
@@ -283,7 +281,7 @@ class MainActivity : AppCompatActivity(),
         return true
     }
 
-    private lateinit var optionsFragment: OptionsFragment
+    var optionsFragment: OptionsFragment? = null
     private fun openOptions(view: View?): Boolean {
         optionsFragment = OptionsFragment.newInstance(1)
         val fragmentTransaction = supportFragmentManager.beginTransaction()
@@ -325,14 +323,13 @@ class MainActivity : AppCompatActivity(),
     fun optionsIncludeMinLapTime(view: View) {
         val c = view as CheckBox
         saveIncludeMinLapTime(c)
-        saveIntValue(startupDelayValue, includeMinLapTimeK)
     }
 
     fun optionsStartupDelay(view: View) {
         val c = view as CheckBox
         saveStartupDelay(c)
         showHideStartupDelayValue(c.isChecked)
-        saveIntValue(startupDelayValue,startupDelayValueK)
+        saveIntValue(startupDelayValue, startupDelayValueK)
     }
 
     private fun saveStartupDelay(checkbox: CheckBox) = defaultSharedPreferences.edit().putBoolean(startupDelayK, checkbox.isChecked).apply()
@@ -340,33 +337,35 @@ class MainActivity : AppCompatActivity(),
     private fun saveIncludeMinLapTime(checkbox: CheckBox) = defaultSharedPreferences.edit().putBoolean(includeMinLapTimeK, checkbox.isChecked).apply()
 
     fun saveIntValue(delayText: EditText, key: String) = try {
-            val delay = (Integer.valueOf(delayText.text.toString()))
-            defaultSharedPreferences.edit().putInt(key, delay).apply()
-        } catch (e: Exception) {
-        }
+        val delay = (Integer.valueOf(delayText.text.toString()))
+        defaultSharedPreferences.edit().putInt(key, delay).apply()
+    } catch (e: Exception) {
+        Log.e(TAG,"Value not saved! $key",e)
+    }
 
     fun showHideStartupDelayValue(show: Boolean) {
         if (show) {
             startupDelayValue.visibility = View.VISIBLE
             textStartupDelay2.visibility = View.VISIBLE
         } else {
-            startupDelayValue.visibility = View.GONE
-            textStartupDelay2.visibility = View.GONE
+            startupDelayValue.visibility = View.INVISIBLE
+            textStartupDelay2.visibility = View.INVISIBLE
         }
     }
 
     private fun showHideRaceDurationValue(show: Boolean) {
-        if (show) {
-            raceDurationValue.visibility = View.VISIBLE
-            textRaceDuration2.visibility = View.VISIBLE
-            textRaceDurationOption2.visibility = View.VISIBLE
-            checkIncludeMinLapTime.visibility = View.VISIBLE
-        } else {
-            raceDurationValue.visibility = View.GONE
-            textRaceDuration2.visibility = View.GONE
-            textRaceDurationOption2.visibility = View.INVISIBLE
-            checkIncludeMinLapTime.visibility = View.INVISIBLE
-        }
+            if (show) {
+                findViewById<EditText>(R.id.raceDurationValue).visibility = View.VISIBLE
+                findViewById<TextView>(R.id.textRaceDuration2).visibility = View.VISIBLE
+                findViewById<TextView>(R.id.textRaceDurationOption2).visibility = View.VISIBLE
+                checkIncludeMinLapTime.visibility = View.VISIBLE
+            } else {
+                findViewById<EditText>(R.id.raceDurationValue).visibility = View.INVISIBLE
+                findViewById<TextView>(R.id.textRaceDuration2).visibility = View.INVISIBLE
+                findViewById<TextView>(R.id.textRaceDurationOption2).visibility = View.INVISIBLE
+                checkIncludeMinLapTime.visibility = View.INVISIBLE
+            }
+
     }
 
     private lateinit var consoleFragment: ConsoleModeFragment
@@ -401,7 +400,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     fun openTransponderDialog(view: View?) {
-        if (!trainingFragment.running) {
+        if (!trainingFragment.trainingRunning) {
             trainingFragment.openTransponderDialog(false)
         }
     }
@@ -507,7 +506,6 @@ class MainActivity : AppCompatActivity(),
 
     companion object {
         private const val TAG = "MainActivity"
-        private const val AMMC_PREFS = "ammcprefs"
         private const val LAST_IP = "lastip"
 
         fun decoderLabel(d: Decoder): String {

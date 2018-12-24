@@ -4,17 +4,28 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.EditText
-import com.skoky.Const.startupDelayValueK
+import com.skoky.Const.raceDurationValueK
 import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.fragment.content.ConsoleModel
+import kotlinx.android.synthetic.*
 import kotlinx.android.synthetic.main.fragment_options.*
+
+class MyTextWatcher(val ma: MainActivity, val key: String, val value: EditText): TextWatcher  {
+    override fun afterTextChanged(p0: Editable?) {}
+    override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+    override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+        ma.saveIntValue(value, key)
+    }
+}
 
 class OptionsFragment : FragmentCommon() {
 
@@ -32,6 +43,7 @@ class OptionsFragment : FragmentCommon() {
         return view
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -47,13 +59,7 @@ class OptionsFragment : FragmentCommon() {
             ma.showHideStartupDelayValue(ma.getStartupDelayFlag())
             a.findViewById<EditText>(R.id.raceDurationValue)?.let { it.setText(ma.getRaceDurationValueFlag().toString()) }
 
-            startupDelayValue.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
-                ma.saveIntValue(startupDelayValue,startupDelayValueK)
-            }
-
-            raceDurationValue.addOnLayoutChangeListener { _: View, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int, _: Int ->
-                ma.saveIntValue(startupDelayValue,"raceDurationValue")
-            }
+            view.findViewById<EditText>(R.id.startupDelayValue).addTextChangedListener(MyTextWatcher(ma, raceDurationValueK,startupDelayValue))
 
             a.findViewById<CheckBox>(R.id.checkDriverSync)?.isChecked = ma.getDriverSyncFlag()
             a.findViewById<CheckBox>(R.id.checkBadMsg)?.isChecked = ma.getBadMsgFlag()
@@ -65,6 +71,11 @@ class OptionsFragment : FragmentCommon() {
     interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
         fun onListFragmentInteraction(item: ConsoleModel?)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        this.clearFindViewByIdCache()
     }
 
     companion object {

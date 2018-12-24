@@ -2,7 +2,6 @@ package com.skoky.services
 
 import android.app.Service
 import android.content.Intent
-import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.Binder
 import android.os.Build
@@ -11,6 +10,8 @@ import android.support.annotation.RequiresApi
 import android.util.Log
 import com.skoky.*
 import com.skoky.Tools.P3_DEF_PORT
+import com.skoky.Wrapped.sleep
+import com.skoky.Wrapped.tone
 import eu.plib.Parser
 import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.doAsync
@@ -106,7 +107,7 @@ class DecoderService : Service() {
                         }
                     } else Log.d(TAG, "Vostok: Already connected another decoder")
                 } else Log.d(TAG, "Already have vostok")
-                Thread.sleep(5000)
+                sleep(5000)
             }
         }
     }
@@ -245,7 +246,7 @@ class DecoderService : Service() {
                             val parsed = Parser.encode(m)
                             parsed?.let { p -> s.getOutputStream().write(p) }
                         } finally {
-                            Thread.sleep(200)
+                            sleep(200)
                         }
                     }
                 }
@@ -496,8 +497,7 @@ class DecoderService : Service() {
         Log.d(TAG, "Broadcast passing sent $intent")
 
         if (defaultSharedPreferences.getBoolean(Const.transponderSoundK, true))
-            ToneGenerator(AudioManager.STREAM_ALARM, 100)
-                    .startTone(ToneGenerator.TONE_CDMA_INTERCEPT, 200)
+            tone(ToneGenerator.TONE_CDMA_INTERCEPT, 200)
     }
 
 //    private val cache = mutableListOf<JSONObject>()

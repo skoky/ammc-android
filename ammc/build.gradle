@@ -6,7 +6,7 @@ def android_support_version = '27.1.1'
 
 android {
     useLibrary 'org.apache.http.legacy'
-    compileSdkVersion 27
+    compileSdkVersion 28
     buildToolsVersion '28.0.3'
     defaultConfig {
         applicationId "com.skoky"

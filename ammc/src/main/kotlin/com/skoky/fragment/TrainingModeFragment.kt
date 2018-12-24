@@ -19,6 +19,7 @@ import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.Tools
+import com.skoky.Wrapped.sleep
 import com.skoky.fragment.content.TrainingLap
 import com.skoky.fragment.content.TrainingModeModel
 import com.skoky.services.DecoderService.Companion.DECODER_PASSING
@@ -80,7 +81,7 @@ class TrainingModeFragment : FragmentCommon() {
                 val transponder = FragmentCommon().getTransponderFromPassingJson(activity!!.application, json)
                 val timeUs = FragmentCommon().getTimeFromPassingJson(json)
 
-                if (running) {
+                if (trainingRunning) {
                     (adapter as TrainingModeRecyclerViewAdapter).addRecord(transponder, timeUs)
                     adapter.notifyDataSetChanged()
                 }
@@ -125,8 +126,8 @@ class TrainingModeFragment : FragmentCommon() {
         tmm.setSelectedTransponder(transponder)
     }
 
-    var running = false
-    var preStartDelay = false
+    var trainingRunning = false
+    var preStartDelayRunning = false
     private fun doStartStopDialog() {
 
         if (tmm.getSelectedTransponder() == null) {
@@ -138,9 +139,9 @@ class TrainingModeFragment : FragmentCommon() {
 
     private fun doStartStop() {
 
-        if (running || preStartDelay) {
+        if (trainingRunning || preStartDelayRunning) {
             doStop()
-        } else {    // not running
+        } else {    // not trainingRunning
 
             if (timingContentView.adapter.itemCount == 1) {     // just a label, nothing to clear
                 doStart()
@@ -157,15 +158,15 @@ class TrainingModeFragment : FragmentCommon() {
 
     }
 
-    private lateinit var clock: Future<Unit>
+    private var clock: Future<Unit>? = null
 
     private fun doStop() {
-        if (preStartDelay) {
+        if (preStartDelayRunning) {
             clockViewX.text = ""
         }
-        running = false
-        preStartDelay = false
-        clock.cancel(true)      // TODO calculate exact training timeUs
+        trainingRunning = false
+        preStartDelayRunning = false
+        clock?.cancel(true)      // TODO calculate exact training timeUs
         startStopButtonM.text = getText(R.string.start)
     }
 
@@ -182,45 +183,47 @@ class TrainingModeFragment : FragmentCommon() {
     }
 
     private fun doStartDelay(delaySecs: Int) {
-        preStartDelay = true
+        preStartDelayRunning = true
         (timingContentView.adapter as TrainingModeRecyclerViewAdapter).clearResults()
         startStopButtonM.text = getText(R.string.stop)
-
+        var isInterrupted = false
         val delayStartTime = System.currentTimeMillis()
 
         clock = doAsync {
-            while (System.currentTimeMillis() - delayStartTime < delaySecs * 1000) {
+            while (System.currentTimeMillis() - delayStartTime < delaySecs * 1000 && preStartDelayRunning && !isInterrupted) {
                 val diffSecs = (System.currentTimeMillis() - delayStartTime) / 1000
                 val time = delaySecs - diffSecs
                 val str = "Start in ${time}s"
                 uiThread {
                     clockViewX.text = str
                 }
-                Thread.sleep(30)
+                isInterrupted = sleep(30)
             }
 
-            uiThread {
-                doStartNow()
+            if (!isInterrupted) {
+                uiThread {
+                    doStartNow()
+                }
             }
         }
-
     }
 
     private fun doStartNow() {
         (timingContentView.adapter as TrainingModeRecyclerViewAdapter).clearResults()
-        preStartDelay = false
-        running = true
+        preStartDelayRunning = false
+        trainingRunning = true
         startStopButtonM.text = getText(R.string.stop)
         val trainingStartTime = System.currentTimeMillis()
+        var isInterrupted = false
 
         clock = doAsync {
-            while (true) {
+            while (trainingRunning && !isInterrupted) {
                 val timeMs = System.currentTimeMillis() - trainingStartTime
                 val str = Tools.millisToTimeWithMillis(timeMs)
                 uiThread {
                     clockViewX.text = str
                 }
-                Thread.sleep(30)
+                isInterrupted = sleep(30)
             }
         }
     }
@@ -237,6 +240,7 @@ class TrainingModeFragment : FragmentCommon() {
     override fun onDetach() {
         super.onDetach()
         context?.unregisterReceiver(receiver)
+        clock?.cancel(true)
     }
 
     interface OnListFragmentInteractionListener {

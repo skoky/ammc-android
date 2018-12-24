@@ -97,7 +97,7 @@ object Tools {
         if (b) {
             // FIXME use smaller wake lock on new androids
             MyApp.wakeLock = (context.getSystemService(Context.POWER_SERVICE) as PowerManager).run {
-                newWakeLock(FULL_WAKE_LOCK , "AMMC:Race running").apply {
+                newWakeLock(FULL_WAKE_LOCK , "AMMC:Race trainingRunning").apply {
                     acquire()
                 }
 

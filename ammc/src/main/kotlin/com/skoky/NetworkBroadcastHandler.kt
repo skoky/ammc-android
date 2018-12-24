@@ -1,6 +1,7 @@
 package com.skoky
 
 import android.util.Log
+import com.skoky.Wrapped.sleep
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 
@@ -16,7 +17,7 @@ object NetworkBroadcastHandler {
         val incomingBuffer = ByteArray(1024)
         var socket: DatagramSocket? = null
         while (true) {
-            Thread.sleep(2000)
+            sleep(2000)
             socket = try {
                 DatagramSocket(INCOMING_PORT)
             } catch (e: Exception) {
@@ -43,7 +44,7 @@ object NetworkBroadcastHandler {
 
                 } finally {
                     s.let { s.close() }
-                    Thread.sleep(1000)
+                    sleep(1000)
                     Log.i(TAG, "Reconnecting broadcast port $INCOMING_PORT")
                 }
             }
