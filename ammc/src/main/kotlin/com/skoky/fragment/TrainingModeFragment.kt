@@ -18,6 +18,9 @@ import android.widget.TextView
 import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
+import com.skoky.Tone.preStartTone
+import com.skoky.Tone.startTone
+import com.skoky.Tone.stopTone
 import com.skoky.Tools
 import com.skoky.Wrapped.sleep
 import com.skoky.fragment.content.TrainingLap
@@ -161,6 +164,10 @@ class TrainingModeFragment : FragmentCommon() {
     private var clock: Future<Unit>? = null
 
     private fun doStop() {
+
+        val ma = (activity as MainActivity)
+        if (ma.getStartStopSoundFlag()) stopTone()
+
         if (preStartDelayRunning) {
             clockViewX.text = ""
         }
@@ -188,16 +195,19 @@ class TrainingModeFragment : FragmentCommon() {
         startStopButtonM.text = getText(R.string.stop)
         var isInterrupted = false
         val delayStartTime = System.currentTimeMillis()
+        val ma = activity as MainActivity
 
         clock = doAsync {
             while (System.currentTimeMillis() - delayStartTime < delaySecs * 1000 && preStartDelayRunning && !isInterrupted) {
                 val diffSecs = (System.currentTimeMillis() - delayStartTime) / 1000
                 val time = delaySecs - diffSecs
+                if (ma.getStartStopSoundFlag())
+                    if (time == 2.toLong() || time == 1.toLong()) preStartTone()
                 val str = "Start in ${time}s"
                 uiThread {
                     clockViewX.text = str
                 }
-                isInterrupted = sleep(30)
+                isInterrupted = sleep(1000)
             }
 
             if (!isInterrupted) {
@@ -215,8 +225,10 @@ class TrainingModeFragment : FragmentCommon() {
         startStopButtonM.text = getText(R.string.stop)
         val trainingStartTime = System.currentTimeMillis()
         var isInterrupted = false
-
+        val ma = activity as MainActivity
         clock = doAsync {
+
+            if (ma.getStartStopSoundFlag()) startTone()
             while (trainingRunning && !isInterrupted) {
                 val timeMs = System.currentTimeMillis() - trainingStartTime
                 val str = Tools.millisToTimeWithMillis(timeMs)

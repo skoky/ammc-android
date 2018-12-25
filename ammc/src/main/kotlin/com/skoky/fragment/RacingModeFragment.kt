@@ -5,8 +5,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.media.ToneGenerator.TONE_CDMA_NETWORK_BUSY
-import android.media.ToneGenerator.TONE_DTMF_7
 import android.os.Bundle
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
@@ -21,9 +19,11 @@ import android.widget.TextView
 import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
+import com.skoky.Tone.preStartTone
+import com.skoky.Tone.startTone
+import com.skoky.Tone.stopTone
 import com.skoky.Tools
 import com.skoky.Wrapped.sleep
-import com.skoky.Wrapped.tone
 import com.skoky.fragment.content.Racer
 import com.skoky.fragment.content.RacingModeModel
 import com.skoky.services.DecoderService.Companion.DECODER_PASSING
@@ -150,8 +150,8 @@ class RacingModeFragment : FragmentCommon() {
 
     private fun doStop() {
         val ma = (activity as MainActivity)
-        if (ma.getStartStopSoundFlag())
-            tone(TONE_CDMA_NETWORK_BUSY, 1000)
+        if (ma.getStartStopSoundFlag()) stopTone()
+
 
         context?.let {
             Tools.wakeLock(it, false)
@@ -216,7 +216,7 @@ class RacingModeFragment : FragmentCommon() {
                 val diffSecs = (System.currentTimeMillis() - delayStartTime) / 1000
                 val time = delaySecs - diffSecs
                 if (ma.getStartStopSoundFlag())
-                    if (time == 1.toLong() || time == 2.toLong()) tone(TONE_DTMF_7, 200)
+                    if (time == 1.toLong() || time == 2.toLong()) preStartTone()
 
                 val str = "Start in ${time}s"
                 uiThread {
@@ -225,7 +225,6 @@ class RacingModeFragment : FragmentCommon() {
                 isInterrupted = sleep(1000)
             }
             if (!isInterrupted) {
-                if (ma.getStartStopSoundFlag()) tone(TONE_DTMF_7, 600)
 
                 if (preStartDelayRunning)
                     uiThread {
@@ -253,6 +252,8 @@ class RacingModeFragment : FragmentCommon() {
         val racingStartTime = System.currentTimeMillis()
         var isInterrupted = false
         clock = doAsync {
+
+            if (ma.getStartStopSoundFlag()) startTone()
 
             if (limitRaceDuration) {
                 while ((System.currentTimeMillis() - racingStartTime) / 1000 <= totalRaceTime && raceRunning && !isInterrupted) {
