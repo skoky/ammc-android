@@ -473,6 +473,7 @@ class DecoderService : Service() {
     }
 
     private fun sendBroadcastConnect(decoder: Decoder) {
+        Tools.wakeLock(this,true)
         val intent = Intent()
         intent.action = DECODER_CONNECT
         intent.putExtra("uuid", decoder.uuid.toString())
@@ -481,6 +482,7 @@ class DecoderService : Service() {
     }
 
     private fun sendBroadcastDisconnected(decoder: Decoder) {
+        Tools.wakeLock(this,false)
         val intent = Intent()
         intent.action = DECODER_DISCONNECTED
         intent.putExtra("uuid", decoder.uuid.toString())
@@ -500,30 +502,6 @@ class DecoderService : Service() {
             tone(ToneGenerator.TONE_CDMA_INTERCEPT, 200)
     }
 
-//    private val cache = mutableListOf<JSONObject>()
-//    private fun updateCache(json: JSONObject) {
-//
-//        if (json.has("decoderID")) {
-//            // not caching for another decoder or disconnected decoder
-//            decoders.find { it.decoderId == json.getString("decoderType") && it.connection != null }
-//                    ?: return
-//        } else {
-//            return      // weird
-//        }
-//
-//        val found = cache.find { it.getString("recordType") == json.getString("recordType") }
-//
-//        if (found == null) {
-//            cache.add(json)
-//        } else {
-//            cache.forEachIndexed { i, j ->
-//                if (j.getString("recordType") == found.getString("recordType")) {
-//                    cache[i] = found
-//                }
-//            }
-//        }
-//    }
-
     private fun sendBroadcastData(decoder: Decoder?, jsonData: JSONObject) {
         //updateCache(jsonData)
         val intent = Intent()
@@ -537,6 +515,7 @@ class DecoderService : Service() {
     private val myBinder = MyLocalBinder()
     override fun onDestroy() {
         super.onDestroy()
+        Tools.wakeLock(this,false)
         Log.w(TAG, "Destroyed")
     }
 

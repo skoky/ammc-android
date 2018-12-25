@@ -152,10 +152,6 @@ class RacingModeFragment : FragmentCommon() {
         val ma = (activity as MainActivity)
         if (ma.getStartStopSoundFlag()) stopTone()
 
-
-        context?.let {
-            Tools.wakeLock(it, false)
-        }
         if (preStartDelayRunning) {
             clockViewX.text = ""
         }
@@ -170,9 +166,6 @@ class RacingModeFragment : FragmentCommon() {
         if (raceRunning || preStartDelayRunning) {
             doStop()
         } else {    // not raceRunning
-            context?.let {
-                Tools.wakeLock(it, true)
-            }
 
             if (timingContentView.adapter.itemCount == 1) {     // just a label, nothing to clear
                 doStart()

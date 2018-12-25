@@ -66,15 +66,8 @@ class MainActivity : AppCompatActivity(),
     private var mAdView: AdView? = null
     private var mDecoderServiceBound = false
 
-    override fun onStart() {
-        super.onStart()
-        Log.w(TAG, "Binding service")
-        val intent = Intent(this, DecoderService::class.java)
-        bindService(intent, decoderServiceConnection, Context.BIND_AUTO_CREATE)
-    }
-
-    override fun onStop() {
-        super.onStop()
+    override fun onDestroy() {
+        super.onDestroy()
         unbindService(decoderServiceConnection)
         mDecoderServiceBound = false
     }
@@ -143,6 +136,9 @@ class MainActivity : AppCompatActivity(),
             setDisplayHomeAsUpEnabled(true)
             setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp)
         }
+        val intent = Intent(this, DecoderService::class.java)
+        bindService(intent, decoderServiceConnection, Context.BIND_AUTO_CREATE)
+
     }
 
     override fun onBackPressed() {
@@ -157,7 +153,6 @@ class MainActivity : AppCompatActivity(),
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         Log.d(TAG, "Focus $hasFocus")
-        Tools.wakeLock(this, hasFocus)
     }
 
     fun openStartupFragment() {
