@@ -281,7 +281,7 @@ class MainActivity : AppCompatActivity(),
         return true
     }
 
-    var optionsFragment: OptionsFragment? = null
+    private var optionsFragment: OptionsFragment? = null
     private fun openOptions(view: View?): Boolean {
         optionsFragment = OptionsFragment.newInstance(1)
         val fragmentTransaction = supportFragmentManager.beginTransaction()
@@ -345,25 +345,25 @@ class MainActivity : AppCompatActivity(),
 
     fun showHideStartupDelayValue(show: Boolean) {
         if (show) {
-            startupDelayValue.visibility = View.VISIBLE
-            textStartupDelay2.visibility = View.VISIBLE
+            findViewById<EditText>(R.id.startupDelayValue).visibility = View.VISIBLE
+            findViewById<TextView>(R.id.textStartupDelay2).visibility = View.VISIBLE
         } else {
-            startupDelayValue.visibility = View.INVISIBLE
-            textStartupDelay2.visibility = View.INVISIBLE
+            findViewById<EditText>(R.id.startupDelayValue).visibility = View.INVISIBLE
+            findViewById<TextView>(R.id.textStartupDelay2).visibility = View.INVISIBLE
         }
     }
 
-    private fun showHideRaceDurationValue(show: Boolean) {
+    fun showHideRaceDurationValue(show: Boolean) {
             if (show) {
                 findViewById<EditText>(R.id.raceDurationValue).visibility = View.VISIBLE
                 findViewById<TextView>(R.id.textRaceDuration2).visibility = View.VISIBLE
                 findViewById<TextView>(R.id.textRaceDurationOption2).visibility = View.VISIBLE
-                checkIncludeMinLapTime.visibility = View.VISIBLE
+                findViewById<CheckBox>(R.id.checkIncludeMinLapTime).visibility = View.VISIBLE
             } else {
                 findViewById<EditText>(R.id.raceDurationValue).visibility = View.INVISIBLE
                 findViewById<TextView>(R.id.textRaceDuration2).visibility = View.INVISIBLE
                 findViewById<TextView>(R.id.textRaceDurationOption2).visibility = View.INVISIBLE
-                checkIncludeMinLapTime.visibility = View.INVISIBLE
+                findViewById<CheckBox>(R.id.checkIncludeMinLapTime).visibility = View.INVISIBLE
             }
 
     }

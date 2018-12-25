@@ -55,7 +55,11 @@ class OptionsFragment : FragmentCommon() {
             val ma = (a as MainActivity)
 
             checkStartupDelay.isChecked = ma.getStartupDelayFlag()
+            ma.showHideStartupDelayValue(checkStartupDelay.isChecked)
             checkRaceDuration.isChecked = ma.getRaceDurationFlag()
+            ma.showHideRaceDurationValue(checkRaceDuration.isChecked)
+            checkIncludeMinLapTime.isChecked = ma.getIncludeMinLapTimeFlag()
+
             a.findViewById<EditText>(R.id.checkMinLapTime)?.let {
                 it.setText(ma.getMinLapTimeFlag().toString())
                 it.addTextChangedListener(MyTextWatcher(ma, minLapTimeK, it))
@@ -64,7 +68,6 @@ class OptionsFragment : FragmentCommon() {
                 it.setText(ma.getStartupDelayValueFlag().toString())
                 it.addTextChangedListener(MyTextWatcher(ma, startupDelayValueK, it))
             }
-            ma.showHideStartupDelayValue(ma.getStartupDelayFlag())
 
             a.findViewById<EditText>(R.id.raceDurationValue)?.let {
                 it.setText(ma.getRaceDurationValueFlag().toString())
