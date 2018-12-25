@@ -299,7 +299,6 @@ class RacingModeFragment : FragmentCommon() {
         clock?.cancel(true)
     }
 
-
     interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
         fun onListFragmentInteraction(item: Racer?)
@@ -317,6 +316,10 @@ class RacingModeFragment : FragmentCommon() {
                         putInt(ARG_COLUMN_COUNT, columnCount)
                     }
                 }
+    }
+
+    fun isRaceRunning() : Boolean {
+        return preStartDelayRunning || raceRunning
     }
 
 }

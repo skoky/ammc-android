@@ -273,4 +273,8 @@ class TrainingModeFragment : FragmentCommon() {
                     }
                 }
     }
+
+    fun isRaceRunning() : Boolean {
+        return preStartDelayRunning || trainingRunning
+    }
 }

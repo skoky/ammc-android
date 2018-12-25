@@ -142,12 +142,44 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onBackPressed() {
+        decideIfLeave()
+    }
+
+    private fun decideIfLeave() {
+        val fr = supportFragmentManager.findFragmentById(R.id.screen_container)
+        when (fr) {
+            is StartupFragment -> exitWithConfirm()
+            is OptionsFragment -> openStartupFragment()
+            is TrainingModeFragment ->
+                if (fr.isRaceRunning()) {
+                    finishWithConfirm()
+                } else openStartupFragment()
+            is RacingModeFragment ->
+                if (fr.isRaceRunning()) {
+                    finishWithConfirm()
+                } else openStartupFragment()
+            is HelpFragment -> openStartupFragment()
+            is DriversFragment -> openStartupFragment()
+            else -> openStartupFragment()
+        }
+    }
+
+    private fun exitWithConfirm() {
         AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")
-                .setMessage("Are you sure you want to exit?")
-                .setPositiveButton("Yes") { _, _ ->
+                .setMessage(R.string.exit_message)
+                .setPositiveButton(R.string.yes) { _, _ ->
                     finish()
                 }
-                .setNegativeButton("No") { _, _ -> }.show()
+                .setNegativeButton(R.string.no) { _, _ -> }.show()
+    }
+
+    private fun finishWithConfirm() {
+        AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")
+                .setMessage(R.string.finish_message)
+                .setPositiveButton(R.string.yes) { _, _ ->
+                    openStartupFragment()
+                }
+                .setNegativeButton(R.string.no) { _, _ -> }.show()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -335,7 +367,7 @@ class MainActivity : AppCompatActivity(),
         val delay = (Integer.valueOf(delayText.text.toString()))
         defaultSharedPreferences.edit().putInt(key, delay).apply()
     } catch (e: Exception) {
-        Log.e(TAG,"Value not saved! $key",e)
+        Log.e(TAG, "Value not saved! $key", e)
     }
 
     fun showHideStartupDelayValue(show: Boolean) {
@@ -349,17 +381,17 @@ class MainActivity : AppCompatActivity(),
     }
 
     fun showHideRaceDurationValue(show: Boolean) {
-            if (show) {
-                findViewById<EditText>(R.id.raceDurationValue).visibility = View.VISIBLE
-                findViewById<TextView>(R.id.textRaceDuration2).visibility = View.VISIBLE
-                findViewById<TextView>(R.id.textRaceDurationOption2).visibility = View.VISIBLE
-                findViewById<CheckBox>(R.id.checkIncludeMinLapTime).visibility = View.VISIBLE
-            } else {
-                findViewById<EditText>(R.id.raceDurationValue).visibility = View.INVISIBLE
-                findViewById<TextView>(R.id.textRaceDuration2).visibility = View.INVISIBLE
-                findViewById<TextView>(R.id.textRaceDurationOption2).visibility = View.INVISIBLE
-                findViewById<CheckBox>(R.id.checkIncludeMinLapTime).visibility = View.INVISIBLE
-            }
+        if (show) {
+            findViewById<EditText>(R.id.raceDurationValue).visibility = View.VISIBLE
+            findViewById<TextView>(R.id.textRaceDuration2).visibility = View.VISIBLE
+            findViewById<TextView>(R.id.textRaceDurationOption2).visibility = View.VISIBLE
+            findViewById<CheckBox>(R.id.checkIncludeMinLapTime).visibility = View.VISIBLE
+        } else {
+            findViewById<EditText>(R.id.raceDurationValue).visibility = View.INVISIBLE
+            findViewById<TextView>(R.id.textRaceDuration2).visibility = View.INVISIBLE
+            findViewById<TextView>(R.id.textRaceDurationOption2).visibility = View.INVISIBLE
+            findViewById<CheckBox>(R.id.checkIncludeMinLapTime).visibility = View.INVISIBLE
+        }
 
     }
 
@@ -469,7 +501,7 @@ class MainActivity : AppCompatActivity(),
         Log.i(TAG, "Option menu ${item.itemId}")
         return when (item.itemId) {
             com.skoky.R.id.miHome -> {
-                openStartupFragment()
+                decideIfLeave()
                 true
             }
             android.R.id.home -> {

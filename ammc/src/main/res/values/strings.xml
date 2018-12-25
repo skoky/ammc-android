@@ -62,5 +62,6 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="value_3">3</string>
-
+    <string name="exit_message">Are you sure you want to exit?</string>
+    <string name="finish_message">Are you sure you want to stop?</string>
 </resources>
