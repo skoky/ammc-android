@@ -1,6 +1,7 @@
 package com.skoky
 
 object Const {
+    const val LAST_IP = "lastip"
     const val badMsgK = "badmsg"
     const val driversyncK = "driversync"
     const val startupDelayK = "startupDelay"

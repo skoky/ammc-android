@@ -27,6 +27,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
+import com.skoky.Const.LAST_IP
 import com.skoky.Const.badMsgK
 import com.skoky.Const.driversyncK
 import com.skoky.Const.includeMinLapTimeK
@@ -101,12 +102,12 @@ class MainActivity : AppCompatActivity(),
             drawer_layout.closeDrawers()
 
             when (menuItem.itemId) {
-                R.id.nav_training -> menuItem.isChecked = openTrainingMode(null)
-                R.id.nav_racing -> menuItem.isChecked = openRacingMode(null)
-                R.id.nav_console -> menuItem.isChecked = openConsoleMode(null)
-                R.id.nav_drivers_editor -> menuItem.isChecked = openDriversEditor(null)
-                R.id.nav_options -> menuItem.isChecked = openOptions(null)
-                R.id.nav_connection_help -> menuItem.isChecked = openHelp(null)
+                R.id.nav_training -> menuItem.isChecked = switchWithConfirm { openTrainingMode(null) }
+                R.id.nav_racing -> menuItem.isChecked = switchWithConfirm { openRacingMode(null) }
+                R.id.nav_console -> menuItem.isChecked = switchWithConfirm { openConsoleMode(null) }
+                R.id.nav_drivers_editor -> menuItem.isChecked = switchWithConfirm { openDriversEditor(null) }
+                R.id.nav_options -> menuItem.isChecked = switchWithConfirm { openOptions(null) }
+                R.id.nav_connection_help -> menuItem.isChecked = switchWithConfirm { openHelp(null) }
                 else -> {
                     menuItem.isChecked = false
                     Log.w(TAG, "Unknown mode $menuItem")
@@ -152,11 +153,11 @@ class MainActivity : AppCompatActivity(),
             is OptionsFragment -> openStartupFragment()
             is TrainingModeFragment ->
                 if (fr.isRaceRunning()) {
-                    finishWithConfirm()
+                    switchWithConfirm { openStartupFragment() }
                 } else openStartupFragment()
             is RacingModeFragment ->
                 if (fr.isRaceRunning()) {
-                    finishWithConfirm()
+                    switchWithConfirm{ openStartupFragment() }
                 } else openStartupFragment()
             is HelpFragment -> openStartupFragment()
             is DriversFragment -> openStartupFragment()
@@ -173,13 +174,14 @@ class MainActivity : AppCompatActivity(),
                 .setNegativeButton(R.string.no) { _, _ -> }.show()
     }
 
-    private fun finishWithConfirm() {
+    private fun switchWithConfirm(next: () -> Unit) : Boolean {
         AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")
                 .setMessage(R.string.finish_message)
                 .setPositiveButton(R.string.yes) { _, _ ->
-                    openStartupFragment()
+                    next()
                 }
                 .setNegativeButton(R.string.no) { _, _ -> }.show()
+        return true
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -533,7 +535,6 @@ class MainActivity : AppCompatActivity(),
 
     companion object {
         private const val TAG = "MainActivity"
-        private const val LAST_IP = "lastip"
 
         fun decoderLabel(d: Decoder): String {
 
