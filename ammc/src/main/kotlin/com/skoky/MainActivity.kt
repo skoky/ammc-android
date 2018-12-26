@@ -102,12 +102,12 @@ class MainActivity : AppCompatActivity(),
             drawer_layout.closeDrawers()
 
             when (menuItem.itemId) {
-                R.id.nav_training -> menuItem.isChecked = switchWithConfirm { openTrainingMode(null) }
-                R.id.nav_racing -> menuItem.isChecked = switchWithConfirm { openRacingMode(null) }
-                R.id.nav_console -> menuItem.isChecked = switchWithConfirm { openConsoleMode(null) }
-                R.id.nav_drivers_editor -> menuItem.isChecked = switchWithConfirm { openDriversEditor(null) }
-                R.id.nav_options -> menuItem.isChecked = switchWithConfirm { openOptions(null) }
-                R.id.nav_connection_help -> menuItem.isChecked = switchWithConfirm { openHelp(null) }
+                R.id.nav_training -> menuItem.isChecked = switchFragment { openTrainingMode(null) }
+                R.id.nav_racing -> menuItem.isChecked = switchFragment { openRacingMode(null) }
+                R.id.nav_console -> menuItem.isChecked = switchFragment { openConsoleMode(null) }
+                R.id.nav_drivers_editor -> menuItem.isChecked = switchFragment { openDriversEditor(null) }
+                R.id.nav_options -> menuItem.isChecked = switchFragment { openOptions(null) }
+                R.id.nav_connection_help -> menuItem.isChecked = switchFragment { openHelp(null) }
                 else -> {
                     menuItem.isChecked = false
                     Log.w(TAG, "Unknown mode $menuItem")
@@ -116,11 +116,21 @@ class MainActivity : AppCompatActivity(),
             true
         }
 
+
         mAdView = findViewById<View>(R.id.adView) as AdView?
         val adRequest = AdRequest.Builder().build()
         mAdView?.loadAd(adRequest)
 
         app.badMsgReport = getBadMsgFlag()
+    }
+
+    private fun switchFragment(toCallback: () -> Unit) : Boolean {
+        if (isFragmentWithRaceOpen()) {
+            return switchFragmentWithConfirmation(toCallback)
+        } else {
+            toCallback()
+            return true
+        }
     }
 
     private var serviceBound: Boolean = false
@@ -142,26 +152,41 @@ class MainActivity : AppCompatActivity(),
 
     }
 
-    override fun onBackPressed() {
-        decideIfLeave()
+
+    private fun currentFragment() = supportFragmentManager.findFragmentById(R.id.screen_container)
+
+    private fun confirmLeave(): Boolean {
+
+        val fr = currentFragment()
+        return when (fr) {
+            is StartupFragment -> false
+            is OptionsFragment -> false
+            is TrainingModeFragment -> fr.isRaceRunning()
+            is RacingModeFragment -> fr.isRaceRunning()
+            is HelpFragment -> false
+            is DriversFragment -> false
+            else -> false
+        }
     }
 
-    private fun decideIfLeave() {
-        val fr = supportFragmentManager.findFragmentById(R.id.screen_container)
-        when (fr) {
-            is StartupFragment -> exitWithConfirm()
-            is OptionsFragment -> openStartupFragment()
-            is TrainingModeFragment ->
-                if (fr.isRaceRunning()) {
-                    switchWithConfirm { openStartupFragment() }
-                } else openStartupFragment()
-            is RacingModeFragment ->
-                if (fr.isRaceRunning()) {
-                    switchWithConfirm{ openStartupFragment() }
-                } else openStartupFragment()
-            is HelpFragment -> openStartupFragment()
-            is DriversFragment -> openStartupFragment()
-            else -> openStartupFragment()
+    private fun isFragmentWithRaceOpen(): Boolean {
+        val fr = currentFragment()
+        return when (fr) {
+            is TrainingModeFragment -> fr.isRaceRunning()
+            is RacingModeFragment -> fr.isRaceRunning()
+            else -> false
+        }
+    }
+
+    override fun onBackPressed() {
+        if (currentFragment() is StartupFragment) {
+            exitWithConfirm()
+        } else {
+
+            if (isFragmentWithRaceOpen())
+                switchFragmentWithConfirmation { openStartupFragment() }
+            else
+                openStartupFragment()
         }
     }
 
@@ -174,7 +199,8 @@ class MainActivity : AppCompatActivity(),
                 .setNegativeButton(R.string.no) { _, _ -> }.show()
     }
 
-    private fun switchWithConfirm(next: () -> Unit) : Boolean {
+    private fun switchFragmentWithConfirmation(next: () -> Unit): Boolean {
+
         AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")
                 .setMessage(R.string.finish_message)
                 .setPositiveButton(R.string.yes) { _, _ ->
@@ -503,7 +529,10 @@ class MainActivity : AppCompatActivity(),
         Log.i(TAG, "Option menu ${item.itemId}")
         return when (item.itemId) {
             com.skoky.R.id.miHome -> {
-                decideIfLeave()
+                if (isFragmentWithRaceOpen())
+                    switchFragmentWithConfirmation { openStartupFragment() }
+                else
+                    openStartupFragment()
                 true
             }
             android.R.id.home -> {
