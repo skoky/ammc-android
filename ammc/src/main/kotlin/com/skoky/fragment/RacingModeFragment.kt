@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -24,7 +23,6 @@ import com.skoky.Tone.startTone
 import com.skoky.Tone.stopTone
 import com.skoky.Tools
 import com.skoky.Wrapped.sleep
-import com.skoky.fragment.content.Racer
 import com.skoky.fragment.content.RacingModeModel
 import com.skoky.services.DecoderService.Companion.DECODER_PASSING
 import kotlinx.android.synthetic.main.fragment_racingmode_list.view.*
@@ -37,9 +35,6 @@ import java.util.concurrent.Future
 
 class RacingModeFragment : FragmentCommon() {
 
-    private var columnCount = 1
-
-    private var listener: OnListFragmentInteractionListener? = null
     private lateinit var receiver: BroadcastReceiver
 
     private lateinit var startStopButtonM: Button
@@ -75,11 +70,9 @@ class RacingModeFragment : FragmentCommon() {
         // Set the adapter
 
         with(timingContentView) {
-            layoutManager = when {
-                columnCount <= 1 -> LinearLayoutManager(context)
-                else -> GridLayoutManager(context, columnCount)
-            }
-            adapter = RacingModeRecyclerViewAdapter(mutableListOf(), listener) { handleDriverEditDialog(it) }
+            layoutManager = LinearLayoutManager(context)
+
+            adapter = RacingModeRecyclerViewAdapter(mutableListOf()) { handleDriverEditDialog(it) }
             mAdapter = adapter as RacingModeRecyclerViewAdapter
             receiver = PassingDataReceiver { data ->
                 val json = JSONObject(data)
@@ -284,42 +277,22 @@ class RacingModeFragment : FragmentCommon() {
         Log.i(TAG, "Loop done")
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is OnListFragmentInteractionListener) {
-            listener = context
-        } else {
-            throw RuntimeException(context.toString() + " must implement OnListFragmentInteractionListener")
-        }
-    }
-
     override fun onDetach() {
         super.onDetach()
         context?.unregisterReceiver(receiver)
         clock?.cancel(true)
     }
 
-    interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
-        fun onListFragmentInteraction(item: Racer?)
-    }
-
-    companion object {
-
-        private const val ARG_COLUMN_COUNT = "column-count"
-        const val TAG = "RacingModeFragment"
-
-        @JvmStatic
-        fun newInstance(columnCount: Int) =
-                RacingModeFragment().apply {
-                    arguments = Bundle().apply {
-                        putInt(ARG_COLUMN_COUNT, columnCount)
-                    }
-                }
-    }
-
-    fun isRaceRunning() : Boolean {
+    fun isRaceRunning(): Boolean {
         return preStartDelayRunning || raceRunning
     }
 
+
+    companion object {
+
+        const val TAG = "RacingModeFragment"
+
+        @JvmStatic
+        fun newInstance() = RacingModeFragment()
+    }
 }

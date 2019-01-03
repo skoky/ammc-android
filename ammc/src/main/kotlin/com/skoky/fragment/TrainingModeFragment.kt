@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -23,7 +22,6 @@ import com.skoky.Tone.startTone
 import com.skoky.Tone.stopTone
 import com.skoky.Tools
 import com.skoky.Wrapped.sleep
-import com.skoky.fragment.content.TrainingLap
 import com.skoky.fragment.content.TrainingModeModel
 import com.skoky.services.DecoderService.Companion.DECODER_PASSING
 import kotlinx.android.synthetic.main.fragment_trainingmode_list.*
@@ -36,9 +34,6 @@ import java.util.concurrent.Future
 
 class TrainingModeFragment : FragmentCommon() {
 
-    private var columnCount = 1
-
-    private var listener: OnListFragmentInteractionListener? = null
     private lateinit var receiver: BroadcastReceiver
 
     lateinit var startStopButtonM: Button
@@ -72,11 +67,8 @@ class TrainingModeFragment : FragmentCommon() {
         // Set the adapter
 
         with(timingContentView) {
-            layoutManager = when {
-                columnCount <= 1 -> LinearLayoutManager(context)
-                else -> GridLayoutManager(context, columnCount)
-            }
-            adapter = TrainingModeRecyclerViewAdapter(mutableListOf(), listener)
+            layoutManager =  LinearLayoutManager(context)
+            adapter = TrainingModeRecyclerViewAdapter(mutableListOf())
 
             receiver = PassingDataReceiver { data ->
                 val json = JSONObject(data)
@@ -240,41 +232,22 @@ class TrainingModeFragment : FragmentCommon() {
         }
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is OnListFragmentInteractionListener) {
-            listener = context
-        } else {
-            throw RuntimeException(context.toString() + " must implement OnListFragmentInteractionListener")
-        }
-    }
-
     override fun onDetach() {
         super.onDetach()
         context?.unregisterReceiver(receiver)
         clock?.cancel(true)
     }
 
-    interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
-        fun onListFragmentInteraction(item: TrainingLap?)
+    fun isRaceRunning() : Boolean {
+        return preStartDelayRunning || trainingRunning
     }
 
     companion object {
 
-        private const val ARG_COLUMN_COUNT = "column-count"
         const val TAG = "TrainingModeFragment"
 
         @JvmStatic
-        fun newInstance(columnCount: Int) =
-                TrainingModeFragment().apply {
-                    arguments = Bundle().apply {
-                        putInt(ARG_COLUMN_COUNT, columnCount)
-                    }
-                }
+        fun newInstance() = TrainingModeFragment()
     }
 
-    fun isRaceRunning() : Boolean {
-        return preStartDelayRunning || trainingRunning
-    }
 }

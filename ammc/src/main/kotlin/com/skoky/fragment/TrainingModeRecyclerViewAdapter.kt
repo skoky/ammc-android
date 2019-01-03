@@ -6,14 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.skoky.R
-import com.skoky.fragment.TrainingModeFragment.OnListFragmentInteractionListener
 import com.skoky.fragment.content.TrainingLap
 import com.skoky.fragment.content.TrainingModeModel
 import kotlinx.android.synthetic.main.fragment_trainingmode.view.*
 import java.text.SimpleDateFormat
 import java.util.*
 
-class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingLap>, private val mListener: OnListFragmentInteractionListener?)
+class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingLap>)
     : RecyclerView.Adapter<TrainingModeRecyclerViewAdapter.ViewHolder>() {
 
     private val mOnClickListener: View.OnClickListener
@@ -22,9 +21,6 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingL
         mValues.sortByDescending { it.number }
         mOnClickListener = View.OnClickListener { v ->
             val item = v.tag as TrainingLap
-            // Notify the active callbacks interface (the activity, if the fragment is attached to
-            // one) that an item has been selected.
-            mListener?.onListFragmentInteraction(item)
         }
     }
 

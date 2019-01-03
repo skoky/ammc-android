@@ -1,7 +1,6 @@
 package com.skoky.fragment
 
 import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
@@ -14,7 +13,6 @@ import android.widget.TextView
 import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
-import com.skoky.fragment.content.ConsoleModel
 import com.skoky.services.DecoderService.Companion.DECODER_DATA
 import kotlinx.android.synthetic.main.fragment_consolemode_list.*
 import org.jetbrains.anko.childrenSequence
@@ -23,7 +21,6 @@ import org.json.JSONObject
 
 class ConsoleModeFragment : FragmentCommon() {
 
-    private var listener: OnListFragmentInteractionListener? = null
     private lateinit var dataHandler: BroadcastReceiver
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -109,21 +106,6 @@ class ConsoleModeFragment : FragmentCommon() {
         }
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is OnListFragmentInteractionListener) {
-            listener = context
-        } else {
-            throw RuntimeException(context.toString() + " must implement OnListFragmentInteractionListener")
-        }
-    }
-
-    interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
-        fun onListFragmentInteraction(item: ConsoleModel?)
-    }
-
-
     override fun onDetach() {
         super.onDetach()
         context?.unregisterReceiver(dataHandler)
@@ -131,16 +113,10 @@ class ConsoleModeFragment : FragmentCommon() {
 
     companion object {
 
-        private const val ARG_COLUMN_COUNT = "column-count"
         const val TAG = "ConsoleModeFragment"
 
         @JvmStatic
-        fun newInstance(columnCount: Int) =
-                ConsoleModeFragment().apply {
-                    arguments = Bundle().apply {
-                        putInt(ARG_COLUMN_COUNT, columnCount)
-                    }
-                }
+        fun newInstance() = ConsoleModeFragment()
     }
 
 }

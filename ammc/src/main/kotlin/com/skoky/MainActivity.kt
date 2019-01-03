@@ -39,9 +39,6 @@ import com.skoky.Const.startupDelayK
 import com.skoky.Const.startupDelayValueK
 import com.skoky.Const.transponderSoundK
 import com.skoky.fragment.*
-import com.skoky.fragment.content.ConsoleModel
-import com.skoky.fragment.content.Racer
-import com.skoky.fragment.content.TrainingLap
 import com.skoky.services.Decoder
 import com.skoky.services.DecoderService
 import kotlinx.android.synthetic.main.fragment_options.*
@@ -52,16 +49,7 @@ import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.toast
 
 
-class MainActivity : AppCompatActivity(),
-        TrainingModeFragment.OnListFragmentInteractionListener,
-        RacingModeFragment.OnListFragmentInteractionListener,
-        DriversFragment.OnListFragmentInteractionListener,
-        ConsoleModeFragment.OnListFragmentInteractionListener,
-        ConsoleModeVostokFragment.OnListFragmentInteractionListener {
-
-    override fun onListFragmentInteraction(item: ConsoleModel?) {}
-    override fun onListFragmentInteraction(item: Racer?) {}
-    override fun onListFragmentInteraction(item: TrainingLap?) {}
+class MainActivity : AppCompatActivity() {
 
     private lateinit var app: MyApp
     private var mAdView: AdView? = null
@@ -132,8 +120,6 @@ class MainActivity : AppCompatActivity(),
             return true
         }
     }
-
-    private var serviceBound: Boolean = false
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -318,7 +304,7 @@ class MainActivity : AppCompatActivity(),
 
     private lateinit var helpFragment: HelpFragment
     private fun openHelp(view: View?): Boolean {
-        helpFragment = HelpFragment.newInstance(1)
+        helpFragment = HelpFragment.newInstance()
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.screen_container, helpFragment)
         fragmentTransaction.commit()
@@ -328,7 +314,7 @@ class MainActivity : AppCompatActivity(),
 
     private lateinit var driversEditorFragment: DriversFragment
     fun openDriversEditor(view: View?): Boolean {
-        driversEditorFragment = DriversFragment.newInstance(1)
+        driversEditorFragment = DriversFragment.newInstance()
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.screen_container, driversEditorFragment)
         fragmentTransaction.commit()
@@ -338,7 +324,7 @@ class MainActivity : AppCompatActivity(),
 
     private var optionsFragment: OptionsFragment? = null
     private fun openOptions(view: View?): Boolean {
-        optionsFragment = OptionsFragment.newInstance(1)
+        optionsFragment = OptionsFragment.newInstance()
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.screen_container, optionsFragment)
         fragmentTransaction.commit()
@@ -435,10 +421,10 @@ class MainActivity : AppCompatActivity(),
                 return if (ds.isDecoderConnected()) {
                     val fragmentTransaction = supportFragmentManager.beginTransaction()
                     if (ds.isConnectedDecoderVostok()) {
-                        consoleVostokFragment = ConsoleModeVostokFragment.newInstance(1)
+                        consoleVostokFragment = ConsoleModeVostokFragment.newInstance()
                         fragmentTransaction.replace(R.id.screen_container, consoleVostokFragment)
                     } else {
-                        consoleFragment = ConsoleModeFragment.newInstance(1)
+                        consoleFragment = ConsoleModeFragment.newInstance()
                         fragmentTransaction.replace(R.id.screen_container, consoleFragment)
                     }
                     fragmentTransaction.commit()
@@ -464,7 +450,7 @@ class MainActivity : AppCompatActivity(),
     fun openRacingMode(view: View?): Boolean {
         app.decoderService?.let {
             return if (it.isDecoderConnected()) {
-                racingFragment = RacingModeFragment.newInstance(1)
+                racingFragment = RacingModeFragment.newInstance()
                 val fragmentTransaction = supportFragmentManager.beginTransaction()
                 fragmentTransaction.replace(R.id.screen_container, racingFragment as Fragment)
                 fragmentTransaction.commit()
@@ -482,7 +468,7 @@ class MainActivity : AppCompatActivity(),
     fun openTrainingMode(view: View?): Boolean {
 
         return if (app.decoderService.isDecoderConnected()) {
-            trainingFragment = TrainingModeFragment.newInstance(1)
+            trainingFragment = TrainingModeFragment.newInstance()
             val fragmentTransaction = supportFragmentManager.beginTransaction()
             fragmentTransaction.replace(R.id.screen_container, trainingFragment)
             fragmentTransaction.commit()

@@ -24,7 +24,6 @@ import org.json.JSONObject
 
 class ConsoleModeVostokFragment : FragmentCommon() {
 
-    private var listener: OnListFragmentInteractionListener? = null
     private lateinit var dataHandler: BroadcastReceiver
 
     class ConnectionReceiver(val handler: () -> Unit) : BroadcastReceiver() {
@@ -102,15 +101,6 @@ class ConsoleModeVostokFragment : FragmentCommon() {
         }
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is OnListFragmentInteractionListener) {
-            listener = context
-        } else {
-            throw RuntimeException(context.toString() + " must implement OnListFragmentInteractionListener")
-        }
-    }
-
     interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
         fun onListFragmentInteraction(item: ConsoleModel?)
@@ -123,15 +113,9 @@ class ConsoleModeVostokFragment : FragmentCommon() {
 
     companion object {
 
-        private const val ARG_COLUMN_COUNT = "column-count"
         const val TAG = "ConsoleVostok"
 
         @JvmStatic
-        fun newInstance(columnCount: Int) =
-                ConsoleModeVostokFragment().apply {
-                    arguments = Bundle().apply {
-                        putInt(ARG_COLUMN_COUNT, columnCount)
-                    }
-                }
+        fun newInstance() = ConsoleModeVostokFragment()
     }
 }

@@ -17,14 +17,11 @@ import android.widget.*
 import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
-import com.skoky.fragment.content.ConsoleModel
 import org.jetbrains.anko.childrenSequence
 
 data class DriverPair(val t: String, val d: String)
 
 class DriversFragment : FragmentCommon() {
-
-    private var listener: OnListFragmentInteractionListener? = null
 
     class ConnectionReceiver(val handler: () -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -162,32 +159,12 @@ class DriversFragment : FragmentCommon() {
         }
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is OnListFragmentInteractionListener) {
-            listener = context
-        } else {
-            throw RuntimeException(context.toString() + " must implement OnListFragmentInteractionListener")
-        }
-    }
-
-    interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
-        fun onListFragmentInteraction(item: ConsoleModel?)
-    }
-
     companion object {
 
-        private const val ARG_COLUMN_COUNT = "column-count"
         const val TAG = "DriversFragment"
 
         @JvmStatic
-        fun newInstance(columnCount: Int) =
-                DriversFragment().apply {
-                    arguments = Bundle().apply {
-                        putInt(ARG_COLUMN_COUNT, columnCount)
-                    }
-                }
+        fun newInstance() = DriversFragment()
     }
 
 }

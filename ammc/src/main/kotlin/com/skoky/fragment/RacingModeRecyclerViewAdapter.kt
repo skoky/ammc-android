@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.skoky.MyApp
 import com.skoky.R
-import com.skoky.fragment.RacingModeFragment.OnListFragmentInteractionListener
 import com.skoky.fragment.content.Racer
 import com.skoky.fragment.content.RacingModeModel
 import kotlinx.android.synthetic.main.fragment_racingmode.view.*
@@ -15,7 +14,6 @@ import java.text.SimpleDateFormat
 
 
 class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
-                                    private val mListener: OnListFragmentInteractionListener?,
                                     private val onLongTapListener: (View) -> Unit)
     : RecyclerView.Adapter<RacingModeRecyclerViewAdapter.ViewHolder>() {
 
@@ -29,9 +27,6 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
         mValues.sortByDescending { it.pos }
         mOnClickListener = View.OnClickListener { v ->
             val item = v.tag as Racer
-            // Notify the active callbacks interface (the activity, if the fragment is attached to
-            // one) that an item has been selected.
-            mListener?.onListFragmentInteraction(item)
         }
     }
 

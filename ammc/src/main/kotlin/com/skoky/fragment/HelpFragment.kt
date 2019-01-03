@@ -19,16 +19,10 @@ class HelpFragment : FragmentCommon() {
 
     companion object {
 
-        private const val ARG_COLUMN_COUNT = "column-count"
         const val TAG = "HelpFragment"
 
         @JvmStatic
-        fun newInstance(columnCount: Int) =
-                HelpFragment().apply {
-                    arguments = Bundle().apply {
-                        putInt(ARG_COLUMN_COUNT, columnCount)
-                    }
-                }
+        fun newInstance() = HelpFragment()
     }
 
 }

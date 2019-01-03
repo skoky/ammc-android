@@ -17,7 +17,6 @@ import com.skoky.Const.startupDelayValueK
 import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
-import com.skoky.fragment.content.ConsoleModel
 import kotlinx.android.synthetic.*
 import kotlinx.android.synthetic.main.fragment_options.*
 
@@ -30,8 +29,6 @@ class MyTextWatcher(val ma: MainActivity, val key: String, val value: EditText) 
 }
 
 class OptionsFragment : FragmentCommon() {
-
-    private var listener: OnListFragmentInteractionListener? = null
 
     class ConnectionReceiver(val handler: () -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -81,11 +78,6 @@ class OptionsFragment : FragmentCommon() {
         }
     }
 
-    interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
-        fun onListFragmentInteraction(item: ConsoleModel?)
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         this.clearFindViewByIdCache()
@@ -93,16 +85,10 @@ class OptionsFragment : FragmentCommon() {
 
     companion object {
 
-        private const val ARG_COLUMN_COUNT = "column-count"
         const val TAG = "OptionsFragment"
 
         @JvmStatic
-        fun newInstance(columnCount: Int) =
-                OptionsFragment().apply {
-                    arguments = Bundle().apply {
-                        putInt(ARG_COLUMN_COUNT, columnCount)
-                    }
-                }
+        fun newInstance() = OptionsFragment()
     }
 
 }
