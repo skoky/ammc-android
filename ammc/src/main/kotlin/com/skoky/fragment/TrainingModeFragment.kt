@@ -78,7 +78,7 @@ class TrainingModeFragment : FragmentCommon() {
 
                 if (trainingRunning) {
                     (adapter as TrainingModeRecyclerViewAdapter).addRecord(transponder, timeUs)
-                    adapter.notifyDataSetChanged()
+                    (adapter as RecyclerView.Adapter).notifyDataSetChanged()
                 }
                 tmm = (adapter as TrainingModeRecyclerViewAdapter).tmm
             }
@@ -138,7 +138,7 @@ class TrainingModeFragment : FragmentCommon() {
             doStop()
         } else {    // not trainingRunning
 
-            if (timingContentView.adapter.itemCount == 1) {     // just a label, nothing to clear
+            if (timingContentView.adapter?.itemCount == 1) {     // just a label, nothing to clear
                 doStart()
             } else {
                 AlertDialog.Builder(context).setTitle("Clear results and start new training?")

@@ -324,9 +324,10 @@ class MainActivity : AppCompatActivity() {
 
     private var optionsFragment: OptionsFragment? = null
     private fun openOptions(view: View?): Boolean {
-        optionsFragment = OptionsFragment.newInstance()
+        val optionsFragment = OptionsFragment.newInstance()
+        val optionsFragmentVal = optionsFragment
         val fragmentTransaction = supportFragmentManager.beginTransaction()
-        fragmentTransaction.replace(R.id.screen_container, optionsFragment)
+        fragmentTransaction.replace(R.id.screen_container, optionsFragmentVal)
         fragmentTransaction.commit()
 
         return true
