@@ -20,7 +20,7 @@ import com.skoky.R
 import kotlinx.android.synthetic.*
 import kotlinx.android.synthetic.main.fragment_options.*
 
-class MyTextWatcher(val ma: MainActivity, val key: String, val value: EditText) : TextWatcher {
+class MyTextWatcher(private val ma: MainActivity, val key: String, val value: EditText) : TextWatcher {
     override fun afterTextChanged(p0: Editable?) {}
     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
     override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {

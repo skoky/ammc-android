@@ -62,7 +62,7 @@ class DriversFragment : FragmentCommon() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val enabled = (activity as MainActivity).getDriverSyncFlag()
-        if (enabled == null || !enabled) return
+        if (!enabled) return
 
         val ll = (view as ScrollView).childrenSequence().first() as LinearLayout
 

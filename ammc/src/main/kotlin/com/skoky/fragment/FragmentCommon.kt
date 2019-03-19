@@ -16,7 +16,6 @@ import org.json.JSONObject
 
 data class Time(val us: Long)
 
-
 class DataReceiver(val handler: (String) -> Unit) : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         intent?.let {
@@ -24,7 +23,6 @@ class DataReceiver(val handler: (String) -> Unit) : BroadcastReceiver() {
         }
     }
 }
-
 
 class ConnectionReceiver(val handler: () -> Unit) : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {

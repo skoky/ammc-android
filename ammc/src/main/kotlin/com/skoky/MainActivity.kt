@@ -5,7 +5,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.content.res.Configuration
 import android.os.Bundle
 import android.os.IBinder
 import android.support.v4.app.Fragment
@@ -20,8 +19,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
@@ -46,13 +43,14 @@ import kotlinx.android.synthetic.main.main.*
 import kotlinx.android.synthetic.main.select_decoder.*
 import kotlinx.android.synthetic.main.startup_content.*
 import org.jetbrains.anko.defaultSharedPreferences
+import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var app: MyApp
-    private var mAdView: AdView? = null
+    //    private var mAdView: AdView? = null
     private var mDecoderServiceBound = false
 
     override fun onDestroy() {
@@ -64,27 +62,55 @@ class MainActivity : AppCompatActivity() {
     override fun onPostResume() {
         super.onPostResume()
 
-        app.firebaseAnalytics = FirebaseAnalytics.getInstance(this)
-        MobileAds.initialize(this, "ca-app-pub-7655373768605194~7466307464")
+    }
 
-        app.firestore = FirebaseFirestore.getInstance()
-        val settings = FirebaseFirestoreSettings.Builder()
-                .setTimestampsInSnapshotsEnabled(true)
-                .setPersistenceEnabled(true)
-                .build()
-        app.firestore.firestoreSettings = settings
+    private fun switchFragment(toCallback: () -> Unit): Boolean {
+        return if (isFragmentWithRaceOpen()) {
+            switchFragmentWithConfirmation(toCallback)
+        } else {
+            toCallback()
+            true
+        }
+    }
 
-        val auth = FirebaseAuth.getInstance()
-        app.drivers = DriversManager(app)
+    public override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        app = application as MyApp
 
-        auth.signInWithEmailAndPassword("skokys@gmail.com", "sfsadfhads8923jhkwdKJGJKHDKJl!")
-                .addOnSuccessListener { result ->
-                    Log.d(TAG, "Saved login $result")
-                    app.user = auth.currentUser
-                }.addOnFailureListener {
-                    toast("Cloud login issue. Update and restart app")
-                    finish()
-                }
+        setContentView(R.layout.main)
+
+        setSupportActionBar(toolbar)
+        val actionbar: ActionBar? = supportActionBar
+        actionbar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp)
+        }
+        val intent = Intent(this, DecoderService::class.java)
+        bindService(intent, decoderServiceConnection, Context.BIND_AUTO_CREATE)
+
+
+        doAsync {
+            app.firebaseAnalytics = FirebaseAnalytics.getInstance(app.applicationContext)
+            MobileAds.initialize(app.applicationContext, "ca-app-pub-7655373768605194~7466307464")
+
+            app.firestore = FirebaseFirestore.getInstance()
+            val settings = FirebaseFirestoreSettings.Builder()
+                    .setTimestampsInSnapshotsEnabled(true)
+                    .setPersistenceEnabled(true)
+                    .build()
+            app.firestore.firestoreSettings = settings
+
+            val auth = FirebaseAuth.getInstance()
+            app.drivers = DriversManager(app)
+
+            auth.signInWithEmailAndPassword("skokys@gmail.com", "sfsadfhads8923jhkwdKJGJKHDKJl!")
+                    .addOnSuccessListener { result ->
+                        Log.d(TAG, "Saved login $result")
+                        app.user = auth.currentUser
+                    }.addOnFailureListener {
+                        Log.w("Cloud login issue", it)
+                    }
+        }
 
         nav_view.setNavigationItemSelectedListener { menuItem ->
             drawer_layout.closeDrawers()
@@ -104,38 +130,7 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-
-        mAdView = findViewById<View>(R.id.adView) as AdView?
-        val adRequest = AdRequest.Builder().build()
-        mAdView?.loadAd(adRequest)
-
         app.badMsgReport = getBadMsgFlag()
-    }
-
-    private fun switchFragment(toCallback: () -> Unit) : Boolean {
-        if (isFragmentWithRaceOpen()) {
-            return switchFragmentWithConfirmation(toCallback)
-        } else {
-            toCallback()
-            return true
-        }
-    }
-
-    public override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        app = application as MyApp
-
-        setContentView(R.layout.main)
-
-        setSupportActionBar(toolbar)
-        val actionbar: ActionBar? = supportActionBar
-        actionbar?.apply {
-            setDisplayHomeAsUpEnabled(true)
-            setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp)
-        }
-        val intent = Intent(this, DecoderService::class.java)
-        bindService(intent, decoderServiceConnection, Context.BIND_AUTO_CREATE)
-
     }
 
 
@@ -203,7 +198,7 @@ class MainActivity : AppCompatActivity() {
 
     fun openStartupFragment() {
         val fragmentTransaction = supportFragmentManager.beginTransaction()
-        optionsFragment?.let { fragmentTransaction.detach(it) }
+        //val optionsFragment { fragmentTransaction.detach(it) }
         fragmentTransaction.replace(R.id.screen_container, StartupFragment())
         fragmentTransaction.commit()
     }
@@ -275,10 +270,10 @@ class MainActivity : AppCompatActivity() {
 
             if (decoderText.text.isNotEmpty()) {
                 val dd = decoderText.text.toString().trim()
-                if (!dd.isBlank()) defaultSharedPreferences.edit().putString(LAST_IP, dd).commit()
-                app.decoderService?.let { s -> s.connectDecoder(dd) }
+                if (!dd.isBlank()) defaultSharedPreferences.edit().putString(LAST_IP, dd).apply()
+                app.decoderService.connectDecoder(dd)
             } else
-                foundDecoder?.let { d3 -> app.decoderService?.let { s -> s.connectDecoder2(d3) } }
+                foundDecoder?.let { d3 -> app.decoderService.connectDecoder2(d3) }
 
             dialog.cancel()
         }
@@ -322,9 +317,9 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    private var optionsFragment: OptionsFragment? = null
+    //    private val optionsFragment: OptionsFragment? = null
     private fun openOptions(view: View?): Boolean {
-        optionsFragment = OptionsFragment.newInstance()
+        val optionsFragment = OptionsFragment.newInstance()
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.screen_container, optionsFragment)
         fragmentTransaction.commit()
@@ -436,7 +431,6 @@ class MainActivity : AppCompatActivity() {
                     false
                 }
             }
-            return false
         }
     }
 
@@ -527,25 +521,6 @@ class MainActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-
-        // Checks the orientation of the screen
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            //          Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show()
-        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-//            Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show()
-        }
-        // Checks whether a hardware keyboard is available
-        if (newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
-            //        Toast.makeText(this, "keyboard visible", Toast.LENGTH_SHORT).show()
-        } else if (newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
-            //      Toast.makeText(this, "keyboard hidden", Toast.LENGTH_SHORT).show()
-        }
-
-        Log.d(TAG, "Layout:" + newConfig.screenLayout)
     }
 
     companion object {

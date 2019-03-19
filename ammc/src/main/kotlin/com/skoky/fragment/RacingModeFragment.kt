@@ -83,7 +83,7 @@ class RacingModeFragment : FragmentCommon() {
 
                 if (raceRunning) {
                     (adapter as RacingModeRecyclerViewAdapter).addRecord(transponder, time)
-                    adapter.notifyDataSetChanged()
+                    (adapter as RacingModeRecyclerViewAdapter).notifyDataSetChanged()
                     doAsync {
                         activity?.let {
                             val myApp = it.application as MyApp
@@ -160,7 +160,7 @@ class RacingModeFragment : FragmentCommon() {
             doStop()
         } else {    // not raceRunning
 
-            if (timingContentView.adapter.itemCount == 1) {     // just a label, nothing to clear
+            if (timingContentView.adapter?.itemCount == 1) {     // just a label, nothing to clear
                 doStart()
             } else {
                 AlertDialog.Builder(context).setTitle("Clear results and start new training?")

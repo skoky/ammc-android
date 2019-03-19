@@ -23,7 +23,7 @@ object NetworkBroadcastHandler {
             } catch (e: Exception) {
                 Log.i(TAG, "Unable to listen in port $INCOMING_PORT, error $e")
                 socket?.close()
-                null
+                return
             }
             socket?.let { s ->
 
