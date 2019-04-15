@@ -19,7 +19,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
-import com.google.android.gms.ads.MobileAds
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -59,11 +58,6 @@ class MainActivity : AppCompatActivity() {
         mDecoderServiceBound = false
     }
 
-    override fun onPostResume() {
-        super.onPostResume()
-
-    }
-
     private fun switchFragment(toCallback: () -> Unit): Boolean {
         return if (isFragmentWithRaceOpen()) {
             switchFragmentWithConfirmation(toCallback)
@@ -91,11 +85,10 @@ class MainActivity : AppCompatActivity() {
 
         doAsync {
             app.firebaseAnalytics = FirebaseAnalytics.getInstance(app.applicationContext)
-            MobileAds.initialize(app.applicationContext, "ca-app-pub-7655373768605194~7466307464")
+            //MobileAds.initialize(app.applicationContext, "ca-app-pub-7655373768605194~7466307464")
 
             app.firestore = FirebaseFirestore.getInstance()
             val settings = FirebaseFirestoreSettings.Builder()
-                    .setTimestampsInSnapshotsEnabled(true)
                     .setPersistenceEnabled(true)
                     .build()
             app.firestore.firestoreSettings = settings
@@ -407,7 +400,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var consoleFragment: ConsoleModeFragment
     private lateinit var consoleVostokFragment: ConsoleModeVostokFragment
     fun openConsoleMode(view: View?): Boolean {
-        app.decoderService?.let { ds ->
+        app.decoderService.let { ds ->
             if (!ds.isDecoderConnected()) {
                 AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected))
                         .setCancelable(true).create().show()
@@ -442,7 +435,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var racingFragment: RacingModeFragment
     fun openRacingMode(view: View?): Boolean {
-        app.decoderService?.let {
+        app.decoderService.let {
             return if (it.isDecoderConnected()) {
                 racingFragment = RacingModeFragment.newInstance()
                 val fragmentTransaction = supportFragmentManager.beginTransaction()

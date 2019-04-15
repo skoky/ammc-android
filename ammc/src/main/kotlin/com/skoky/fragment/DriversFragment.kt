@@ -36,7 +36,7 @@ class DriversFragment : FragmentCommon() {
 
         val view = inflater.inflate(R.layout.fragment_drivers_list, container, false)
 
-        activity?.let { act ->
+        activity?.let { _ ->
             val enabled = (activity as MainActivity).getDriverSyncFlag()
             if (!enabled) {
                 Toast.makeText(activity, "Enabled Cloud sync to use Drivers Editor", Toast.LENGTH_LONG).show()

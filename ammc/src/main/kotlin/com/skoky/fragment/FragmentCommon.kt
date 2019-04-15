@@ -1,6 +1,5 @@
 package com.skoky.fragment
 
-import android.app.Application
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -71,7 +70,7 @@ open class FragmentCommon : android.support.v4.app.Fragment() {
             json.has("RTC_Time") -> Time((json.get("RTC_Time") as String).toLong())
             json.has("UTC_Time") -> Time((json.get("UTC_Time") as String).toLong())
             json.has("msecs_since_start") ->
-                Time((json.get("msecs_since_start") as Integer).toLong() * 1000)
+                Time((json.get("msecs_since_start") as Int).toLong() * 1000)
             else -> {
                 Log.w(TrainingModeFragment.TAG, "No time in passing record $json")
                 activity?.let {
@@ -82,7 +81,7 @@ open class FragmentCommon : android.support.v4.app.Fragment() {
         }
     }
 
-    fun getTransponderFromPassingJson(app: Application, json: JSONObject): String {
+    fun getTransponderFromPassingJson(json: JSONObject): String {
 
         return when {
             json.has("transponder") -> (json.get("transponder") as Int).toString()
@@ -90,7 +89,7 @@ open class FragmentCommon : android.support.v4.app.Fragment() {
             json.has("driverId") -> json.get("driverId") as String
             else -> {
                 Log.w(TrainingModeFragment.TAG, "No racer identification in Passing $json")
-                json?.let {
+                json.let {
                     activity?.let { a ->
                         CloudDB.badMessageReport(a.application as MyApp, "passing_not_transponder", it.toString())
                     }

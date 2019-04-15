@@ -15,7 +15,6 @@ import com.skoky.Const.minLapTimeK
 import com.skoky.Const.raceDurationValueK
 import com.skoky.Const.startupDelayValueK
 import com.skoky.MainActivity
-import com.skoky.MyApp
 import com.skoky.R
 import kotlinx.android.synthetic.*
 import kotlinx.android.synthetic.main.fragment_options.*
@@ -48,7 +47,6 @@ class OptionsFragment : FragmentCommon() {
 
 
         activity?.let { a ->
-            val app = a.application as MyApp
             val ma = (a as MainActivity)
 
             checkStartupDelay.isChecked = ma.getStartupDelayFlag()

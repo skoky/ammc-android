@@ -78,7 +78,7 @@ class RacingModeFragment : FragmentCommon() {
                 val json = JSONObject(data)
                 Log.i(TAG, "Received passing $data")
 
-                val transponder = FragmentCommon().getTransponderFromPassingJson(activity!!.application, json)
+                val transponder = FragmentCommon().getTransponderFromPassingJson(json)
                 val time = FragmentCommon().getTimeFromPassingJson(json)
 
                 if (raceRunning) {

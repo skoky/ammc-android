@@ -25,7 +25,7 @@ object NetworkBroadcastHandler {
                 socket?.close()
                 return
             }
-            socket?.let { s ->
+            socket.let { s ->
 
                 try {
                     while (!s.isClosed) {

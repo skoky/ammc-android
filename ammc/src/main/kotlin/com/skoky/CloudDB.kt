@@ -12,7 +12,7 @@ object CloudDB {
 
         if (!app.badMsgReport) return
 
-        val formatter = SimpleDateFormat("yy/MM/dd")
+        val formatter = SimpleDateFormat("yy/MM/dd", Locale.US)
         val today = formatter.format(Date())
 
         val msg = hashMapOf<String, Any>(key to bytes, "len" to bytes.length, "date" to today) as Map<String, String>

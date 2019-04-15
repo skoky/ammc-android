@@ -15,14 +15,14 @@ import java.util.*
 class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingLap>)
     : RecyclerView.Adapter<TrainingModeRecyclerViewAdapter.ViewHolder>() {
 
-    private val mOnClickListener: View.OnClickListener
-
-    init {
-        mValues.sortByDescending { it.number }
-        mOnClickListener = View.OnClickListener { v ->
-            val item = v.tag as TrainingLap
-        }
-    }
+//    private val mOnClickListener: View.OnClickListener
+//
+//    init {
+//        mValues.sortByDescending { it.number }
+//        mOnClickListener = View.OnClickListener { v ->
+//            val item = v.tag as TrainingLap
+//        }
+//    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -31,7 +31,7 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingL
         return ViewHolder(view)
     }
 
-    val df = SimpleDateFormat("HH:mm:ss.SSS")
+    val df = SimpleDateFormat("HH:mm:ss.SSS",Locale.US)
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (position == 0) {  // header
             holder.mIdView.text = "#"

@@ -73,7 +73,7 @@ class TrainingModeFragment : FragmentCommon() {
             receiver = PassingDataReceiver { data ->
                 val json = JSONObject(data)
                 Log.i(TAG, "Received passing $data")
-                val transponder = FragmentCommon().getTransponderFromPassingJson(activity!!.application, json)
+                val transponder = FragmentCommon().getTransponderFromPassingJson(json)
                 val timeUs = FragmentCommon().getTimeFromPassingJson(json)
 
                 if (trainingRunning) {
