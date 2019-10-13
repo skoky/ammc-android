@@ -21,7 +21,6 @@ import com.skoky.Tone.preStartTone
 import com.skoky.Tone.startTone
 import com.skoky.Tone.stopTone
 import com.skoky.Tools
-import com.skoky.Wrapped.sleep
 import com.skoky.fragment.content.TrainingModeModel
 import com.skoky.services.DecoderService.Companion.DECODER_PASSING
 import kotlinx.android.synthetic.main.fragment_trainingmode_list.*
@@ -29,6 +28,7 @@ import kotlinx.android.synthetic.main.fragment_trainingmode_list.view.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import org.json.JSONObject
+import java.lang.Thread.sleep
 import java.util.concurrent.Future
 
 
@@ -199,7 +199,7 @@ class TrainingModeFragment : FragmentCommon() {
                 uiThread {
                     clockViewX.text = str
                 }
-                isInterrupted = sleep(1000)
+                sleep(1000)
             }
 
             if (!isInterrupted) {
@@ -227,7 +227,7 @@ class TrainingModeFragment : FragmentCommon() {
                 uiThread {
                     clockViewX.text = str
                 }
-                isInterrupted = sleep(30)
+                sleep(30)
             }
         }
     }

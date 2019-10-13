@@ -2,6 +2,7 @@ package com.skoky.services
 
 import android.app.Service
 import android.content.Intent
+import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.Binder
 import android.os.Build
@@ -10,14 +11,13 @@ import android.support.annotation.RequiresApi
 import android.util.Log
 import com.skoky.*
 import com.skoky.Tools.P3_DEF_PORT
-import com.skoky.Wrapped.sleep
-import com.skoky.Wrapped.tone
 import eu.plib.Parser
 import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
 import org.json.JSONObject
+import java.lang.Thread.sleep
 import java.net.*
 import java.util.*
 import kotlin.concurrent.schedule
@@ -499,7 +499,7 @@ class DecoderService : Service() {
         Log.d(TAG, "Broadcast passing sent $intent")
 
         if (defaultSharedPreferences.getBoolean(Const.transponderSoundK, true))
-            tone(ToneGenerator.TONE_CDMA_INTERCEPT, 200)
+            ToneGenerator(AudioManager.STREAM_MUSIC, 100).startTone(ToneGenerator.TONE_CDMA_INTERCEPT, 200)
     }
 
     private fun sendBroadcastData(decoder: Decoder?, jsonData: JSONObject) {

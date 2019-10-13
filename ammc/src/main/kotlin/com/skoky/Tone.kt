@@ -1,20 +1,21 @@
 package com.skoky
 
+import android.media.AudioManager.STREAM_MUSIC
 import android.media.ToneGenerator
 import android.media.ToneGenerator.TONE_CDMA_NETWORK_BUSY
-import com.skoky.Wrapped.tone
 
 object Tone {
 
+
     fun stopTone() {
-        tone(TONE_CDMA_NETWORK_BUSY, 1000)
+        ToneGenerator(STREAM_MUSIC, 100).startTone(TONE_CDMA_NETWORK_BUSY, 1000)
     }
 
     fun startTone() {
-        tone(ToneGenerator.TONE_DTMF_7, 600)
+        ToneGenerator(STREAM_MUSIC, 100).startTone(ToneGenerator.TONE_DTMF_7, 600)
     }
 
     fun preStartTone() {
-        tone(ToneGenerator.TONE_DTMF_7, 200)
+        ToneGenerator(STREAM_MUSIC, 100).startTone(ToneGenerator.TONE_DTMF_7, 200)
     }
 }

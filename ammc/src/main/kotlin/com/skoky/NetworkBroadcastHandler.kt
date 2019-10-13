@@ -1,7 +1,7 @@
 package com.skoky
 
 import android.util.Log
-import com.skoky.Wrapped.sleep
+import java.lang.Thread.sleep
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 
