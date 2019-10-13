@@ -8,7 +8,6 @@ import android.widget.TextView
 import com.skoky.R
 import com.skoky.fragment.content.TrainingLap
 import com.skoky.fragment.content.TrainingModeModel
-import kotlinx.android.synthetic.main.fragment_trainingmode.view.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -80,9 +79,9 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingL
     override fun getItemCount(): Int = (mValues.size + 1)
 
     inner class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
-        val mIdView: TextView = mView.item_position
-        val mLapTime: TextView = mView.item_time
-        val mDiff: TextView = mView.item_diff
+        val mIdView: TextView = mView.findViewById(R.id.item_position)
+        val mLapTime: TextView = mView.findViewById(R.id.item_time)
+        val mDiff: TextView = mView.findViewById(R.id.item_diff)
 
     }
 

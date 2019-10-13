@@ -7,8 +7,10 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.support.design.widget.NavigationView
 import android.support.v4.app.Fragment
 import android.support.v4.view.GravityCompat
+import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBar
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
@@ -37,10 +39,6 @@ import com.skoky.Const.transponderSoundK
 import com.skoky.fragment.*
 import com.skoky.services.Decoder
 import com.skoky.services.DecoderService
-import kotlinx.android.synthetic.main.fragment_options.*
-import kotlinx.android.synthetic.main.main.*
-import kotlinx.android.synthetic.main.select_decoder.*
-import kotlinx.android.synthetic.main.startup_content.*
 import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
@@ -73,7 +71,7 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.main)
 
-        setSupportActionBar(toolbar)
+        setSupportActionBar(findViewById(R.id.toolbar))
         val actionbar: ActionBar? = supportActionBar
         actionbar?.apply {
             setDisplayHomeAsUpEnabled(true)
@@ -105,8 +103,11 @@ class MainActivity : AppCompatActivity() {
                     }
         }
 
-        nav_view.setNavigationItemSelectedListener { menuItem ->
-            drawer_layout.closeDrawers()
+        val navView = findViewById<NavigationView>(R.id.nav_view)
+
+        navView.setNavigationItemSelectedListener {  menuItem ->
+            // (findViewById(R.id.menuItem) as MenuItem)
+            findViewById<DrawerLayout>(R.id.drawer_layout).closeDrawers()
 
             when (menuItem.itemId) {
                 R.id.nav_training -> menuItem.isChecked = switchFragment { openTrainingMode(null) }
@@ -207,7 +208,7 @@ class MainActivity : AppCompatActivity() {
         if (app.decoderService.isDecoderConnected()) {
             app.decoderService.disconnectAllDecoders()
         } else {
-            app.decoderService.connectDecoderByUUID(firstDecoderId.tag as String)
+            app.decoderService.connectDecoderByUUID(findViewById<TextView>(R.id.firstDecoderId).tag as String)
         }
     }
 
@@ -235,10 +236,12 @@ class MainActivity : AppCompatActivity() {
 
         val decodersCopy = app.decoderService.getDecoders()
 
-        val decoderText = dialog.decoder_address_edittext
-        decoderText.setText(defaultSharedPreferences.getString(LAST_IP, ""))
+        val et = dialog.findViewById<EditText>(R.id.decoder_address_edittext)
+        et.setText(defaultSharedPreferences.getString(LAST_IP, ""))
 
-        val radioButton = dialog.known_decoders
+        val kd = dialog.findViewById<RadioGroup>(R.id.known_decoders)
+
+        et.addTextChangedListener(SimpleTextWatcher(kd))
 
         decodersCopy.forEach { d2 ->
             if (d2.ipAddress != null) {
@@ -248,21 +251,20 @@ class MainActivity : AppCompatActivity() {
                 b.id = d2.hashCode()
                 b.setOnCheckedChangeListener { view, checked ->
                     Log.d(TAG, "Checked $view $checked")
-                    decoderText.text = null
+                    et.text = null
                 }
-                radioButton.addView(b)
+                kd.addView(b)
             }
         }
 
-        decoderText.addTextChangedListener(SimpleTextWatcher(radioButton))
-
-        dialog.decoder_select_ok_button.setOnClickListener {
-            val checkDecoderHashCode = dialog.known_decoders.checkedRadioButtonId
+        val d = dialog.findViewById<Button>(R.id.decoder_select_ok_button)
+        d.setOnClickListener {
+            val checkDecoderHashCode = kd.checkedRadioButtonId
             val foundDecoder = decodersCopy.find { decoder -> decoder.hashCode() == checkDecoderHashCode }
             Log.i(TAG, "decoder $foundDecoder")
 
-            if (decoderText.text.isNotEmpty()) {
-                val dd = decoderText.text.toString().trim()
+            if (et.text.isNotEmpty()) {
+                val dd = et.text.toString().trim()
                 if (!dd.isBlank()) defaultSharedPreferences.edit().putString(LAST_IP, dd).apply()
                 app.decoderService.connectDecoder(dd)
             } else
@@ -346,7 +348,8 @@ class MainActivity : AppCompatActivity() {
         val c = view as CheckBox
         saveRaceDuration(c)
         showHideRaceDurationValue(c.isChecked)
-        saveIntValue(startupDelayValue, raceDurationValueK)
+        val std = findViewById<EditText>(R.id.startupDelayValue)
+        saveIntValue(std, raceDurationValueK)
     }
 
     fun optionsIncludeMinLapTime(view: View) {
@@ -358,7 +361,8 @@ class MainActivity : AppCompatActivity() {
         val c = view as CheckBox
         saveStartupDelay(c)
         showHideStartupDelayValue(c.isChecked)
-        saveIntValue(startupDelayValue, startupDelayValueK)
+        val std = findViewById<EditText>(R.id.startupDelayValue)
+        saveIntValue(std, startupDelayValueK)
     }
 
     private fun saveStartupDelay(checkbox: CheckBox) = defaultSharedPreferences.edit().putBoolean(startupDelayK, checkbox.isChecked).apply()
@@ -509,7 +513,8 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             android.R.id.home -> {
-                drawer_layout.openDrawer(GravityCompat.START)
+                val dl = findViewById<DrawerLayout>(R.id.drawer_layout)
+                dl.openDrawer(GravityCompat.START)
                 true
             }
             else -> super.onOptionsItemSelected(item)

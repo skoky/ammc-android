@@ -23,8 +23,6 @@ import com.skoky.Tone.stopTone
 import com.skoky.Tools
 import com.skoky.fragment.content.TrainingModeModel
 import com.skoky.services.DecoderService.Companion.DECODER_PASSING
-import kotlinx.android.synthetic.main.fragment_trainingmode_list.*
-import kotlinx.android.synthetic.main.fragment_trainingmode_list.view.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import org.json.JSONObject
@@ -62,8 +60,8 @@ class TrainingModeFragment : FragmentCommon() {
                               savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_trainingmode_list, container, false)
 
-        clockViewX = view.clockView
-        timingContentView = view.training_content
+        clockViewX = view.findViewById(R.id.clockView)
+        timingContentView = view.findViewById(R.id.training_content)
         // Set the adapter
 
         with(timingContentView) {
@@ -87,8 +85,8 @@ class TrainingModeFragment : FragmentCommon() {
             }
 
         }
-        view.startStopButton.setOnClickListener { doStartStopDialog() }
-        startStopButtonM = view.startStopButton
+        view.findViewById<Button>(R.id.startStopButton).setOnClickListener { doStartStopDialog() }
+        startStopButtonM = view.findViewById<Button>(R.id.startStopButton)
         registerConnectionHandlers()
 
         return view
@@ -108,7 +106,7 @@ class TrainingModeFragment : FragmentCommon() {
                 b.setSingleChoiceItems(trs, 0) { dialog, i ->
                     Log.w(TAG, "Selected $i")
                     setSelectedTransponder(trs[i])
-                    decoderIdSelector.text = trs[i]
+                    act.findViewById<TextView>(R.id.decoderIdSelector).text = trs[i]
                     if (startRace) doStartStop()
                     dialog.cancel()
                 }

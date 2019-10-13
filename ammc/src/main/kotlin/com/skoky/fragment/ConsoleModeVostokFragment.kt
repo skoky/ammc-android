@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -17,7 +18,6 @@ import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.fragment.content.ConsoleModel
 import com.skoky.services.DecoderService.Companion.DECODER_DATA
-import kotlinx.android.synthetic.main.fragment_consolemode_list.*
 import org.jetbrains.anko.childrenSequence
 import org.json.JSONObject
 
@@ -90,7 +90,7 @@ class ConsoleModeVostokFragment : FragmentCommon() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        refreshImage.visibility = INVISIBLE
+        view.findViewById<ImageView>(R.id.refreshImage).visibility = INVISIBLE
 
         activity?.let {
             val app = it.application as MyApp

@@ -9,7 +9,6 @@ import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.fragment.content.Racer
 import com.skoky.fragment.content.RacingModeModel
-import kotlinx.android.synthetic.main.fragment_racingmode.view.*
 import java.text.SimpleDateFormat
 
 
@@ -72,10 +71,10 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
     override fun getItemCount(): Int = (mValues.size + 1)
 
     inner class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
-        val mPosition: TextView = mView.item_position
-        val mTrasView: TextView = mView.item_transponder
-        val mLastLapTime: TextView = mView.item_last_lap_time
-        val mLapCount: TextView = mView.item_laps_count
+        val mPosition: TextView = mView.findViewById(R.id.item_position)
+        val mTrasView: TextView = mView.findViewById(R.id.item_transponder)
+        val mLastLapTime: TextView = mView.findViewById(R.id.item_last_lap_time)
+        val mLapCount: TextView = mView.findViewById(R.id.item_laps_count)
 
     }
 

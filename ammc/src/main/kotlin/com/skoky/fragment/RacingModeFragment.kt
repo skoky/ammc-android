@@ -24,7 +24,6 @@ import com.skoky.Tone.stopTone
 import com.skoky.Tools
 import com.skoky.fragment.content.RacingModeModel
 import com.skoky.services.DecoderService.Companion.DECODER_PASSING
-import kotlinx.android.synthetic.main.fragment_racingmode_list.view.*
 import org.jetbrains.anko.childrenSequence
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -65,8 +64,8 @@ class RacingModeFragment : FragmentCommon() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_racingmode_list, container, false)
-        clockViewX = view.clockView
-        timingContentView = view.training_content
+        clockViewX = view.findViewById<TextView>(R.id.clockView)
+        timingContentView = view.findViewById<RecyclerView>(R.id.training_content)
         // Set the adapter
 
         with(timingContentView) {
@@ -102,8 +101,8 @@ class RacingModeFragment : FragmentCommon() {
             }
 
         }
-        view.startStopButton.setOnClickListener { doStartStopDialog() }
-        startStopButtonM = view.startStopButton
+        view.findViewById<Button>(R.id.startStopButton).setOnClickListener { doStartStopDialog() }
+        startStopButtonM = view.findViewById<Button>(R.id.startStopButton)
 
         registerConnectionHandlers()
 
@@ -248,7 +247,7 @@ class RacingModeFragment : FragmentCommon() {
                     uiThread {
                         clockViewX.text = str
                     }
-                    sleep(30)
+                    sleep(30)   // FIXME do it better!
                 }
                 if (!isInterrupted) {
                     uiThread {

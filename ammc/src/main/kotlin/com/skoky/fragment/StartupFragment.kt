@@ -11,6 +11,9 @@ import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ProgressBar
+import android.widget.TextView
 import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
@@ -18,7 +21,6 @@ import com.skoky.services.Decoder
 import com.skoky.services.DecoderService.Companion.DECODERS_UPDATE
 import com.skoky.services.DecoderService.Companion.DECODER_CONNECT
 import com.skoky.services.DecoderService.Companion.DECODER_DISCONNECTED
-import kotlinx.android.synthetic.main.startup_content.*
 
 class StartupFragment : FragmentCommon() {
 
@@ -69,29 +71,29 @@ class StartupFragment : FragmentCommon() {
                     val app = act.application as MyApp
 
             if (foundDecoder == null) {  // query
-                progressBar2.visibility = VISIBLE
-                connectButton.visibility = INVISIBLE
-                moreDecodersButton.visibility = VISIBLE
-                firstDecoderId.text = app.getString(R.string.querying_decoders)
-                firstDecoderId.tag = null
-                connectButton.text = app.getString(R.string.connect)
+                act.findViewById<ProgressBar>(R.id.progressBar2).visibility = VISIBLE
+                act.findViewById<Button>(R.id.connectButton).visibility = INVISIBLE
+                act.findViewById<TextView>(R.id.moreDecodersButton).visibility = VISIBLE
+                act.findViewById<TextView>(R.id.firstDecoderId).text = app.getString(R.string.querying_decoders)
+                act.findViewById<TextView>(R.id.firstDecoderId).tag = null
+                act.findViewById<Button>(R.id.connectButton).text = app.getString(R.string.connect)
 
             } else {
-                progressBar2.visibility = INVISIBLE
-                connectButton.visibility = VISIBLE
-                connectButton.isEnabled = foundDecoder.ipAddress != null
+                act.findViewById<ProgressBar>(R.id.progressBar2).visibility = INVISIBLE
+                act.findViewById<Button>(R.id.connectButton).visibility = VISIBLE
+                act.findViewById<Button>(R.id.connectButton).isEnabled = foundDecoder.ipAddress != null
 
                 foundDecoder.let {
-                    firstDecoderId.text = MainActivity.decoderLabel(it)
-                    firstDecoderId.tag = foundDecoder.uuid.toString()
+                    act.findViewById<TextView>(R.id.firstDecoderId).text = MainActivity.decoderLabel(it)
+                    act.findViewById<TextView>(R.id.firstDecoderId).tag = foundDecoder.uuid.toString()
                 }
 
                 if (foundDecoder.connection == null) { // not connected
-                    connectButton.text = app.getString(R.string.connect)
-                    moreDecodersButton.visibility = VISIBLE
+                    act.findViewById<Button>(R.id.connectButton).text = app.getString(R.string.connect)
+                    act.findViewById<TextView>(R.id.moreDecodersButton).visibility = VISIBLE
                 } else if (foundDecoder.connection != null && foundDecoder.connection!!.isConnected) {  // connected
-                    connectButton.text = app.getString(R.string.disconnect)
-                    moreDecodersButton.visibility = INVISIBLE
+                    act.findViewById<Button>(R.id.connectButton).text = app.getString(R.string.disconnect)
+                    act.findViewById<TextView>(R.id.moreDecodersButton).visibility = INVISIBLE
                 }
             }
         }

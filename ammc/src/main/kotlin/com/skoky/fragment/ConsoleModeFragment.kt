@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -14,7 +15,6 @@ import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.services.DecoderService.Companion.DECODER_DATA
-import kotlinx.android.synthetic.main.fragment_consolemode_list.*
 import org.jetbrains.anko.childrenSequence
 import org.json.JSONObject
 
@@ -79,7 +79,8 @@ class ConsoleModeFragment : FragmentCommon() {
 
             connectedDecoder?.let { decoder ->
                 app.decoderService.exploreDecoder(decoder.uuid)
-                refreshImage.setOnClickListener {
+                val iv = view.findViewById<ImageView>(R.id.refreshImage)
+                iv.setOnClickListener {
                     doRefresh()
                 }
             }

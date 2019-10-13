@@ -16,8 +16,6 @@ import com.skoky.Const.raceDurationValueK
 import com.skoky.Const.startupDelayValueK
 import com.skoky.MainActivity
 import com.skoky.R
-import kotlinx.android.synthetic.*
-import kotlinx.android.synthetic.main.fragment_options.*
 
 class MyTextWatcher(private val ma: MainActivity, val key: String, val value: EditText) : TextWatcher {
     override fun afterTextChanged(p0: Editable?) {}
@@ -49,11 +47,16 @@ class OptionsFragment : FragmentCommon() {
         activity?.let { a ->
             val ma = (a as MainActivity)
 
-            checkStartupDelay.isChecked = ma.getStartupDelayFlag()
-            ma.showHideStartupDelayValue(checkStartupDelay.isChecked)
-            checkRaceDuration.isChecked = ma.getRaceDurationFlag()
-            ma.showHideRaceDurationValue(checkRaceDuration.isChecked)
-            checkIncludeMinLapTime.isChecked = ma.getIncludeMinLapTimeFlag()
+            val sd = a.findViewById<CheckBox>(R.id.checkStartupDelay)
+            sd.isChecked = ma.getStartupDelayFlag()
+            ma.showHideStartupDelayValue(sd.isChecked)
+
+            val rd = a.findViewById<CheckBox>(R.id.checkRaceDuration)
+            rd.isChecked = ma.getRaceDurationFlag()
+            ma.showHideRaceDurationValue(rd.isChecked)
+
+
+            a.findViewById<CheckBox>(R.id.checkIncludeMinLapTime).isChecked = ma.getIncludeMinLapTimeFlag()
 
             a.findViewById<EditText>(R.id.checkMinLapTime)?.let {
                 it.setText(ma.getMinLapTimeFlag().toString())
@@ -78,7 +81,7 @@ class OptionsFragment : FragmentCommon() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        this.clearFindViewByIdCache()
+// FIXME?        this.clearFindViewByIdCache()
     }
 
     companion object {
