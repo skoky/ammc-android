@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.skoky">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="com.skoky.ammc.service"/>
 
     <application
         android:name=".MyApp"
         android:icon="@drawable/icon"
         android:label="@string/app_name"
         android:theme="@style/amm"
-        android:allowBackup="true">
+        android:allowBackup="true"
+        tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden"
@@ -28,7 +31,8 @@
         <service
             android:name=".services.DecoderService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true"
+            android:permission="com.skoky.ammc.service" />
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
