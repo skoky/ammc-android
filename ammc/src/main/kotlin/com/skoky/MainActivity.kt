@@ -7,13 +7,6 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
-import android.support.design.widget.NavigationView
-import android.support.v4.app.Fragment
-import android.support.v4.view.GravityCompat
-import android.support.v4.widget.DrawerLayout
-import android.support.v7.app.ActionBar
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -21,6 +14,13 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
+import androidx.appcompat.app.ActionBar
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
+import com.google.android.material.navigation.NavigationView
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
 
         val navView = findViewById<NavigationView>(R.id.nav_view)
 
-        navView.setNavigationItemSelectedListener {  menuItem ->
+        navView.setNavigationItemSelectedListener { menuItem ->
             // (findViewById(R.id.menuItem) as MenuItem)
             findViewById<DrawerLayout>(R.id.drawer_layout).closeDrawers()
 
@@ -128,12 +128,11 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun currentFragment() = supportFragmentManager.findFragmentById(R.id.screen_container)
+    private fun currentFragment() = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
 
     private fun confirmLeave(): Boolean {
 
-        val fr = currentFragment()
-        return when (fr) {
+        return when (val fr = currentFragment()) {
             is StartupFragment -> false
             is OptionsFragment -> false
             is TrainingModeFragment -> fr.isRaceRunning()
@@ -145,8 +144,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isFragmentWithRaceOpen(): Boolean {
-        val fr = currentFragment()
-        return when (fr) {
+        return when (val fr = currentFragment()) {
             is TrainingModeFragment -> fr.isRaceRunning()
             is RacingModeFragment -> fr.isRaceRunning()
             else -> false
@@ -193,7 +191,7 @@ class MainActivity : AppCompatActivity() {
     fun openStartupFragment() {
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         //val optionsFragment { fragmentTransaction.detach(it) }
-        fragmentTransaction.replace(R.id.screen_container, StartupFragment())
+        fragmentTransaction.replace(R.id.nav_host_fragment, StartupFragment())
         fragmentTransaction.commit()
     }
 
@@ -296,27 +294,26 @@ class MainActivity : AppCompatActivity() {
     private fun openHelp(view: View?): Boolean {
         helpFragment = HelpFragment.newInstance()
         val fragmentTransaction = supportFragmentManager.beginTransaction()
-        fragmentTransaction.replace(R.id.screen_container, helpFragment)
+        fragmentTransaction.replace(R.id.nav_host_fragment, helpFragment)
         fragmentTransaction.commit()
 
         return true
     }
 
     private lateinit var driversEditorFragment: DriversFragment
-    fun openDriversEditor(view: View?): Boolean {
+    fun openDriversEditor(view: View?) {
         driversEditorFragment = DriversFragment.newInstance()
         val fragmentTransaction = supportFragmentManager.beginTransaction()
-        fragmentTransaction.replace(R.id.screen_container, driversEditorFragment)
+        fragmentTransaction.replace(R.id.nav_host_fragment, driversEditorFragment)
         fragmentTransaction.commit()
-
-        return true
+        return
     }
 
     //    private val optionsFragment: OptionsFragment? = null
     private fun openOptions(view: View?): Boolean {
         val optionsFragment = OptionsFragment.newInstance()
         val fragmentTransaction = supportFragmentManager.beginTransaction()
-        fragmentTransaction.replace(R.id.screen_container, optionsFragment)
+        fragmentTransaction.replace(R.id.nav_host_fragment, optionsFragment)
         fragmentTransaction.commit()
 
         return true
@@ -403,29 +400,26 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var consoleFragment: ConsoleModeFragment
     private lateinit var consoleVostokFragment: ConsoleModeVostokFragment
-    fun openConsoleMode(view: View?): Boolean {
+    fun openConsoleMode(view: View?) {
         app.decoderService.let { ds ->
             if (!ds.isDecoderConnected()) {
                 AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected))
                         .setCancelable(true).create().show()
-                return true
             } else {
                 return if (ds.isDecoderConnected()) {
                     val fragmentTransaction = supportFragmentManager.beginTransaction()
                     if (ds.isConnectedDecoderVostok()) {
                         consoleVostokFragment = ConsoleModeVostokFragment.newInstance()
-                        fragmentTransaction.replace(R.id.screen_container, consoleVostokFragment)
+                        fragmentTransaction.replace(R.id.nav_host_fragment, consoleVostokFragment)
                     } else {
                         consoleFragment = ConsoleModeFragment.newInstance()
-                        fragmentTransaction.replace(R.id.screen_container, consoleFragment)
+                        fragmentTransaction.replace(R.id.nav_host_fragment, consoleFragment)
                     }
                     fragmentTransaction.commit()
-
-                    true
+                    return
 
                 } else {
                     AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
-                    false
                 }
             }
         }
@@ -438,17 +432,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var racingFragment: RacingModeFragment
-    fun openRacingMode(view: View?): Boolean {
+    fun openRacingMode(view: View?) {
         app.decoderService.let {
             return if (it.isDecoderConnected()) {
                 racingFragment = RacingModeFragment.newInstance()
                 val fragmentTransaction = supportFragmentManager.beginTransaction()
-                fragmentTransaction.replace(R.id.screen_container, racingFragment as Fragment)
+                fragmentTransaction.replace(R.id.nav_host_fragment, racingFragment as Fragment)
                 fragmentTransaction.commit()
-                true
+                return
             } else {
                 AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
-                false
             }
         }
     }
@@ -456,17 +449,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var trainingFragment: TrainingModeFragment
 
     @Suppress("UNUSED_PARAMETER")
-    fun openTrainingMode(view: View?): Boolean {
+    fun openTrainingMode(view: View?) {
 
         return if (app.decoderService.isDecoderConnected()) {
             trainingFragment = TrainingModeFragment.newInstance()
             val fragmentTransaction = supportFragmentManager.beginTransaction()
-            fragmentTransaction.replace(R.id.screen_container, trainingFragment)
+            fragmentTransaction.replace(R.id.nav_host_fragment, trainingFragment)
             fragmentTransaction.commit()
-            true
+            return
         } else {
             AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
-            false
         }
 
     }
@@ -535,4 +527,5 @@ class MainActivity : AppCompatActivity() {
             return d.uuid.toString()
         }
     }
+
 }

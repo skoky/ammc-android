@@ -6,16 +6,20 @@
     android:layout_height="match_parent"
     android:background="@color/amm_grey">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout6"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/amm_grey">
+        android:layout_height="wrap_content"
+        android:background="@color/amm_grey"
+        tools:layout_editor_absoluteY="1dp">
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
             android:background="@drawable/rounded"
             android:minHeight="100dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -24,13 +28,11 @@
 
             <ProgressBar
                 android:id="@+id/progressBar2"
-                android:layout_width="61dp"
-                android:layout_height="41dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginTop="8dp"
-                android:gravity="right"
-                android:onClick="showMoreDecoders"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="end"
                 android:indeterminate="true"
+                android:onClick="showMoreDecoders"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -42,7 +44,8 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:onClick="openConsoleMode"
-                android:paddingLeft="10dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
                 android:text="@string/querying_decoders"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -63,28 +66,28 @@
                 android:id="@+id/moreDecodersButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginEnd="8dp"
                 android:onClick="showMoreDecoders"
                 android:text="@string/show_more_decoders"
+                android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:visibility="visible"
                 app:layout_constraintTop_toBottomOf="@+id/connectButton" />
 
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
             android:background="@drawable/rounded"
             android:minHeight="100dp"
+            android:onClick="openTrainingMode"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:onClick="openTrainingMode"
             app:layout_constraintTop_toBottomOf="@+id/constraintLayout">
 
             <TextView
@@ -92,8 +95,6 @@
                 style="@style/amm_text_white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
                 android:padding="10dp"
                 android:text="@string/training_mode"
                 app:layout_constraintStart_toStartOf="parent"
@@ -104,41 +105,40 @@
                 style="@style/amm_text_white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
                 android:maxLines="5"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
                 android:paddingBottom="10dp"
-                android:paddingLeft="10dp"
                 android:text="@string/training_mode_text"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/training_label" />
 
             <TextView
+                android:id="@+id/textView4"
                 style="@style/amm_text_white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_marginTop="8dp"
                 android:paddingBottom="10dp"
                 android:text="@string/label_open"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
             android:background="@drawable/rounded"
             android:minHeight="100dp"
+            android:onClick="openRacingMode"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            android:onClick="openRacingMode"
             app:layout_constraintTop_toBottomOf="@+id/constraintLayout3">
 
             <TextView
@@ -146,56 +146,52 @@
                 style="@style/amm_text_white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 android:padding="10dp"
                 android:text="@string/racing_mode"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:layout_editor_absoluteY="1dp"
-                />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/textView2"
                 style="@style/amm_text_white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
                 android:maxLines="5"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
                 android:paddingBottom="10dp"
-                android:paddingLeft="10dp"
                 android:text="@string/racing_mode_text"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView" />
 
             <TextView
+                android:id="@+id/textView5"
                 style="@style/amm_text_white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_marginTop="8dp"
                 android:onClick="openRacingMode"
                 android:paddingBottom="10dp"
                 android:text="@string/label_open"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout4"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
             android:background="@drawable/rounded"
             android:minHeight="100dp"
+            android:onClick="openDriversEditor"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            android:onClick="openDriversEditor"
             app:layout_constraintTop_toBottomOf="@+id/constraintLayout2">
 
             <TextView
@@ -203,57 +199,48 @@
                 style="@style/amm_text_white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 android:padding="10dp"
                 android:text="@string/drivers_editor"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:layout_editor_absoluteY="1dp"
-                />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/textView2de"
                 style="@style/amm_text_white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
                 android:maxLines="5"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
                 android:paddingBottom="10dp"
-                android:paddingLeft="10dp"
                 android:text="@string/drivers_editor_text"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textViewDriversEditor" />
 
             <TextView
+                android:id="@+id/textView6"
                 style="@style/amm_text_white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_marginTop="8dp"
                 android:onClick="openDriversEditor"
                 android:paddingBottom="10dp"
                 android:text="@string/label_open"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <Button
             android:id="@+id/button2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
             android:layout_marginTop="8dp"
-            android:text="@string/make_a_wish"
             android:onClick="doMakeAWish"
+            android:text="@string/make_a_wish"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/constraintLayout4" />
 
-    </android.support.constraint.ConstraintLayout>
-
-
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </ScrollView>

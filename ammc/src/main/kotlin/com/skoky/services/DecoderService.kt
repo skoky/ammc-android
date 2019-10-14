@@ -7,7 +7,6 @@ import android.media.ToneGenerator
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
-import android.support.annotation.RequiresApi
 import android.util.Log
 import com.skoky.*
 import com.skoky.Tools.P3_DEF_PORT
@@ -124,7 +123,7 @@ class DecoderService : Service() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
+//    @RequiresApi(Build.VERSION_CODES.N)
     private fun decoderAutoCleanup() {
         Timer().schedule(1000, 1000) {
             // removes inactive decoders

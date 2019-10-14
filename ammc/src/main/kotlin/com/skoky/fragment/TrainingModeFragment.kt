@@ -6,8 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -78,7 +76,7 @@ class TrainingModeFragment : FragmentCommon() {
 
                 if (trainingRunning) {
                     (adapter as TrainingModeRecyclerViewAdapter).addRecord(transponder, timeUs)
-                    adapter.notifyDataSetChanged()
+                    adapter?.notifyDataSetChanged()
                 }
                 tmm = (adapter as TrainingModeRecyclerViewAdapter).tmm
             }
@@ -100,7 +98,7 @@ class TrainingModeFragment : FragmentCommon() {
             val app = act.application as MyApp
             val trs = app.recentTransponders.toTypedArray()
 
-            val b = android.support.v7.app.AlertDialog.Builder(act)
+            val b = AlertDialog.Builder(act)
                     .setTitle(getString(R.string.select_label))
             if (trs.isEmpty()) {
                 b.setMessage(getString(R.string.no_transponder))
@@ -138,7 +136,7 @@ class TrainingModeFragment : FragmentCommon() {
             doStop()
         } else {    // not trainingRunning
 
-            if (timingContentView.adapter.itemCount == 1) {     // just a label, nothing to clear
+            if (timingContentView.adapter?.itemCount == 1) {     // just a label, nothing to clear
                 doStart()
             } else {
                 AlertDialog.Builder(context).setTitle("Clear results and start new training?")
