@@ -219,7 +219,7 @@ class TrainingModeFragment : FragmentCommon() {
         clock = doAsync {
 
             if (ma.getStartStopSoundFlag()) startTone()
-            while (trainingRunning && !isInterrupted) {
+            while (trainingRunning && !isInterrupted) {  // TBD handle interrupt
                 val timeMs = System.currentTimeMillis() - trainingStartTime
                 val str = Tools.millisToTimeWithMillis(timeMs)
                 uiThread {
