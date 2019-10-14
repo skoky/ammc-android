@@ -15,13 +15,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.skoky.MainActivity
-import com.skoky.MyApp
-import com.skoky.R
-import com.skoky.Tone.preStartTone
-import com.skoky.Tone.startTone
-import com.skoky.Tone.stopTone
-import com.skoky.Tools
+import com.skoky.*
 import com.skoky.fragment.content.RacingModeModel
 import com.skoky.services.DecoderService.Companion.DECODER_PASSING
 import org.jetbrains.anko.childrenSequence
@@ -46,6 +40,8 @@ class RacingModeFragment : FragmentCommon() {
     private lateinit var clockViewX: TextView
 
     private lateinit var mAdapter: RacingModeRecyclerViewAdapter
+
+    private val toneGenerator = Tone()
 
     class ConnectionReceiver(val handler: () -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -142,7 +138,7 @@ class RacingModeFragment : FragmentCommon() {
 
     private fun doStop() {
         val ma = (activity as MainActivity)
-        if (ma.getStartStopSoundFlag()) stopTone()
+        if (ma.getStartStopSoundFlag()) toneGenerator.stopTone()
 
         if (preStartDelayRunning) {
             clockViewX.text = ""
@@ -201,7 +197,7 @@ class RacingModeFragment : FragmentCommon() {
                 val diffSecs = (System.currentTimeMillis() - delayStartTime) / 1000
                 val time = delaySecs - diffSecs
                 if (ma.getStartStopSoundFlag())
-                    if (time == 1.toLong() || time == 2.toLong()) preStartTone()
+                    if (time == 1.toLong() || time == 2.toLong()) toneGenerator.preStartTone()
 
                 val str = "Start in ${time}s"
                 uiThread {
@@ -238,7 +234,7 @@ class RacingModeFragment : FragmentCommon() {
         var isInterrupted = false
         clock = doAsync {
 
-            if (ma.getStartStopSoundFlag()) startTone()
+            if (ma.getStartStopSoundFlag()) toneGenerator.startTone()
 
             if (limitRaceDuration) {
                 while ((System.currentTimeMillis() - racingStartTime) / 1000 <= totalRaceTime && raceRunning && !isInterrupted) {

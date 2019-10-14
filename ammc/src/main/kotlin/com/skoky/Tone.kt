@@ -5,8 +5,15 @@ import android.media.ToneGenerator
 import android.media.ToneGenerator.TONE_CDMA_NETWORK_BUSY
 import android.util.Log
 
-object Tone {
-    val TAG = Tone::class.simpleName
+class Tone {
+
+    private var generator: ToneGenerator? = null
+
+    constructor() {
+        generator = ToneGenerator(STREAM_MUSIC, 100)
+    }
+
+
 
     fun stopTone() {
         playTone(TONE_CDMA_NETWORK_BUSY, 1000)
@@ -22,9 +29,14 @@ object Tone {
 
     private fun playTone(tone: Int, duration: Int) {
         try {
-            ToneGenerator(STREAM_MUSIC, 100).startTone(tone, duration)
+            generator?.startTone(tone, duration)
         } catch (e: Exception) {
             Log.w(TAG, "Exception when playing tone", e)
         }
     }
+
+    companion object Tone {
+        val TAG = com.skoky.Tone::class.simpleName
+    }
 }
+

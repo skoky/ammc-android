@@ -14,13 +14,7 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.skoky.MainActivity
-import com.skoky.MyApp
-import com.skoky.R
-import com.skoky.Tone.preStartTone
-import com.skoky.Tone.startTone
-import com.skoky.Tone.stopTone
-import com.skoky.Tools
+import com.skoky.*
 import com.skoky.fragment.content.TrainingModeModel
 import com.skoky.services.DecoderService.Companion.DECODER_PASSING
 import org.jetbrains.anko.doAsync
@@ -41,6 +35,8 @@ class TrainingModeFragment : FragmentCommon() {
     private lateinit var timingContentView: RecyclerView
 
     private lateinit var clockViewX: TextView
+
+    private val toneGenerator = Tone()
 
     class ConnectionReceiver(val handler: () -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -156,7 +152,7 @@ class TrainingModeFragment : FragmentCommon() {
     private fun doStop() {
 
         val ma = (activity as MainActivity)
-        if (ma.getStartStopSoundFlag()) stopTone()
+        if (ma.getStartStopSoundFlag()) toneGenerator.stopTone()
 
         if (preStartDelayRunning) {
             clockViewX.text = ""
@@ -192,7 +188,7 @@ class TrainingModeFragment : FragmentCommon() {
                 val diffSecs = (System.currentTimeMillis() - delayStartTime) / 1000
                 val time = delaySecs - diffSecs
                 if (ma.getStartStopSoundFlag())
-                    if (time == 2.toLong() || time == 1.toLong()) preStartTone()
+                    if (time == 2.toLong() || time == 1.toLong()) toneGenerator.preStartTone()
                 val str = "Start in ${time}s"
                 uiThread {
                     clockViewX.text = str
@@ -218,7 +214,7 @@ class TrainingModeFragment : FragmentCommon() {
         val ma = activity as MainActivity
         clock = doAsync {
 
-            if (ma.getStartStopSoundFlag()) startTone()
+            if (ma.getStartStopSoundFlag()) toneGenerator.startTone()
             while (trainingRunning && !isInterrupted) {  // TBD handle interrupt
                 val timeMs = System.currentTimeMillis() - trainingStartTime
                 val str = Tools.millisToTimeWithMillis(timeMs)
