@@ -123,6 +123,8 @@ class MainActivity : AppCompatActivity() {
             }
             true
         }
+//            val label = navView.findViewById<TextView>(R.id.amm_header_version)
+//            label?.text = getString(R.string.amm_short,"Here!")
 
         app.badMsgReport = getBadMsgFlag()
     }

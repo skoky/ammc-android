@@ -24,5 +24,4 @@
         app:itemTextAppearance="@style/amm_text_white"
         app:menu="@menu/drawer_view" />
 
-
 </androidx.drawerlayout.widget.DrawerLayout>
