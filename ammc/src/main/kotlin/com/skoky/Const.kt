@@ -11,5 +11,6 @@ object Const {
     const val includeMinLapTimeK = "includeMinLapTime"
     const val minLapTimeK = "minLapTime"
     const val transponderSoundK = "transponderSound"
+    const val timeToSpeech = "timeToSpeech"
     const val startStopSoundK = "startStopSound"
 }

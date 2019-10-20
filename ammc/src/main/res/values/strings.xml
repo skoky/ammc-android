@@ -15,6 +15,7 @@
     <string name="bad_msg">Bad messages reporting</string>
     <string name="drivers_sync">Drivers name sync</string>
     <string name="transponder_sound">Transponder sound</string>
+    <string name="time_to_speech">Say time in Training mode</string>
     <string name="start_stop_sound">Start/stop sound</string>
     <string name="minLapTime">Min. lap time</string>
     <string name="startup_delay">Startup Delay</string>
@@ -33,6 +34,7 @@
     <string name="bad_msg_long">Enables bad messages from decoder reporting to us for continues improvements of the application</string>
     <string name="drivers_sync_long">Enables drivers names sync to transponder code via cloud. Once entered, will sync with other timers with the same application</string>
     <string name="transponder_sound_long">Beep on every transponder passing whenever decoder is connected</string>
+    <string name="time_to_speech_long">Say time on every lap in local language</string>
     <string name="start_stop_sound_long">Beep on race start and stop. With pre-start delay, beeps 3 times</string>
     <string name="min_lap_long">Minimal lap time for each transponder. Times with less lap time will be ignored</string>
     <string name="startup_delay_long">Delays race startup by few seconds that racer can get ready to start</string>

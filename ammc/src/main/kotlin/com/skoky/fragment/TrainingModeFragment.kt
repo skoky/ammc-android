@@ -24,7 +24,6 @@ import org.json.JSONObject
 import java.lang.Thread.sleep
 import java.util.concurrent.Future
 
-
 class TrainingModeFragment : FragmentCommon() {
 
     private lateinit var receiver: BroadcastReceiver
@@ -91,14 +90,16 @@ class TrainingModeFragment : FragmentCommon() {
     }
 
     private fun sayLastTime(adapter: TrainingModeRecyclerViewAdapter) {
-        doAsync {
-            val a = (activity as MainActivity)
+        if ((activity as MainActivity).getTimeToSpeechFlag()) {
+            doAsync {
+                val a = (activity as MainActivity)
 
-            adapter.getLastLap()?.let {
-                if (it.number > 0) {
-                    val toSay = formatTimeToSpeach(it.lapTimeMs).replace(".", " a ")
-                    Log.d(TAG, "To sayLastTime $toSay")
-                    a.tts.speak(toSay, TextToSpeech.QUEUE_FLUSH, null, null)
+                adapter.getLastLap()?.let {
+                    if (it.number > 0) {
+                        val toSay = formatTimeToSpeach(it.lapTimeMs).replace(".", " a ")
+                        Log.d(TAG, "To sayLastTime $toSay")
+                        a.tts.speak(toSay, TextToSpeech.QUEUE_FLUSH, null, null)
+                    }
                 }
             }
         }

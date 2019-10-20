@@ -36,6 +36,7 @@ import com.skoky.Const.raceDurationValueK
 import com.skoky.Const.startStopSoundK
 import com.skoky.Const.startupDelayK
 import com.skoky.Const.startupDelayValueK
+import com.skoky.Const.timeToSpeech
 import com.skoky.Const.transponderSoundK
 import com.skoky.fragment.*
 import com.skoky.services.Decoder
@@ -344,6 +345,11 @@ class MainActivity : AppCompatActivity() {
         defaultSharedPreferences.edit().putBoolean(transponderSoundK, c.isChecked).apply()
     }
 
+    fun optionsTimeToSpeech(view: View) {
+        val c = view as CheckBox
+        defaultSharedPreferences.edit().putBoolean(timeToSpeech, c.isChecked).apply()
+    }
+
     fun optionsStartStopSound(view: View) {
         val c = view as CheckBox
         defaultSharedPreferences.edit().putBoolean(startStopSoundK, c.isChecked).apply()
@@ -400,8 +406,8 @@ class MainActivity : AppCompatActivity() {
         } else {
             findViewById<EditText>(R.id.raceDurationValue).visibility = View.INVISIBLE
             findViewById<TextView>(R.id.textRaceDuration2).visibility = View.INVISIBLE
-            findViewById<TextView>(R.id.textRaceDurationOption2).visibility = View.INVISIBLE
-            findViewById<CheckBox>(R.id.checkIncludeMinLapTime).visibility = View.INVISIBLE
+            findViewById<TextView>(R.id.textRaceDurationOption2).visibility = View.GONE
+            findViewById<CheckBox>(R.id.checkIncludeMinLapTime).visibility = View.GONE
         }
 
     }
@@ -481,6 +487,7 @@ class MainActivity : AppCompatActivity() {
     fun getMinLapTimeFlag() = defaultSharedPreferences.getInt(minLapTimeK, 20)
     fun getTransponderSoundFlag() = defaultSharedPreferences.getBoolean(transponderSoundK, true)
     fun getStartStopSoundFlag() = defaultSharedPreferences.getBoolean(startStopSoundK, true)
+    fun getTimeToSpeechFlag() = defaultSharedPreferences.getBoolean(timeToSpeech, true)
 
     private val decoderServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName,
