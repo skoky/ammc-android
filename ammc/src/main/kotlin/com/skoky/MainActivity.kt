@@ -89,7 +89,6 @@ class MainActivity : AppCompatActivity() {
 
         doAsync {
             app.firebaseAnalytics = FirebaseAnalytics.getInstance(app.applicationContext)
-            //MobileAds.initialize(app.applicationContext, "ca-app-pub-7655373768605194~7466307464")
 
             app.firestore = FirebaseFirestore.getInstance()
             val settings = FirebaseFirestoreSettings.Builder()
