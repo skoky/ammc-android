@@ -5,6 +5,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.media.AudioManager
+import android.media.ToneGenerator
 import android.os.Bundle
 import android.os.IBinder
 import android.speech.tts.TextToSpeech
@@ -53,6 +55,7 @@ class MainActivity : AppCompatActivity() {
     //    private var mAdView: AdView? = null
     private var mDecoderServiceBound = false
 
+    lateinit var toneGenerator : ToneGenerator
     lateinit var tts: TextToSpeech
 
     override fun onDestroy() {
@@ -60,6 +63,7 @@ class MainActivity : AppCompatActivity() {
         unbindService(decoderServiceConnection)
         mDecoderServiceBound = false
         tts.shutdown()
+        toneGenerator.release()
     }
 
     private fun switchFragment(toCallback: () -> Unit): Boolean {
@@ -129,8 +133,6 @@ class MainActivity : AppCompatActivity() {
             true
 
         }
-//            val label = navView.findViewById<TextView>(R.id.amm_header_version)
-//            label?.text = getString(R.string.amm_short,"Here!")
 
         doAsync {
             tts = TextToSpeech(app, TextToSpeech.OnInitListener { status ->
@@ -144,6 +146,8 @@ class MainActivity : AppCompatActivity() {
                 }
             })
         }
+
+        toneGenerator = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
 
         app.badMsgReport = getBadMsgFlag()
     }

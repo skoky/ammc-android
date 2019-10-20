@@ -1,42 +1,38 @@
 package com.skoky
 
-import android.media.AudioManager.STREAM_MUSIC
 import android.media.ToneGenerator
-import android.media.ToneGenerator.TONE_CDMA_NETWORK_BUSY
+import android.media.ToneGenerator.*
 import android.util.Log
 
-class Tone {
+object Tone {
 
-    private var generator: ToneGenerator? = null
+    val TAG = com.skoky.Tone::class.simpleName
 
-    constructor() {
-        generator = ToneGenerator(STREAM_MUSIC, 100)
+    fun stopTone(generator: ToneGenerator) {
+        playTone(generator, TONE_CDMA_NETWORK_BUSY, 1000)
     }
 
-
-
-    fun stopTone() {
-        playTone(TONE_CDMA_NETWORK_BUSY, 1000)
+    fun startTone(generator: ToneGenerator) {
+        playTone(generator, TONE_DTMF_7, 600)
     }
 
-    fun startTone() {
-        playTone(ToneGenerator.TONE_DTMF_7, 600)
+    fun preStartTone(generator: ToneGenerator) {
+        playTone(generator, TONE_DTMF_7, 200)
     }
 
-    fun preStartTone() {
-        playTone(ToneGenerator.TONE_DTMF_7, 200)
+    fun disconnectTone(generator: ToneGenerator) {
+        playTone(generator, TONE_CDMA_NETWORK_BUSY_ONE_SHOT, 300)
     }
 
-    private fun playTone(tone: Int, duration: Int) {
+    private fun playTone(generator: ToneGenerator, tone: Int, duration: Int) {
         try {
-            generator?.startTone(tone, duration)
+            val t = generator.startTone(tone, duration)
+            Log.d(TAG,"Played tone $t")
         } catch (e: Exception) {
             Log.w(TAG, "Exception when playing tone", e)
         }
     }
 
-    companion object Tone {
-        val TAG = com.skoky.Tone::class.simpleName
-    }
+
 }
 

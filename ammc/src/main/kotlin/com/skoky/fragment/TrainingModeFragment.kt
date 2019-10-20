@@ -36,8 +36,6 @@ class TrainingModeFragment : FragmentCommon() {
 
     private lateinit var clockViewX: TextView
 
-    private val toneGenerator = Tone()
-
     class ConnectionReceiver(val handler: () -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             handler()
@@ -173,7 +171,7 @@ class TrainingModeFragment : FragmentCommon() {
     private fun doStop() {
 
         val ma = (activity as MainActivity)
-        if (ma.getStartStopSoundFlag()) toneGenerator.stopTone()
+        if (ma.getStartStopSoundFlag()) Tone.stopTone(ma.toneGenerator)
 
         if (preStartDelayRunning) {
             clockViewX.text = ""
@@ -209,7 +207,7 @@ class TrainingModeFragment : FragmentCommon() {
                 val diffSecs = (System.currentTimeMillis() - delayStartTime) / 1000
                 val time = delaySecs - diffSecs
                 if (ma.getStartStopSoundFlag())
-                    if (time == 2.toLong() || time == 1.toLong()) toneGenerator.preStartTone()
+                    if (time == 2.toLong() || time == 1.toLong()) Tone.preStartTone(ma.toneGenerator)
                 val str = "Start in ${time}s"
                 uiThread {
                     clockViewX.text = str
@@ -235,14 +233,18 @@ class TrainingModeFragment : FragmentCommon() {
         val ma = activity as MainActivity
         clock = doAsync {
 
-            if (ma.getStartStopSoundFlag()) toneGenerator.startTone()
+            if (ma.getStartStopSoundFlag()) Tone.startTone(ma.toneGenerator)
             while (trainingRunning && !isInterrupted) {  // TBD handle interrupt
                 val timeMs = System.currentTimeMillis() - trainingStartTime
                 val str = Tools.millisToTimeWithMillis(timeMs)
                 uiThread {
                     clockViewX.text = str
                 }
-                sleep(30)
+                try {
+                    sleep(30)
+                } catch (e: InterruptedException) {
+                    Log.d(TAG,"Sleep interrupted")
+                }
             }
         }
     }

@@ -41,8 +41,6 @@ class RacingModeFragment : FragmentCommon() {
 
     private lateinit var mAdapter: RacingModeRecyclerViewAdapter
 
-    private val toneGenerator = Tone()
-
     class ConnectionReceiver(val handler: () -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             handler()
@@ -138,7 +136,7 @@ class RacingModeFragment : FragmentCommon() {
 
     private fun doStop() {
         val ma = (activity as MainActivity)
-        if (ma.getStartStopSoundFlag()) toneGenerator.stopTone()
+        if (ma.getStartStopSoundFlag()) Tone.stopTone(ma.toneGenerator)
 
         if (preStartDelayRunning) {
             clockViewX.text = ""
@@ -197,7 +195,7 @@ class RacingModeFragment : FragmentCommon() {
                 val diffSecs = (System.currentTimeMillis() - delayStartTime) / 1000
                 val time = delaySecs - diffSecs
                 if (ma.getStartStopSoundFlag())
-                    if (time == 1.toLong() || time == 2.toLong()) toneGenerator.preStartTone()
+                    if (time == 1.toLong() || time == 2.toLong()) Tone.preStartTone(ma.toneGenerator)
 
                 val str = "Start in ${time}s"
                 uiThread {
@@ -234,7 +232,7 @@ class RacingModeFragment : FragmentCommon() {
         var isInterrupted = false
         clock = doAsync {
 
-            if (ma.getStartStopSoundFlag()) toneGenerator.startTone()
+            if (ma.getStartStopSoundFlag()) Tone.startTone(ma.toneGenerator)
 
             if (limitRaceDuration) {
                 while ((System.currentTimeMillis() - racingStartTime) / 1000 <= totalRaceTime && raceRunning && !isInterrupted) {

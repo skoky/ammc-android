@@ -7,9 +7,7 @@ import android.content.IntentFilter
 import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.skoky.CloudDB
-import com.skoky.MyApp
-import com.skoky.R
+import com.skoky.*
 import com.skoky.services.DecoderService
 import org.json.JSONObject
 
@@ -19,7 +17,7 @@ data class Time(val us: Long)
 class DataReceiver(val handler: (String) -> Unit) : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         intent?.let {
-            handler(it.getStringExtra("Data"))
+            handler(it.getStringExtra("Data").orEmpty())
         }
     }
 }
@@ -41,9 +39,12 @@ open class FragmentCommon : Fragment() {
 
     fun registerConnectionHandlers() {
 
+        val a = activity as MainActivity
+
         disconnectReceiver = ConnectionReceiver {
             Log.i(ConsoleModeFragment.TAG, "Disconnected")
             Toast.makeText(activity, getString(R.string.decoder_not_connected), Toast.LENGTH_LONG).show()
+            Tone.disconnectTone(a.toneGenerator)
         }
         connectReceiver = ConnectionReceiver {
             Log.i(ConsoleModeFragment.TAG, "Connected")

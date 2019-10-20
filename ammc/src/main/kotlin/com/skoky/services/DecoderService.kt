@@ -497,8 +497,9 @@ class DecoderService : Service() {
         applicationContext.sendBroadcast(intent)
         Log.d(TAG, "Broadcast passing sent $intent")
 
-        if (defaultSharedPreferences.getBoolean(Const.transponderSoundK, true))
+        if (defaultSharedPreferences.getBoolean(Const.transponderSoundK, true)) {
             ToneGenerator(AudioManager.STREAM_MUSIC, 100).startTone(ToneGenerator.TONE_CDMA_INTERCEPT, 200)
+        }
     }
 
     private fun sendBroadcastData(decoder: Decoder?, jsonData: JSONObject) {

@@ -9,8 +9,8 @@ android {
         applicationId "com.skoky"
         minSdkVersion 24
         targetSdkVersion 29
-        versionCode 59
-        versionName "2.8"
+        versionCode 60
+        versionName "2.9"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     dexOptions {
