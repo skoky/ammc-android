@@ -7,7 +7,7 @@ data class TrainingLap(val number: Int, val time: Time, val lapTimeMs: Int, val 
 class TrainingModeModel {
 
     private val allTransponders = mutableSetOf<String>()
-    private var myTransponder: String? = null
+    var myTransponder: String? = null
 
     fun newPassing(values: List<TrainingLap>, transponder: String, time: Time): List<TrainingLap> {
 

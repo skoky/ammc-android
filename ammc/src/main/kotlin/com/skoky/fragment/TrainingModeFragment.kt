@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -47,7 +48,7 @@ class TrainingModeFragment : FragmentCommon() {
     class PassingDataReceiver(val handler: (String) -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             intent?.let {
-                handler(it.getStringExtra("Passing"))
+                handler(it.getStringExtra("Passing").orEmpty())
             }
         }
     }
@@ -61,8 +62,8 @@ class TrainingModeFragment : FragmentCommon() {
         // Set the adapter
 
         with(timingContentView) {
-            layoutManager =  LinearLayoutManager(context)
-            adapter = TrainingModeRecyclerViewAdapter(mutableListOf())
+            layoutManager = LinearLayoutManager(context)
+            adapter = TrainingModeRecyclerViewAdapter()
 
             receiver = PassingDataReceiver { data ->
                 val json = JSONObject(data)
@@ -71,10 +72,11 @@ class TrainingModeFragment : FragmentCommon() {
                 val timeUs = FragmentCommon().getTimeFromPassingJson(json)
 
                 if (trainingRunning) {
-                    (adapter as TrainingModeRecyclerViewAdapter).addRecord(transponder, timeUs)
-                    adapter?.notifyDataSetChanged()
+                    val a = (adapter as TrainingModeRecyclerViewAdapter)
+                    a.addRecord(transponder, timeUs)
+                    a.notifyDataSetChanged()
+                    if (a.tmm.myTransponder == transponder) sayLastTime(a)
                 }
-                tmm = (adapter as TrainingModeRecyclerViewAdapter).tmm
             }
             context?.let {
                 it.registerReceiver(receiver, IntentFilter(DECODER_PASSING))
@@ -86,6 +88,24 @@ class TrainingModeFragment : FragmentCommon() {
         registerConnectionHandlers()
 
         return view
+    }
+
+    private fun sayLastTime(adapter: TrainingModeRecyclerViewAdapter) {
+        doAsync {
+            val a = (activity as MainActivity)
+
+            adapter.getLastLap()?.let {
+                if (it.number > 0) {
+                    val toSay = formatTimeToSpeach(it.lapTimeMs).replace(".", " a ")
+                    Log.d(TAG, "To sayLastTime $toSay")
+                    a.tts.speak(toSay, TextToSpeech.QUEUE_FLUSH, null, null)
+                }
+            }
+        }
+    }
+
+    private fun formatTimeToSpeach(timeMs: Int): String {
+        return Tools.timeToText(timeMs)
     }
 
     fun openTransponderDialog(startRace: Boolean) {
@@ -232,7 +252,7 @@ class TrainingModeFragment : FragmentCommon() {
         clock?.cancel(true)
     }
 
-    fun isRaceRunning() : Boolean {
+    fun isRaceRunning(): Boolean {
         return preStartDelayRunning || trainingRunning
     }
 

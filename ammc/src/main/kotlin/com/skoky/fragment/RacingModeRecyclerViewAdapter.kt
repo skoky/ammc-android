@@ -7,6 +7,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.skoky.MyApp
 import com.skoky.R
+import com.skoky.Tools
 import com.skoky.fragment.content.Racer
 import com.skoky.fragment.content.RacingModeModel
 import java.text.SimpleDateFormat
@@ -56,17 +57,11 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
 
                 holder.mPosition.text = item.pos.toString()
                 holder.mTrasView.text = if (item.driverName.isNullOrBlank()) item.transponder else item.driverName
-                holder.mLastLapTime.text = timeToText(item.lastLapTimeMs)
+                holder.mLastLapTime.text = Tools.timeToText(item.lastLapTimeMs)
                 holder.mLapCount.text = "     ${item.laps}"
 
             }
 
-    private fun timeToText(lapTimeMs: Int): String {
-        val millis = lapTimeMs % 1000
-        val second = lapTimeMs / 1000 % 60
-        val minute = lapTimeMs / (1000 * 60)
-        return String.format("%d:%d.%d", minute, second, millis)
-    }
 
     override fun getItemCount(): Int = (mValues.size + 1)
 

@@ -11,7 +11,7 @@ import com.skoky.fragment.content.TrainingModeModel
 import java.text.SimpleDateFormat
 import java.util.*
 
-class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingLap>)
+class TrainingModeRecyclerViewAdapter()
     : RecyclerView.Adapter<TrainingModeRecyclerViewAdapter.ViewHolder>() {
 
 //    private val mOnClickListener: View.OnClickListener
@@ -23,6 +23,8 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingL
 //        }
 //    }
 
+    private var mValues: MutableList<TrainingLap> = mutableListOf()
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.fragment_trainingmode, parent, false)
@@ -30,7 +32,7 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingL
         return ViewHolder(view)
     }
 
-    val df = SimpleDateFormat("HH:mm:ss.SSS",Locale.US)
+    private val df = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (position == 0) {  // header
             holder.mIdView.text = "#"
@@ -42,7 +44,7 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingL
 
             holder.mIdView.text = item.number.toString()
 
-            if (item.diffMs==null) {
+            if (item.diffMs == null) {
 
                 holder.mLapTime.text = df.format(Date(item.time.us / 1000))
                 holder.mDiff.text = ""
@@ -53,7 +55,7 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingL
 
                 if (item.lapTimeMs != (item.diffMs)) {
                     holder.mDiff.text = String.format("%+.3f", item.diffMs.toFloat() / 1000)
-                    if (item.diffMs < 0 )
+                    if (item.diffMs < 0)
                         holder.mDiff.setBackgroundResource(R.color.amm_green)
                     else if (item.diffMs > 0)
                         holder.mDiff.setBackgroundResource(R.color.amm_red)
@@ -69,7 +71,7 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingL
         }
     }
 
-    private fun timeToText(lapTimeMs: Int): String {
+    fun timeToText(lapTimeMs: Int): String {
         val millis = lapTimeMs % 1000
         val second = lapTimeMs / 1000 % 60
         val minute = lapTimeMs / (1000 * 60)
@@ -83,6 +85,10 @@ class TrainingModeRecyclerViewAdapter(private var mValues: MutableList<TrainingL
         val mLapTime: TextView = mView.findViewById(R.id.item_time)
         val mDiff: TextView = mView.findViewById(R.id.item_diff)
 
+    }
+
+    fun getLastLap(): TrainingLap? {
+        return mValues.maxBy { it.number }
     }
 
     val tmm = TrainingModeModel()

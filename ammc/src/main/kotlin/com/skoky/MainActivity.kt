@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.speech.tts.TextToSpeech
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -42,6 +43,7 @@ import com.skoky.services.DecoderService
 import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -50,10 +52,13 @@ class MainActivity : AppCompatActivity() {
     //    private var mAdView: AdView? = null
     private var mDecoderServiceBound = false
 
+    lateinit var tts: TextToSpeech
+
     override fun onDestroy() {
         super.onDestroy()
         unbindService(decoderServiceConnection)
         mDecoderServiceBound = false
+        tts.shutdown()
     }
 
     private fun switchFragment(toCallback: () -> Unit): Boolean {
@@ -122,28 +127,29 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             true
+
         }
 //            val label = navView.findViewById<TextView>(R.id.amm_header_version)
 //            label?.text = getString(R.string.amm_short,"Here!")
+
+        doAsync {
+            tts = TextToSpeech(app, TextToSpeech.OnInitListener { status ->
+                if (status != TextToSpeech.ERROR) {
+                    //if there is no error then set language
+                    if (tts.availableLanguages.contains(Locale.getDefault()))
+                        tts.language = Locale.getDefault()
+                    else
+                        tts.language = Locale.US
+
+                }
+            })
+        }
 
         app.badMsgReport = getBadMsgFlag()
     }
 
 
     private fun currentFragment() = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)
-
-    private fun confirmLeave(): Boolean {
-
-        return when (val fr = currentFragment()) {
-            is StartupFragment -> false
-            is OptionsFragment -> false
-            is TrainingModeFragment -> fr.isRaceRunning()
-            is RacingModeFragment -> fr.isRaceRunning()
-            is HelpFragment -> false
-            is DriversFragment -> false
-            else -> false
-        }
-    }
 
     private fun isFragmentWithRaceOpen(): Boolean {
         return when (val fr = currentFragment()) {

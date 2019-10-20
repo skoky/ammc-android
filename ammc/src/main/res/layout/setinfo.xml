@@ -1,71 +1,150 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent" android:orientation="vertical"
-              android:background="#f8f8ff" android:paddingLeft="10dp">
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#f8f8ff"
+    android:orientation="vertical"
+    android:paddingLeft="10dp">
 
-    <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content"
-                  android:orientation="horizontal" android:layout_marginTop="10dp">
-        <TextView android:layout_width="wrap_content" android:layout_gravity="center"
-                  android:layout_height="wrap_content" android:text="Beep frequency:" />
-        <EditText android:text="" android:id="@+id/beepFrequencyText" android:layout_width="wrap_content"
-                  android:layout_height="wrap_content" android:width="100dip" android:maxLines="1"
-                  android:maxWidth="150dip" android:singleLine="true"
-                  android:layout_gravity="center" android:numeric="integer"></EditText>
-        <TextView android:layout_width="wrap_content" android:layout_gravity="center"
-                  android:layout_height="wrap_content" android:text="Hz"/>
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
 
-    </LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Beep frequency:" />
 
-    <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content"
-                  android:orientation="horizontal" android:layout_marginTop="10dp">
-        <TextView android:layout_width="wrap_content" android:layout_gravity="center"
-                  android:layout_height="wrap_content" android:text="Beep duration:"/>
-        <EditText android:text="" android:id="@+id/beepDurationText" android:layout_width="wrap_content"
-                  android:layout_height="wrap_content" android:width="100dip" android:maxLines="1"
-                  android:maxWidth="150dip" android:singleLine="true"
-                  android:layout_gravity="center" android:numeric="integer"></EditText>
-        <TextView android:layout_width="wrap_content" android:layout_gravity="center"
-                  android:layout_height="wrap_content" android:text="milliseconds"/>
+        <EditText
+            android:id="@+id/beepFrequencyText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:width="100dip"
+            android:inputType="number"
+            android:maxWidth="150dip"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:text="" />
 
-    </LinearLayout>
-
-
-    <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content"
-                  android:orientation="horizontal" android:layout_marginTop="10dp">
-        <TextView android:layout_width="wrap_content" android:layout_gravity="center"
-                  android:layout_height="wrap_content" android:text="Two beeps hold off:"/>
-        <EditText android:text="" android:id="@+id/beepHoldOffText" android:layout_width="wrap_content"
-                  android:layout_height="wrap_content" android:width="100dip" android:maxLines="1"
-                  android:maxWidth="150dip" android:singleLine="true"
-                  android:layout_gravity="center" android:numeric="integer"></EditText>
-        <TextView android:layout_width="wrap_content" android:layout_gravity="center"
-                  android:layout_height="wrap_content" android:text="milliseconds"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Hz" />
 
     </LinearLayout>
 
-    <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content"
-                  android:orientation="horizontal">
-        <TextView android:layout_width="wrap_content" android:layout_gravity="center"
-                  android:layout_height="wrap_content" android:text="Auxiliary output enabled:"/>
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
 
-        <CheckBox android:id="@+id/auxiliaryOutputText"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Beep duration:" />
+
+        <EditText
+            android:id="@+id/beepDurationText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:width="100dip"
+            android:maxWidth="150dip"
+            android:maxLines="1"
+            android:inputType="number"
+            android:singleLine="true"
+            android:text="" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="milliseconds" />
 
     </LinearLayout>
 
-    <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content"
-                  android:orientation="horizontal" android:layout_gravity="right">
 
-    <Button   android:layout_width="wrap_content" android:id="@+id/sendBeepCommand"
-              android:layout_height="wrap_content" android:text="Set beep values"
-                android:paddingBottom="2dip" android:paddingTop="2dip" android:layout_marginTop="10dp" />
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Two beeps hold off:" />
+
+        <EditText
+            android:id="@+id/beepHoldOffText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:width="100dip"
+            android:maxWidth="150dip"
+            android:maxLines="1"
+            android:inputType="number"
+            android:singleLine="true"
+            android:text=""></EditText>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="milliseconds" />
+
     </LinearLayout>
 
-    <View android:layout_width="fill_parent" android:layout_height="1dip" android:background="#FFAFDE"
-          android:paddingBottom="2dip" android:paddingTop="2dip" android:layout_marginTop="10dp"/>
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Auxiliary output enabled:" />
+
+        <CheckBox
+            android:id="@+id/auxiliaryOutputText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/sendBeepCommand"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:paddingTop="2dip"
+            android:paddingBottom="2dip"
+            android:text="Set beep values" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dip"
+        android:layout_marginTop="10dp"
+        android:background="#FFAFDE"
+        android:paddingTop="2dip"
+        android:paddingBottom="2dip" />
 
 
 </LinearLayout>
