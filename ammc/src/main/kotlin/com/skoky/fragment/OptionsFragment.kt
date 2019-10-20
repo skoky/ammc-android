@@ -75,6 +75,7 @@ class OptionsFragment : FragmentCommon() {
             a.findViewById<CheckBox>(R.id.checkDriverSync)?.isChecked = ma.getDriverSyncFlag()
             a.findViewById<CheckBox>(R.id.checkBadMsg)?.isChecked = ma.getBadMsgFlag()
             a.findViewById<CheckBox>(R.id.checkTransponderSound).isChecked = ma.getTransponderSoundFlag()
+            a.findViewById<CheckBox>(R.id.checkTimeToSpeech).isChecked = ma.getTimeToSpeechFlag()
             a.findViewById<CheckBox>(R.id.checkStartStopSound).isChecked = ma.getStartStopSoundFlag()
         }
     }
