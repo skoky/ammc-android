@@ -137,12 +137,14 @@ class MainActivity : AppCompatActivity() {
         doAsync {
             tts = TextToSpeech(app, TextToSpeech.OnInitListener { status ->
                 if (status != TextToSpeech.ERROR) {
-                    //if there is no error then set language
-                    if (tts.availableLanguages.contains(Locale.getDefault()))
-                        tts.language = Locale.getDefault()
-                    else
+                    try {  //if there is no error then set language
+                        if (tts.availableLanguages.contains(Locale.getDefault()))
+                            tts.language = Locale.getDefault()
+                        else
+                            tts.language = Locale.US
+                    } catch (e:Exception) {
                         tts.language = Locale.US
-
+                    }
                 }
             })
         }
