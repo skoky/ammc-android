@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -94,17 +93,13 @@ class TrainingModeFragment : FragmentCommon() {
 
                 adapter.getLastLap()?.let {
                     if (it.number > 0) {
-                        val toSay = formatTimeToSpeach(it.lapTimeMs).replace(".", " a ")
+                        val toSay = Tools.timeToTextSpeech(it.lapTimeMs,a.getTimeToSpeechPattern())
                         Log.d(TAG, "To sayLastTime $toSay")
-                        a.tts.speak(toSay, TextToSpeech.QUEUE_FLUSH, null, null)
+                        a.sayTimeText(toSay)
                     }
                 }
             }
         }
-    }
-
-    private fun formatTimeToSpeach(timeMs: Int): String {
-        return Tools.timeToText(timeMs)
     }
 
     fun openTransponderDialog(startRace: Boolean) {

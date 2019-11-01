@@ -33,7 +33,7 @@ object Tools {
         if (b) {
             // FIXME use smaller wake lock on new androids
             MyApp.wakeLock = (context.getSystemService(Context.POWER_SERVICE) as PowerManager).run {
-                newWakeLock(PARTIAL_WAKE_LOCK , "AMMC:LOCK").apply {
+                newWakeLock(PARTIAL_WAKE_LOCK, "AMMC:LOCK").apply {
                     acquire()
                 }
 
@@ -50,5 +50,16 @@ object Tools {
         val second = lapTimeMs / 1000 % 60
         val minute = lapTimeMs / (1000 * 60)
         return String.format("%d:%d.%d", minute, second, millis)
+    }
+
+    fun timeToTextSpeech(lapTimeMs: Int, pattern: String): String {
+        val millis = lapTimeMs % 1000
+        val second = lapTimeMs / 1000 % 60
+        val minute = lapTimeMs / (1000 * 60)
+        return try {
+            String.format(pattern, minute, second, millis)
+        } catch (e: Exception) {
+            String.format(Const.defaultTimeToSpeechPattern, minute, second, millis)
+        }
     }
 }

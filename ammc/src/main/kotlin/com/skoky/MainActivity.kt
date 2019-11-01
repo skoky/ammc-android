@@ -30,6 +30,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.skoky.Const.LAST_IP
 import com.skoky.Const.badMsgK
+import com.skoky.Const.defaultTimeToSpeechPattern
 import com.skoky.Const.driversyncK
 import com.skoky.Const.includeMinLapTimeK
 import com.skoky.Const.minLapTimeK
@@ -39,6 +40,7 @@ import com.skoky.Const.startStopSoundK
 import com.skoky.Const.startupDelayK
 import com.skoky.Const.startupDelayValueK
 import com.skoky.Const.timeToSpeech
+import com.skoky.Const.timeToSpeechPattern
 import com.skoky.Const.transponderSoundK
 import com.skoky.fragment.*
 import com.skoky.services.Decoder
@@ -305,6 +307,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var helpFragment: HelpFragment
+    @Suppress("UNUSED_PARAMETER")
     private fun openHelp(view: View?): Boolean {
         helpFragment = HelpFragment.newInstance()
         val fragmentTransaction = supportFragmentManager.beginTransaction()
@@ -315,6 +318,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var driversEditorFragment: DriversFragment
+    @Suppress("UNUSED_PARAMETER")
     fun openDriversEditor(view: View?) {
         driversEditorFragment = DriversFragment.newInstance()
         val fragmentTransaction = supportFragmentManager.beginTransaction()
@@ -324,6 +328,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     //    private val optionsFragment: OptionsFragment? = null
+    @Suppress("UNUSED_PARAMETER")
     private fun openOptions(view: View?): Boolean {
         val optionsFragment = OptionsFragment.newInstance()
         val fragmentTransaction = supportFragmentManager.beginTransaction()
@@ -353,6 +358,15 @@ class MainActivity : AppCompatActivity() {
     fun optionsTimeToSpeech(view: View) {
         val c = view as CheckBox
         defaultSharedPreferences.edit().putBoolean(timeToSpeech, c.isChecked).apply()
+        showHideTimeToSpeechPattern(c.isChecked)
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun testSpeech(view: View) {
+        val d = Date()
+        val toSay = Tools.timeToTextSpeech(23383,getTimeToSpeechPattern())
+        Log.d(TrainingModeFragment.TAG, "To sayLastTime $toSay pattern ${getTimeToSpeechPattern()}")
+        sayTimeText(toSay)
     }
 
     fun optionsStartStopSound(view: View) {
@@ -392,6 +406,13 @@ class MainActivity : AppCompatActivity() {
         Log.e(TAG, "Value not saved! $key", e)
     }
 
+    fun saveStringValue(text: EditText, key: String) = try {
+        val t = text.text.toString()
+        defaultSharedPreferences.edit().putString(key, t).apply()
+    } catch (e: Exception) {
+        Log.e(TAG, "Value not saved! $key", e)
+    }
+
     fun showHideStartupDelayValue(show: Boolean) {
         if (show) {
             findViewById<EditText>(R.id.startupDelayValue).visibility = View.VISIBLE
@@ -414,11 +435,24 @@ class MainActivity : AppCompatActivity() {
             findViewById<TextView>(R.id.textRaceDurationOption2).visibility = View.GONE
             findViewById<CheckBox>(R.id.checkIncludeMinLapTime).visibility = View.GONE
         }
+    }
 
+    fun showHideTimeToSpeechPattern(show: Boolean) {
+        if (!show) {
+            findViewById<TextView>(R.id.timeToSpeechPatternLabel).visibility = View.GONE
+            findViewById<EditText>(R.id.timeToSpeech).visibility = View.GONE
+            findViewById<Button>(R.id.timeToSpeechTestButton).visibility = View.GONE
+        } else {
+            findViewById<TextView>(R.id.timeToSpeechPatternLabel).visibility = View.VISIBLE
+            findViewById<EditText>(R.id.timeToSpeech).visibility = View.VISIBLE
+            findViewById<Button>(R.id.timeToSpeechTestButton).visibility = View.VISIBLE
+        }
     }
 
     private lateinit var consoleFragment: ConsoleModeFragment
     private lateinit var consoleVostokFragment: ConsoleModeVostokFragment
+
+    @Suppress("UNUSED_PARAMETER")
     fun openConsoleMode(view: View?) {
         app.decoderService.let { ds ->
             if (!ds.isDecoderConnected()) {
@@ -444,6 +478,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun openTransponderDialog(view: View?) {
         if (!trainingFragment.trainingRunning) {
             trainingFragment.openTransponderDialog(false)
@@ -451,6 +486,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var racingFragment: RacingModeFragment
+
+    @Suppress("UNUSED_PARAMETER")
     fun openRacingMode(view: View?) {
         app.decoderService.let {
             return if (it.isDecoderConnected()) {
@@ -492,7 +529,8 @@ class MainActivity : AppCompatActivity() {
     fun getMinLapTimeFlag() = defaultSharedPreferences.getInt(minLapTimeK, 20)
     fun getTransponderSoundFlag() = defaultSharedPreferences.getBoolean(transponderSoundK, true)
     fun getStartStopSoundFlag() = defaultSharedPreferences.getBoolean(startStopSoundK, true)
-    fun getTimeToSpeechFlag() = defaultSharedPreferences.getBoolean(timeToSpeech, true)
+    fun getTimeToSpeechFlag() = defaultSharedPreferences.getBoolean(timeToSpeech,true )
+    fun getTimeToSpeechPattern() = defaultSharedPreferences.getString(timeToSpeechPattern,defaultTimeToSpeechPattern).orEmpty()
 
     private val decoderServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName,
@@ -531,6 +569,10 @@ class MainActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    fun sayTimeText(toSay: String) {
+        tts.speak(toSay, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
     companion object {

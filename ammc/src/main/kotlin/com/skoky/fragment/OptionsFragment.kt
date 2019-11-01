@@ -14,6 +14,7 @@ import android.widget.EditText
 import com.skoky.Const.minLapTimeK
 import com.skoky.Const.raceDurationValueK
 import com.skoky.Const.startupDelayValueK
+import com.skoky.Const.timeToSpeechPattern
 import com.skoky.MainActivity
 import com.skoky.R
 
@@ -22,6 +23,14 @@ class MyTextWatcher(private val ma: MainActivity, val key: String, val value: Ed
     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
     override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
         ma.saveIntValue(value, key)
+    }
+}
+
+class MyTextStringWatcher(private val ma: MainActivity, val key: String, val value: EditText) : TextWatcher {
+    override fun afterTextChanged(p0: Editable?) {}
+    override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+    override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+        ma.saveStringValue(value, key)
     }
 }
 
@@ -75,7 +84,17 @@ class OptionsFragment : FragmentCommon() {
             a.findViewById<CheckBox>(R.id.checkDriverSync)?.isChecked = ma.getDriverSyncFlag()
             a.findViewById<CheckBox>(R.id.checkBadMsg)?.isChecked = ma.getBadMsgFlag()
             a.findViewById<CheckBox>(R.id.checkTransponderSound).isChecked = ma.getTransponderSoundFlag()
-            a.findViewById<CheckBox>(R.id.checkTimeToSpeech).isChecked = ma.getTimeToSpeechFlag()
+
+
+            val tts = a.findViewById<CheckBox>(R.id.checkTimeToSpeech)
+            tts.isChecked = ma.getTimeToSpeechFlag()
+            ma.showHideTimeToSpeechPattern(tts.isChecked)
+
+            a.findViewById<EditText>(R.id.timeToSpeech)?.let {
+                it.setText(ma.getTimeToSpeechPattern())
+                it.addTextChangedListener(MyTextStringWatcher(ma, timeToSpeechPattern, it))
+            }
+
             a.findViewById<CheckBox>(R.id.checkStartStopSound).isChecked = ma.getStartStopSoundFlag()
         }
     }

@@ -12,5 +12,7 @@ object Const {
     const val minLapTimeK = "minLapTime"
     const val transponderSoundK = "transponderSound"
     const val timeToSpeech = "timeToSpeech"
+    const val timeToSpeechPattern = "timeToSpeechPattern"
+    const val defaultTimeToSpeechPattern = "%d:%d, %d"
     const val startStopSoundK = "startStopSound"
 }

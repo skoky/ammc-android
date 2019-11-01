@@ -67,4 +67,7 @@
     <string name="exit_message">Are you sure you want to exit?</string>
     <string name="finish_message">Are you sure you want to stop?</string>
     <string name="amm_short">AMM</string>
+    <string name="test">Test</string>
+    <string name="d_d_d">%d:%d.%d</string>
+    <string name="pattern">Pattern</string>
 </resources>
