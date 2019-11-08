@@ -62,6 +62,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        app.decoderService.disconnectAllDecoders()
         unbindService(decoderServiceConnection)
         mDecoderServiceBound = false
         tts.shutdown()
@@ -170,6 +171,7 @@ class MainActivity : AppCompatActivity() {
     override fun onBackPressed() {
         if (currentFragment() is StartupFragment) {
             exitWithConfirm()
+            app.decoderService.disconnectAllDecoders()
         } else {
 
             if (isFragmentWithRaceOpen())
