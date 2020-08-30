@@ -32,8 +32,8 @@ public class CRC16 {
     public static short cmpCRC(byte[] b) {
 // loop, calculating CRC for each byte of the string
         short work = (short) 0xffff;
-        for (int i = 0; i < b.length; i++) {
-            work = (short) ((crcTable[((work >> 8)) & 0xff] ^ (work << 8) ^ (b[i] & 0xff)) & 0xffff);
+        for (byte value : b) {
+            work = (short) ((crcTable[((work >> 8)) & 0xff] ^ (work << 8) ^ (value & 0xff)) & 0xffff);
         }
         return work;
     }

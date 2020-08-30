@@ -39,11 +39,6 @@ class RacingModeRecyclerViewAdapter(private var mValues: MutableList<Racer>,
         return ViewHolder(view)
     }
 
-    //    data class Racer(var pos: Int, var recentTransponders: String, var laps: Int, var lastLapTimeMs: Long, val diffMs: Int)
-    private val df = SimpleDateFormat("HH:mm:ss.SSS")
-
-    private val r = mutableListOf<Racer>()
-
     override fun onBindViewHolder(holder: ViewHolder, position: Int) =
             if (position == 0) {  // header
                 holder.mPosition.text = "#"

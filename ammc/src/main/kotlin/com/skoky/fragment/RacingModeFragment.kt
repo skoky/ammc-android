@@ -187,7 +187,7 @@ class RacingModeFragment : FragmentCommon() {
         (timingContentView.adapter as RacingModeRecyclerViewAdapter).clearResults()
         startStopButtonM?.text = getText(R.string.stop)
         val ma = (activity as MainActivity)
-        var isInterrupted = false
+        val isInterrupted = false
 
         val delayStartTime = System.currentTimeMillis()
         clock = doAsync {
@@ -229,7 +229,7 @@ class RacingModeFragment : FragmentCommon() {
         raceRunning = true
         startStopButtonM?.text = getText(R.string.stop)
         val racingStartTime = System.currentTimeMillis()
-        var isInterrupted = false
+        val isInterrupted = false
         clock = doAsync {
 
             if (ma.getStartStopSoundFlag()) Tone.startTone(ma.toneGenerator)

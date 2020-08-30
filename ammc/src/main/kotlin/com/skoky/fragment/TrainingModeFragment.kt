@@ -193,7 +193,7 @@ class TrainingModeFragment : FragmentCommon() {
         preStartDelayRunning = true
         (timingContentView.adapter as TrainingModeRecyclerViewAdapter).clearResults()
         startStopButtonM.text = getText(R.string.stop)
-        var isInterrupted = false
+        val isInterrupted = false
         val delayStartTime = System.currentTimeMillis()
         val ma = activity as MainActivity
 

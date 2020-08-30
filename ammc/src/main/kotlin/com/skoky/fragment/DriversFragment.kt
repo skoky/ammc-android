@@ -52,7 +52,7 @@ class DriversFragment : FragmentCommon() {
                 val transponders = app.recentTransponders.map { DriverPair(it, "") }.toMutableList()
 
                 transponders.forEach { p ->
-                    addRow(inflater, container, app, ll, p, true, activity!!)
+                    addRow(inflater, container, app, ll, p, true, requireActivity())
                 }
             }
         }

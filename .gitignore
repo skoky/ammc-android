@@ -5,3 +5,4 @@ ammc/build/*
 ammc/release/*
 .gradle
 build/*
+local.properties

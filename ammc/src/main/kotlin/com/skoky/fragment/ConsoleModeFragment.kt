@@ -39,9 +39,9 @@ class ConsoleModeFragment : FragmentCommon() {
                     json.keys().forEach { key ->
                         if (shouldShow(json, key)) {
                             val newTag = json.getString("recordType").replace("-text", "") + "." + key
-                            var found = ll.childrenSequence().find { it.tag == newTag }
+                            val found = ll.childrenSequence().find { it.tag == newTag }
 
-                            var newView: TextView
+                            val newView: TextView
                             if (found == null) {
                                 newView = inflater.inflate(R.layout.fragment_consolemode_line, container, false) as TextView
                                 ll.addView(newView)

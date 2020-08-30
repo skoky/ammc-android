@@ -15,7 +15,7 @@ object CloudDB {
         val formatter = SimpleDateFormat("yy/MM/dd", Locale.US)
         val today = formatter.format(Date())
 
-        val msg = hashMapOf<String, Any>(key to bytes, "len" to bytes.length, "date" to today) as Map<String, String>
+        val msg = hashMapOf<String, Any>(key to bytes, "len" to bytes.length, "date" to today)
 
         app.firestore.collection("badmsg$suffix")
                 .add(msg)

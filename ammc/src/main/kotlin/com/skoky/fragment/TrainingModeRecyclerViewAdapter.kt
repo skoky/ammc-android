@@ -14,15 +14,6 @@ import java.util.*
 class TrainingModeRecyclerViewAdapter()
     : RecyclerView.Adapter<TrainingModeRecyclerViewAdapter.ViewHolder>() {
 
-//    private val mOnClickListener: View.OnClickListener
-//
-//    init {
-//        mValues.sortByDescending { it.number }
-//        mOnClickListener = View.OnClickListener { v ->
-//            val item = v.tag as TrainingLap
-//        }
-//    }
-
     private var mValues: MutableList<TrainingLap> = mutableListOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

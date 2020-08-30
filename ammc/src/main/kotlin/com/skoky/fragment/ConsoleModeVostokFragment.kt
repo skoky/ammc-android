@@ -16,7 +16,6 @@ import android.widget.ScrollView
 import android.widget.TextView
 import com.skoky.MyApp
 import com.skoky.R
-import com.skoky.fragment.content.ConsoleModel
 import com.skoky.services.DecoderService.Companion.DECODER_DATA
 import org.jetbrains.anko.childrenSequence
 import org.json.JSONObject
@@ -51,14 +50,13 @@ class ConsoleModeVostokFragment : FragmentCommon() {
 
             val json = JSONObject(it)
             Log.d(TAG, json.getString("recordType"))
-//                if (json.getString("recordType") != "Passing") {
 
             json.keys().forEach { key ->
                 if (shouldShow(json, key)) {
                     val newTag = key
-                    var found = ll.childrenSequence().find { it.tag == newTag }
+                    val found = ll.childrenSequence().find { it.tag == newTag }
 
-                    var newView: TextView
+                    val newView: TextView
                     if (found == null) {
                         newView = inflater.inflate(R.layout.fragment_consolemode_line, container, false) as TextView
                         ll.addView(newView)
@@ -67,8 +65,6 @@ class ConsoleModeVostokFragment : FragmentCommon() {
                     newView.tag = newTag
                 }
             }
-            //     }
-
         }
         context?.let { it.registerReceiver(dataHandler, IntentFilter(DECODER_DATA)) }
 
@@ -99,11 +95,6 @@ class ConsoleModeVostokFragment : FragmentCommon() {
                 app.decoderService.exploreDecoder(cd.uuid)
             }
         }
-    }
-
-    interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
-        fun onListFragmentInteraction(item: ConsoleModel?)
     }
 
     override fun onDetach() {
