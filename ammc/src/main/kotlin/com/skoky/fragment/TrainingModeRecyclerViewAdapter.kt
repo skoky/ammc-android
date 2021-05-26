@@ -79,7 +79,7 @@ class TrainingModeRecyclerViewAdapter()
     }
 
     fun getLastLap(): TrainingLap? {
-        return mValues.maxBy { it.number }
+        return mValues.maxByOrNull { it.number }
     }
 
     val tmm = TrainingModeModel()

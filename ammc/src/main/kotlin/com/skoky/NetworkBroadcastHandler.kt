@@ -28,7 +28,9 @@ object NetworkBroadcastHandler {
             socket.let { s ->
 
                 try {
-                    while (!s.isClosed) {
+                    while (true) {
+                        if (s == null) break
+                        if (s.isClosed) break
                         val incomingPacket = DatagramPacket(incomingBuffer, incomingBuffer.size)
                         s.receive(incomingPacket)
                         val data = incomingPacket.data
@@ -43,7 +45,7 @@ object NetworkBroadcastHandler {
                     socket = null
 
                 } finally {
-                    s.let { s.close() }
+                    s.let { s?.close() }
                     sleep(1000)
                     Log.i(TAG, "Reconnecting broadcast port $INCOMING_PORT")
                 }

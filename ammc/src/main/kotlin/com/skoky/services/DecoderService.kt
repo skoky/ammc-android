@@ -112,18 +112,17 @@ class DecoderService : Service() {
     }
 
     private fun checkTcpSocket(ipaddress: String, port: Int): Boolean {
-        var socket = Socket()
-        return try {
-            socket.connect(InetSocketAddress(ipaddress, port), 5000)
-            socket.isConnected
-        } catch (e: java.lang.Exception) {
-            false
-        } finally {
-            socket.let { socket.close() }
+        Socket().use { socket ->
+            return try {
+                socket.connect(InetSocketAddress(ipaddress, port), 5000)
+                socket.isConnected
+            } catch (e: java.lang.Exception) {
+                false
+            }
         }
     }
 
-//    @RequiresApi(Build.VERSION_CODES.N)
+    //    @RequiresApi(Build.VERSION_CODES.N)
     private fun decoderAutoCleanup() {
         Timer().schedule(1000, 1000) {
             // removes inactive decoders
@@ -144,7 +143,7 @@ class DecoderService : Service() {
         }
     }
 
-    fun getBestFreeDecoder(): Decoder? = decoders.maxBy { it.lastSeen }
+    fun getBestFreeDecoder(): Decoder? = decoders.maxByOrNull { it.lastSeen }
 
     fun getDecoders() = decoders.toList()
 
@@ -185,7 +184,7 @@ class DecoderService : Service() {
                         socket.getOutputStream().write(versionRequest)
                     }
                 } catch (e: Exception) {
-                    socket.let { it.close() }
+                    socket.close()
                     if (notifyError) {
                         Log.e(TAG, "Error connecting decoder", e)
                         uiThread {
@@ -254,23 +253,6 @@ class DecoderService : Service() {
 
     }
 
-    private fun disconnectDecoder2(decoder: Decoder) {
-
-        try {
-            decoder.connection?.let {
-                it.close()
-            }
-            // cleanup
-            decoder.connection = null
-            //cache.clear()
-            sendBroadcastDisconnected(decoder)
-            sendBroadcastDecodersUpdate()
-
-        } catch (e: Exception) {
-            Log.w(TAG, "Unable to disconnect decoder $decoder", e)
-        }
-    }
-
     private fun listenOnSocketConnection(socket: Socket, orgDecoder: Decoder) {
         val buffer = ByteArray(1024)
         var decoder = orgDecoder
@@ -285,8 +267,7 @@ class DecoderService : Service() {
                                 vostokDecoderId(decoder.ipAddress, decoder.port))
 
                         if (json.get("recordType").toString().isNotEmpty()) sendBroadcastData(decoder, json)
-                        val recordType = json.get("recordType").toString()
-                        when (recordType) {
+                        when (json.get("recordType").toString()) {
                             "Passing" -> {
                                 appendDriver(json)
                                 sendBroadcastPassing(json.toString())
@@ -325,10 +306,10 @@ class DecoderService : Service() {
                         }
 
                         if (json.has("decoderType-text")) {
-                            json.getString("decoderType-text")?.let { type -> decoders.addOrUpdate(decoder.copy(decoderType = type)) }
+                            json.getString("decoderType-text").let { type -> decoders.addOrUpdate(decoder.copy(decoderType = type)) }
                         } else {
                             if (json.has("decoderType")) {
-                                json.getString("decoderType")?.let { type -> decoders.addOrUpdate(decoder.copy(decoderType = type)) }
+                                json.getString("decoderType").let { type -> decoders.addOrUpdate(decoder.copy(decoderType = type)) }
                             }
                         }
                         decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis()))
@@ -378,7 +359,7 @@ class DecoderService : Service() {
             JSONObject(P98Parser.parse(msg, decoderIdVostok ?: "-"))
         } else {
             Log.w(TAG, "Invalid msg on TCP " + Arrays.toString(msg))
-            CloudDB.badMessageReport(application as MyApp, "tcp_msg_error", Arrays.toString(msg))
+            CloudDB.badMessageReport(application as MyApp, "tcp_msg_error", msg.contentToString())
             JSONObject("{\"recordType\":\"Error\",\"description\":\"Invalid message\"}")
         }
     }
@@ -390,7 +371,7 @@ class DecoderService : Service() {
         Log.d(TAG, ">> $json")
 
         if (msg.contains("Error")) {
-            CloudDB.badMessageReport(application as MyApp, "tcp_msg_with_error", Arrays.toString(msgB))
+            CloudDB.badMessageReport(application as MyApp, "tcp_msg_with_error", msgB.contentToString())
         }
 
         val decoderId: String?
@@ -449,18 +430,16 @@ class DecoderService : Service() {
     }
 
     private fun sendUdpBroadcastMessage(msg: String) {
-        var socket: DatagramSocket? = null
         try {
-            socket = DatagramSocket(P3_DEF_PORT)
-            socket.broadcast = true
-            socket.connect(InetAddress.getByName("255.255.255.255"), P3_DEF_PORT)
-            val bytes = Parser.encode(msg)
-            Log.d(TAG, "Bytes size ${bytes.size}")
-            socket.send(DatagramPacket(bytes, bytes.size))
-        } catch (e: Exception) {
+            DatagramSocket(P3_DEF_PORT).use { socket ->
+                socket.broadcast = true
+                socket.connect(InetAddress.getByName("255.255.255.255"), P3_DEF_PORT)
+                val bytes = Parser.encode(msg)
+                Log.d(TAG, "Bytes size ${bytes.size}")
+                socket.send(DatagramPacket(bytes, bytes.size))
+            }
+        } catch (e: java.lang.Exception) {
             Log.w(TAG, "Error $e", e)
-        } finally {
-            socket?.close()
         }
     }
 
@@ -472,7 +451,7 @@ class DecoderService : Service() {
     }
 
     private fun sendBroadcastConnect(decoder: Decoder) {
-        Tools.wakeLock(this,true)
+        Tools.wakeLock(this, true)
         val intent = Intent()
         intent.action = DECODER_CONNECT
         intent.putExtra("uuid", decoder.uuid.toString())
@@ -481,7 +460,7 @@ class DecoderService : Service() {
     }
 
     private fun sendBroadcastDisconnected(decoder: Decoder) {
-        Tools.wakeLock(this,false)
+        Tools.wakeLock(this, false)
         val intent = Intent()
         intent.action = DECODER_DISCONNECTED
         intent.putExtra("uuid", decoder.uuid.toString())
@@ -515,7 +494,7 @@ class DecoderService : Service() {
     private val myBinder = MyLocalBinder()
     override fun onDestroy() {
         super.onDestroy()
-        Tools.wakeLock(this,false)
+        Tools.wakeLock(this, false)
         Log.w(TAG, "Destroyed")
     }
 

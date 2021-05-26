@@ -69,7 +69,7 @@ class DriversManager(val app: MyApp) {
             if (qry.documents.isNotEmpty()) {
                 Log.d(TAG, "Found names for transponder $transponder ${qry.documents.size}")
 
-                val last = qry.documents.maxBy { it.getLong("lastUpdate") ?: 0 }
+                val last = qry.documents.maxByOrNull { it.getLong("lastUpdate") ?: 0 }
                 last?.getString("name")?.let {
                     handler(it)
                 }
