@@ -34,7 +34,7 @@ object Tools {
             // FIXME use smaller wake lock on new androids
             MyApp.wakeLock = (context.getSystemService(Context.POWER_SERVICE) as PowerManager).run {
                 newWakeLock(PARTIAL_WAKE_LOCK, "AMMC:LOCK").apply {
-                    acquire()
+                    acquire(60*60*1000)
                 }
 
             }

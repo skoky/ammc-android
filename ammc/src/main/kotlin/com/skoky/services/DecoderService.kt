@@ -79,9 +79,7 @@ class DecoderService : Service() {
 
         decoders.sortedWith(compareBy({ it.uuid }, { it.uuid }))
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            decoderAutoCleanup()
-        }
+        decoderAutoCleanup()
 
         doAsync {
             NetworkBroadcastHandler.receiveBroadcastData { processUdpMsg(it) }

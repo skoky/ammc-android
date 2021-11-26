@@ -62,7 +62,7 @@ class TrainingModeRecyclerViewAdapter()
         }
     }
 
-    fun timeToText(lapTimeMs: Int): String {
+    private fun timeToText(lapTimeMs: Int): String {
         val millis = lapTimeMs % 1000
         val second = lapTimeMs / 1000 % 60
         val minute = lapTimeMs / (1000 * 60)

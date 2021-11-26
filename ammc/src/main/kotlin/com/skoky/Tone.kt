@@ -6,7 +6,7 @@ import android.util.Log
 
 object Tone {
 
-    val TAG = com.skoky.Tone::class.simpleName
+    val TAG = Tone::class.simpleName
 
     fun stopTone(generator: ToneGenerator) {
         playTone(generator, TONE_CDMA_NETWORK_BUSY, 1000)
