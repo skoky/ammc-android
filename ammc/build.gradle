@@ -6,17 +6,14 @@ apply plugin: 'kotlin-android'
 android {
     useLibrary 'org.apache.http.legacy'
     compileSdkVersion 30
-    buildToolsVersion '28.0.3'
+    buildToolsVersion '31.0.0'
     defaultConfig {
         applicationId "com.skoky"
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 66
+        versionCode 67
         versionName "2.13"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-    }
-    dexOptions {
-        jumboMode true
     }
     testOptions {
         unitTests.returnDefaultValues = true
