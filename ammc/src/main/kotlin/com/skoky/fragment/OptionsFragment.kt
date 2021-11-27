@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.EditText
+import com.skoky.Const.defaultTimeToSpeechPattern
 import com.skoky.Const.minLapTimeK
 import com.skoky.Const.raceDurationValueK
 import com.skoky.Const.startupDelayValueK
@@ -26,10 +27,13 @@ class MyTextWatcher(private val ma: MainActivity, val key: String, val value: Ed
     }
 }
 
-class MyTextStringWatcher(private val ma: MainActivity, val key: String, val value: EditText) : TextWatcher {
+class TestToSpeechPatternWatcher(private val ma: MainActivity, val key: String, var value: EditText) : TextWatcher {
     override fun afterTextChanged(p0: Editable?) {}
     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
     override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+        if (value.text.toString().isBlank()) {
+            value.setText(defaultTimeToSpeechPattern)
+        }
         ma.saveStringValue(value, key)
     }
 }
@@ -92,7 +96,7 @@ class OptionsFragment : FragmentCommon() {
 
             a.findViewById<EditText>(R.id.timeToSpeech)?.let {
                 it.setText(ma.getTimeToSpeechPattern())
-                it.addTextChangedListener(MyTextStringWatcher(ma, timeToSpeechPattern, it))
+                it.addTextChangedListener(TestToSpeechPatternWatcher(ma, timeToSpeechPattern, it))
             }
 
             a.findViewById<CheckBox>(R.id.checkStartStopSound).isChecked = ma.getStartStopSoundFlag()

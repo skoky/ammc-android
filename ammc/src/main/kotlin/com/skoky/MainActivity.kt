@@ -366,7 +366,6 @@ class MainActivity : AppCompatActivity() {
 
     @Suppress("UNUSED_PARAMETER")
     fun testSpeech(view: View) {
-        val d = Date()
         val toSay = Tools.timeToTextSpeech(23383,getTimeToSpeechPattern())
         Log.d(TrainingModeFragment.TAG, "To sayLastTime $toSay pattern ${getTimeToSpeechPattern()}")
         sayTimeText(toSay)

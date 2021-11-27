@@ -4,6 +4,7 @@ package com.skoky
 import android.content.Context
 import android.os.PowerManager
 import android.os.PowerManager.PARTIAL_WAKE_LOCK
+import android.util.Log
 
 object Tools {
 
@@ -34,7 +35,7 @@ object Tools {
             // FIXME use smaller wake lock on new androids
             MyApp.wakeLock = (context.getSystemService(Context.POWER_SERVICE) as PowerManager).run {
                 newWakeLock(PARTIAL_WAKE_LOCK, "AMMC:LOCK").apply {
-                    acquire(60*60*1000)
+                    acquire(60 * 60 * 1000)
                 }
 
             }
@@ -56,10 +57,14 @@ object Tools {
         val millis = lapTimeMs % 1000
         val second = lapTimeMs / 1000 % 60
         val minute = lapTimeMs / (1000 * 60)
-        return try {
-            String.format(pattern, minute, second, millis)
-        } catch (e: Exception) {
-            String.format(Const.defaultTimeToSpeechPattern, minute, second, millis)
-        }
+
+        val tts = pattern
+            .replace("%ms", millis.toString(), false)
+            .replaceFirst("%m", minute.toString(), false)
+            .replace("%s", second.toString(), false)
+
+        Log.i("TTS",tts)
+        return tts
+
     }
 }
