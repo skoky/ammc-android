@@ -24,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import com.google.android.material.internal.NavigationMenuItemView
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
@@ -55,10 +56,11 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
 
     private lateinit var app: MyApp
+
     //    private var mAdView: AdView? = null
     private var mDecoderServiceBound = false
 
-    lateinit var toneGenerator : ToneGenerator
+    lateinit var toneGenerator: ToneGenerator
     lateinit var tts: TextToSpeech
 
     override fun onDestroy() {
@@ -100,20 +102,20 @@ class MainActivity : AppCompatActivity() {
 
             app.firestore = FirebaseFirestore.getInstance()
             val settings = FirebaseFirestoreSettings.Builder()
-                    .setPersistenceEnabled(true)
-                    .build()
+                .setPersistenceEnabled(true)
+                .build()
             app.firestore.firestoreSettings = settings
 
             val auth = FirebaseAuth.getInstance()
             app.drivers = DriversManager(app)
 
             auth.signInWithEmailAndPassword("skokys@gmail.com", "sfsadfhads8923jhkwdKJGJKHDKJl!")
-                    .addOnSuccessListener { result ->
-                        Log.d(TAG, "Saved login $result")
-                        app.user = auth.currentUser
-                    }.addOnFailureListener {
-                        Log.w("Cloud login issue", it)
-                    }
+                .addOnSuccessListener { result ->
+                    Log.d(TAG, "Saved login $result")
+                    app.user = auth.currentUser
+                }.addOnFailureListener {
+                    Log.w("Cloud login issue", it)
+                }
         }
 
         val navView = findViewById<NavigationView>(R.id.nav_view)
@@ -126,7 +128,8 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_training -> menuItem.isChecked = switchFragment { openTrainingMode(null) }
                 R.id.nav_racing -> menuItem.isChecked = switchFragment { openRacingMode(null) }
                 R.id.nav_console -> menuItem.isChecked = switchFragment { openConsoleMode(null) }
-                R.id.nav_drivers_editor -> menuItem.isChecked = switchFragment { openDriversEditor(null) }
+                R.id.nav_drivers_editor -> menuItem.isChecked =
+                    switchFragment { openDriversEditor(null) }
                 R.id.nav_options -> menuItem.isChecked = switchFragment { openOptions(null) }
                 R.id.nav_connection_help -> menuItem.isChecked = switchFragment { openHelp(null) }
                 else -> {
@@ -146,7 +149,7 @@ class MainActivity : AppCompatActivity() {
                             tts.language = Locale.getDefault()
                         else
                             tts.language = Locale.US
-                    } catch (e:Exception) {
+                    } catch (e: Exception) {
                         tts.language = Locale.US
                     }
                 }
@@ -184,21 +187,21 @@ class MainActivity : AppCompatActivity() {
 
     private fun exitWithConfirm() {
         AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")
-                .setMessage(R.string.exit_message)
-                .setPositiveButton(R.string.yes) { _, _ ->
-                    finish()
-                }
-                .setNegativeButton(R.string.no) { _, _ -> }.show()
+            .setMessage(R.string.exit_message)
+            .setPositiveButton(R.string.yes) { _, _ ->
+                finish()
+            }
+            .setNegativeButton(R.string.no) { _, _ -> }.show()
     }
 
     private fun switchFragmentWithConfirmation(next: () -> Unit): Boolean {
 
         AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")
-                .setMessage(R.string.finish_message)
-                .setPositiveButton(R.string.yes) { _, _ ->
-                    next()
-                }
-                .setNegativeButton(R.string.no) { _, _ -> }.show()
+            .setMessage(R.string.finish_message)
+            .setPositiveButton(R.string.yes) { _, _ ->
+                next()
+            }
+            .setNegativeButton(R.string.no) { _, _ -> }.show()
         return true
     }
 
@@ -233,15 +236,18 @@ class MainActivity : AppCompatActivity() {
     fun doMakeAWish(view: View) {
 
         AlertDialog.Builder(this).setMessage(getString(R.string.well))
-                .setPositiveButton(getString(R.string.send_email)) { _, _ ->
+            .setPositiveButton(getString(R.string.send_email)) { _, _ ->
 
-                    val intent = Intent(Intent.ACTION_SEND)
-                    intent.type = "plain/text"
-                    intent.putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf<String>("skokys@gmail.com"))
-                    intent.putExtra(android.content.Intent.EXTRA_SUBJECT, "AMM wish from Android")
-                    intent.putExtra(android.content.Intent.EXTRA_TEXT, "I wish....")
-                    startActivity(Intent.createChooser(intent, "Send"))
-                }.setCancelable(true).create().show()
+                val intent = Intent(Intent.ACTION_SEND)
+                intent.type = "plain/text"
+                intent.putExtra(
+                    android.content.Intent.EXTRA_EMAIL,
+                    arrayOf<String>("skokys@gmail.com")
+                )
+                intent.putExtra(android.content.Intent.EXTRA_SUBJECT, "AMM wish from Android")
+                intent.putExtra(android.content.Intent.EXTRA_TEXT, "I wish....")
+                startActivity(Intent.createChooser(intent, "Send"))
+            }.setCancelable(true).create().show()
 
     }
 
@@ -277,7 +283,8 @@ class MainActivity : AppCompatActivity() {
         val d = dialog.findViewById<Button>(R.id.decoder_select_ok_button)
         d.setOnClickListener {
             val checkDecoderHashCode = kd.checkedRadioButtonId
-            val foundDecoder = decodersCopy.find { decoder -> decoder.hashCode() == checkDecoderHashCode }
+            val foundDecoder =
+                decodersCopy.find { decoder -> decoder.hashCode() == checkDecoderHashCode }
             Log.i(TAG, "decoder $foundDecoder")
 
             if (et.text.isNotEmpty()) {
@@ -310,6 +317,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var helpFragment: HelpFragment
+
     @Suppress("UNUSED_PARAMETER")
     private fun openHelp(view: View?): Boolean {
         helpFragment = HelpFragment.newInstance()
@@ -321,6 +329,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var driversEditorFragment: DriversFragment
+
     @Suppress("UNUSED_PARAMETER")
     fun openDriversEditor(view: View?) {
         driversEditorFragment = DriversFragment.newInstance()
@@ -366,7 +375,7 @@ class MainActivity : AppCompatActivity() {
 
     @Suppress("UNUSED_PARAMETER")
     fun testSpeech(view: View) {
-        val toSay = Tools.timeToTextSpeech(23383,getTimeToSpeechPattern())
+        val toSay = Tools.timeToTextSpeech(23383, getTimeToSpeechPattern())
         Log.d(TrainingModeFragment.TAG, "To sayLastTime $toSay pattern ${getTimeToSpeechPattern()}")
         sayTimeText(toSay)
     }
@@ -397,9 +406,14 @@ class MainActivity : AppCompatActivity() {
         saveIntValue(std, startupDelayValueK)
     }
 
-    private fun saveStartupDelay(checkbox: CheckBox) = defaultSharedPreferences.edit().putBoolean(startupDelayK, checkbox.isChecked).apply()
-    private fun saveRaceDuration(checkbox: CheckBox) = defaultSharedPreferences.edit().putBoolean(raceDurationK, checkbox.isChecked).apply()
-    private fun saveIncludeMinLapTime(checkbox: CheckBox) = defaultSharedPreferences.edit().putBoolean(includeMinLapTimeK, checkbox.isChecked).apply()
+    private fun saveStartupDelay(checkbox: CheckBox) =
+        defaultSharedPreferences.edit().putBoolean(startupDelayK, checkbox.isChecked).apply()
+
+    private fun saveRaceDuration(checkbox: CheckBox) =
+        defaultSharedPreferences.edit().putBoolean(raceDurationK, checkbox.isChecked).apply()
+
+    private fun saveIncludeMinLapTime(checkbox: CheckBox) =
+        defaultSharedPreferences.edit().putBoolean(includeMinLapTimeK, checkbox.isChecked).apply()
 
     fun saveIntValue(delayText: EditText, key: String) = try {
         val delay = (Integer.valueOf(delayText.text.toString()))
@@ -459,7 +473,7 @@ class MainActivity : AppCompatActivity() {
         app.decoderService.let { ds ->
             if (!ds.isDecoderConnected()) {
                 AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected))
-                        .setCancelable(true).create().show()
+                    .setCancelable(true).create().show()
             } else {
                 return if (ds.isDecoderConnected()) {
                     val fragmentTransaction = supportFragmentManager.beginTransaction()
@@ -474,7 +488,8 @@ class MainActivity : AppCompatActivity() {
                     return
 
                 } else {
-                    AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
+                    AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected))
+                        .setCancelable(true).create().show()
                 }
             }
         }
@@ -499,7 +514,8 @@ class MainActivity : AppCompatActivity() {
                 fragmentTransaction.commit()
                 return
             } else {
-                AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
+                AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected))
+                    .setCancelable(true).create().show()
             }
         }
     }
@@ -516,7 +532,8 @@ class MainActivity : AppCompatActivity() {
             fragmentTransaction.commit()
             return
         } else {
-            AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected)).setCancelable(true).create().show()
+            AlertDialog.Builder(this).setMessage(getString(R.string.decoder_not_connected))
+                .setCancelable(true).create().show()
         }
 
     }
@@ -531,12 +548,16 @@ class MainActivity : AppCompatActivity() {
     fun getMinLapTimeFlag() = defaultSharedPreferences.getInt(minLapTimeK, 20)
     fun getTransponderSoundFlag() = defaultSharedPreferences.getBoolean(transponderSoundK, true)
     fun getStartStopSoundFlag() = defaultSharedPreferences.getBoolean(startStopSoundK, true)
-    fun getTimeToSpeechFlag() = defaultSharedPreferences.getBoolean(timeToSpeech,true )
-    fun getTimeToSpeechPattern() = defaultSharedPreferences.getString(timeToSpeechPattern,defaultTimeToSpeechPattern).orEmpty()
+    fun getTimeToSpeechFlag() = defaultSharedPreferences.getBoolean(timeToSpeech, true)
+    fun getTimeToSpeechPattern() =
+        defaultSharedPreferences.getString(timeToSpeechPattern, defaultTimeToSpeechPattern)
+            .orEmpty()
 
     private val decoderServiceConnection = object : ServiceConnection {
-        override fun onServiceConnected(className: ComponentName,
-                                        service: IBinder) {
+        override fun onServiceConnected(
+            className: ComponentName,
+            service: IBinder
+        ) {
 
             val binder = service as DecoderService.MyLocalBinder
             app.decoderService = binder.getService()
@@ -566,6 +587,8 @@ class MainActivity : AppCompatActivity() {
             }
             android.R.id.home -> {
                 val dl = findViewById<DrawerLayout>(R.id.drawer_layout)
+                val nl = dl.findViewById<NavigationMenuItemView>(R.id.nav_version)
+                nl.setTitle("Version ${BuildConfig.VERSION_NAME}/${BuildConfig.VERSION_CODE}")
                 dl.openDrawer(GravityCompat.START)
                 true
             }

@@ -37,6 +37,10 @@
             android:icon="@drawable/baseline_help_outline_24px"
             android:title="@string/help_connecting" />
 
+        <item
+            android:id="@+id/nav_version"
+            android:title="---" />
+
     </group>
 
 </menu>
