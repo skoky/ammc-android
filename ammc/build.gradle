@@ -11,8 +11,8 @@ android {
         applicationId "com.skoky"
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 64
-        versionName "2.11"
+        versionCode 65
+        versionName "2.12"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     dexOptions {
