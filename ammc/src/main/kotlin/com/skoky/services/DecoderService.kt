@@ -10,6 +10,7 @@ import android.os.IBinder
 import android.util.Log
 import com.skoky.*
 import com.skoky.Tools.P3_DEF_PORT
+import com.skoky.Tools.toHexString
 import eu.plib.Parser
 import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.doAsync
@@ -297,8 +298,7 @@ class DecoderService : Service() {
                             "GPS" -> {
                             }
                             else -> {
-                                CloudDB.badMessageReport(application as MyApp, "tcp_unknown_data",
-                                        Arrays.toString(buffer.copyOf(read)))
+                                CloudDB.badMessageReport(application as MyApp, "tcp_unknown_data", buffer.toHexString())
                                 Log.w(TAG, "received unknown data $json")
                             }
                         }
@@ -356,8 +356,8 @@ class DecoderService : Service() {
         } else if (msg.size > 1 && msg[0] == 1.toByte()) {
             JSONObject(P98Parser.parse(msg, decoderIdVostok ?: "-"))
         } else {
-            Log.w(TAG, "Invalid msg on TCP " + Arrays.toString(msg))
-            CloudDB.badMessageReport(application as MyApp, "tcp_msg_error", msg.contentToString())
+            Log.w(TAG, "Invalid msg on TCP " + msg.toHexString())
+            CloudDB.badMessageReport(application as MyApp, "tcp_msg_error", msg.toHexString())
             JSONObject("{\"recordType\":\"Error\",\"description\":\"Invalid message\"}")
         }
     }
@@ -369,7 +369,7 @@ class DecoderService : Service() {
         Log.d(TAG, ">> $json")
 
         if (msg.contains("Error")) {
-            CloudDB.badMessageReport(application as MyApp, "tcp_msg_with_error", msgB.contentToString())
+            CloudDB.badMessageReport(application as MyApp, "tcp_msg_with_error", msgB.toHexString())
         }
 
         val decoderId: String?
@@ -410,7 +410,7 @@ class DecoderService : Service() {
                         sendBroadcastData(d, json)
                     }
                 "Error" ->
-                    CloudDB.badMessageReport(application as MyApp, "tcp_error", Arrays.toString(msgB))
+                    CloudDB.badMessageReport(application as MyApp, "tcp_error", msgB.toHexString())
 
             } else {
                 Log.w(TAG, "Msg with record type on UDP. Wired! $json")

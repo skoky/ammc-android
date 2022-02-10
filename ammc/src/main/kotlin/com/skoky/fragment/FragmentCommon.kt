@@ -93,7 +93,8 @@ open class FragmentCommon : Fragment() {
                 Log.w(TrainingModeFragment.TAG, "No racer identification in Passing $json")
                 json.let {
                     activity?.let { a ->
-                        CloudDB.badMessageReport(a.application as MyApp, "passing_not_transponder", it.toString())
+                        CloudDB.badMessageReport(a.application as MyApp, "passing_not_transponder",
+                            it.toString())
                     }
                 }
                 return "---"

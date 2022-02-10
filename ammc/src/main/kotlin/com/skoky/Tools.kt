@@ -63,8 +63,12 @@ object Tools {
             .replaceFirst("%m", minute.toString(), false)
             .replace("%s", second.toString(), false)
 
-        Log.i("TTS",tts)
+        Log.i("TTS", tts)
         return tts
 
+    }
+
+    fun ByteArray.toHexString() = joinToString("") {
+        Integer.toUnsignedString(java.lang.Byte.toUnsignedInt(it), 16).padStart(2, '0').uppercase()
     }
 }
