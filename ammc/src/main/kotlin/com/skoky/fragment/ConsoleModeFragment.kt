@@ -102,7 +102,7 @@ class ConsoleModeFragment : FragmentCommon() {
             if (connectedDecoder==null) {
                     (a as MainActivity).openStartupFragment()
             } else
-                app.decoderService.exploreDecoder(connectedDecoder?.uuid)
+                app.decoderService.exploreDecoder(connectedDecoder.uuid)
 
         }
     }

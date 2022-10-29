@@ -6,7 +6,6 @@ import com.google.gson.GsonBuilder
 const val DELIM = "\t"
 const val VOSTOK_ID = "101"
 const val VOSTOK_NAME = "Vostok"
-const val VOSTOK_NAME_LONG = "Vostok lap timing system"
 
 data class Status(val recordType: String, val decoderType: String, val decoderId: String, val packetSequenceNum: Int, val noise: Int, val crcOk: Boolean)
 data class Passing(val recordType: String, val decoderType: String, val decoderId: String, val packetSequenceNum: Int, val transponderCode: String,
@@ -25,7 +24,7 @@ object P98Parser {
         val msg = String(msgMaybeMore).split("\r\n").first().toByteArray()
 
         return try {
-            when (msg[1].toChar()) {
+            when (msg[1].toInt().toChar()) {
                 '#' -> parserStatus(msg.copyOfRange(1,msg.size-1), id)
                 '@' -> parsePassing(msg.copyOfRange(1,msg.size-1), id)
                 else -> makeError("unknown 98 record type")
@@ -80,7 +79,7 @@ object P98Parser {
     }
 
 
-    private fun checkCrc(msg: ByteArray, crc: String): Boolean {
+    private fun checkCrc(_msg: ByteArray, _crc: String): Boolean {
         return true
     }
 
