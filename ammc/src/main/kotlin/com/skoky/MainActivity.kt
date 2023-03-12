@@ -53,7 +53,9 @@ import org.jetbrains.anko.toast
 import java.util.*
 
 
+
 class MainActivity : AppCompatActivity() {
+
 
     private lateinit var app: MyApp
 
@@ -84,6 +86,12 @@ class MainActivity : AppCompatActivity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         app = application as MyApp
+
+        val b = RustBridge()
+        val x = b.p3_to_json_local("8e023300e5630000010001047a00000003041fd855000408589514394cd8040005026d0006025000080200008104501304008f")
+        Log.i(TAG,x)
+        val y = b.encode_local("json")
+        Log.i(TAG,y)
 
         setContentView(R.layout.main)
 
@@ -602,6 +610,10 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "MainActivity"
+
+        init {
+            System.loadLibrary("ammc")
+        }
 
         fun decoderLabel(d: Decoder): String {
 

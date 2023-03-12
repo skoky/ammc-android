@@ -11,7 +11,6 @@ import android.util.Log
 import com.skoky.*
 import com.skoky.Tools.P3_DEF_PORT
 import com.skoky.Tools.toHexString
-import eu.plib.Parser
 import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
@@ -25,9 +24,11 @@ import kotlin.concurrent.schedule
 const val VOSTOK_DEFAULT_IP = "10.10.100.254"
 const val VOSTOK_DEFAULT_PORT = 8899
 
-data class Decoder(val uuid: UUID, var decoderId: String? = null, var ipAddress: String? = null,
-                   var port: Int? = null,
-                   var decoderType: String? = null, var connection: Socket? = null, var lastSeen: Long) {
+data class Decoder(
+    val uuid: UUID, var decoderId: String? = null, var ipAddress: String? = null,
+    var port: Int? = null,
+    var decoderType: String? = null, var connection: Socket? = null, var lastSeen: Long
+) {
     override fun equals(other: Any?): Boolean {
         return uuid == (other as? Decoder)?.uuid
     }
@@ -37,11 +38,18 @@ data class Decoder(val uuid: UUID, var decoderId: String? = null, var ipAddress:
     }
 
     companion object {
-        fun newDecoder(ipAddress: String? = null, port: Int? = null, decoderId: String? = null, decoderType: String? = null): Decoder {
+        fun newDecoder(
+            ipAddress: String? = null,
+            port: Int? = null,
+            decoderId: String? = null,
+            decoderType: String? = null
+        ): Decoder {
             val fixedPort = port ?: Tools.P3_DEF_PORT
-            return Decoder(UUID.randomUUID(), ipAddress = ipAddress, port = fixedPort,
-                    decoderId = decoderId, decoderType = decoderType,
-                    lastSeen = System.currentTimeMillis())
+            return Decoder(
+                UUID.randomUUID(), ipAddress = ipAddress, port = fixedPort,
+                decoderId = decoderId, decoderType = decoderType,
+                lastSeen = System.currentTimeMillis()
+            )
         }
     }
 }
@@ -97,9 +105,11 @@ class DecoderService : Service() {
                         val validSocket = checkTcpSocket(VOSTOK_DEFAULT_IP, VOSTOK_DEFAULT_PORT)
                         Log.d(TAG, "Vostok socket $validSocket")
                         if (validSocket) {      // default vostok decoder found
-                            val newDecoder = Decoder.newDecoder(VOSTOK_DEFAULT_IP, VOSTOK_DEFAULT_PORT,
-                                    vostokDecoderId(VOSTOK_DEFAULT_IP, VOSTOK_DEFAULT_PORT),
-                                    VOSTOK_NAME)
+                            val newDecoder = Decoder.newDecoder(
+                                VOSTOK_DEFAULT_IP, VOSTOK_DEFAULT_PORT,
+                                vostokDecoderId(VOSTOK_DEFAULT_IP, VOSTOK_DEFAULT_PORT),
+                                VOSTOK_NAME
+                            )
                             decoders.addOrUpdate(newDecoder)
                             sendBroadcastDecodersUpdate()
                         }
@@ -149,7 +159,8 @@ class DecoderService : Service() {
     fun isDecoderConnected() = decoders.any { it.connection != null }
 
 
-    fun getConnectedDecoder() = decoders.find { d -> d.connection != null && d.connection!!.isConnected }
+    fun getConnectedDecoder() =
+        decoders.find { d -> d.connection != null && d.connection!!.isConnected }
 
     fun connectDecoderByUUID(decoderUUIDString: String) {
         val uuid = UUID.fromString(decoderUUIDString)
@@ -166,9 +177,21 @@ class DecoderService : Service() {
                     socket.connect(InetSocketAddress(decoder.ipAddress, decoder.port ?: 5403), 5000)
 
                     if (!isP3Decoder(decoder)) {
-                        decoders.addOrUpdate(decoder.copy(decoderId = vostokDecoderId(decoder.ipAddress, decoder.port), connection = socket, lastSeen = System.currentTimeMillis()))
+                        decoders.addOrUpdate(
+                            decoder.copy(
+                                decoderId = vostokDecoderId(
+                                    decoder.ipAddress,
+                                    decoder.port
+                                ), connection = socket, lastSeen = System.currentTimeMillis()
+                            )
+                        )
                     } else if (isP3Decoder(decoder)) {
-                        decoders.addOrUpdate(decoder.copy(connection = socket, lastSeen = System.currentTimeMillis()))
+                        decoders.addOrUpdate(
+                            decoder.copy(
+                                connection = socket,
+                                lastSeen = System.currentTimeMillis()
+                            )
+                        )
                     }
 
                     Log.i(TAG, "Decoder $decoder connected")
@@ -179,8 +202,11 @@ class DecoderService : Service() {
                     }
 
                     if (isP3Decoder(decoder)) {
-                        val versionRequest = Parser.encode("{\"recordType\":\"Version\",\"emptyFields\":[\"decoderType\"],\"VERSION\":\"2\"}")
-                        socket.getOutputStream().write(versionRequest)
+                        val parser = RustBridge()
+                        val versionRequest =
+                            parser.encode_local("{\"recordType\":\"Version\",\"emptyFields\":[\"decoderType\"],\"VERSION\":\"2\"}")
+
+                        // FIXME socket.getOutputStream().write(versionRequest)
                     }
                 } catch (e: Exception) {
                     socket.close()
@@ -216,18 +242,18 @@ class DecoderService : Service() {
     }
 
     private val exploreMessages = listOf(
-            "{\"recordType\":\"Version\",\"emptyFields\":[\"decoderType\"],\"VERSION\":\"2\"}",
-            "{\"recordType\":\"Status\",\"emptyFields\":[\"loopTriggers\",\"noise\",\"gps\", \"temperature\",\"inputVoltage\",\"satInUse\"],\"VERSION\":\"2\"}",
-            "{\"recordType\":\"AuxiliarySettings\",\"emptyFields\":[\"photocellHoldOff\",\"externalStartHoldOff\",\"syncHoldOff\"],\"VERSION\":\"2\"}",
-            "{\"recordType\":\"GeneralSettings\",\"emptyFields\":[\"statusInterval\",\"realTimeClock\",\"enableFirstContactRecord\",\"decoderMode\"],\"VERSION\":\"2\"}",
-            "{\"recordType\":\"GPS\",\"emptyFields\":[\"longtitude\",\"latitude\",\"numOfSatInUse\"],\"VERSION\":\"2\"}",
-            "{\"recordType\":\"LoopTrigger\",\"emptyFields\":[\"flags\",\"pingCount\",\"temperature\",\"strength\",\"code\",\"lastReceivedPingRtcTime\",\"lastReceivedPingUtcTime\",\"actStrength\",\"recordIndex\"],\"VERSION\":\"2\"}",
-            "{\"recordType\":\"NetworkSettings\",\"emptyFields\":[\"automatic\",\"staticSubnetMask\",\"obtained\",\"activeIPAddress\",\"activeDNS\",\"activeGateway\",\"staticDNSServer\",\"activeSubNetMask\",\"activate\",\"interfaceNumber\",\"staticIpAddress\",\"staticGateway\"],\"VERSION\":\"2\"}",
-            "{\"recordType\":\"ServerSettings\",\"emptyFields\":[\"host\",\"ipPort\",\"interfaceName\"],\"VERSION\":\"2\"}",
-            "{\"recordType\":\"Signals\",\"emptyFields\":[\"beepFrequency\",\"beepDuration\",\"beepHoldOff\",\"auxiliaryOutput\"],\"VERSION\":\"2\"}",
-            "{\"recordType\":\"Time\",\"emptyFields\":[\"RTC_Time\",\"UTC_Time\",\"flags\"],\"VERSION\":\"2\"}",
-            "{\"recordType\":\"Timeline\",\"emptyFields\":[\"gateTime\",\"ID\",\"name\",\"sports\",\"loopTriggerEnabled\",\"minOutField\",\"squelch\"],\"VERSION\":\"2\"}",
-            "{\"recordType\":\"Version\",\"emptyFields\":[\"description\",\"options\",\"version\",\"decoderType\",\"release\",\"registration\",\"buildNumber\"],\"VERSION\":\"2\"}"
+        "{\"recordType\":\"Version\",\"emptyFields\":[\"decoderType\"],\"VERSION\":\"2\"}",
+        "{\"recordType\":\"Status\",\"emptyFields\":[\"loopTriggers\",\"noise\",\"gps\", \"temperature\",\"inputVoltage\",\"satInUse\"],\"VERSION\":\"2\"}",
+        "{\"recordType\":\"AuxiliarySettings\",\"emptyFields\":[\"photocellHoldOff\",\"externalStartHoldOff\",\"syncHoldOff\"],\"VERSION\":\"2\"}",
+        "{\"recordType\":\"GeneralSettings\",\"emptyFields\":[\"statusInterval\",\"realTimeClock\",\"enableFirstContactRecord\",\"decoderMode\"],\"VERSION\":\"2\"}",
+        "{\"recordType\":\"GPS\",\"emptyFields\":[\"longtitude\",\"latitude\",\"numOfSatInUse\"],\"VERSION\":\"2\"}",
+        "{\"recordType\":\"LoopTrigger\",\"emptyFields\":[\"flags\",\"pingCount\",\"temperature\",\"strength\",\"code\",\"lastReceivedPingRtcTime\",\"lastReceivedPingUtcTime\",\"actStrength\",\"recordIndex\"],\"VERSION\":\"2\"}",
+        "{\"recordType\":\"NetworkSettings\",\"emptyFields\":[\"automatic\",\"staticSubnetMask\",\"obtained\",\"activeIPAddress\",\"activeDNS\",\"activeGateway\",\"staticDNSServer\",\"activeSubNetMask\",\"activate\",\"interfaceNumber\",\"staticIpAddress\",\"staticGateway\"],\"VERSION\":\"2\"}",
+        "{\"recordType\":\"ServerSettings\",\"emptyFields\":[\"host\",\"ipPort\",\"interfaceName\"],\"VERSION\":\"2\"}",
+        "{\"recordType\":\"Signals\",\"emptyFields\":[\"beepFrequency\",\"beepDuration\",\"beepHoldOff\",\"auxiliaryOutput\"],\"VERSION\":\"2\"}",
+        "{\"recordType\":\"Time\",\"emptyFields\":[\"RTC_Time\",\"UTC_Time\",\"flags\"],\"VERSION\":\"2\"}",
+        "{\"recordType\":\"Timeline\",\"emptyFields\":[\"gateTime\",\"ID\",\"name\",\"sports\",\"loopTriggerEnabled\",\"minOutField\",\"squelch\"],\"VERSION\":\"2\"}",
+        "{\"recordType\":\"Version\",\"emptyFields\":[\"description\",\"options\",\"version\",\"decoderType\",\"release\",\"registration\",\"buildNumber\"],\"VERSION\":\"2\"}"
     )
 
 
@@ -240,8 +266,9 @@ class DecoderService : Service() {
 
                     exploreMessages.forEach { m ->
                         try {
-                            val parsed = Parser.encode(m)
-                            parsed?.let { p -> s.getOutputStream().write(p) }
+                            val parser = RustBridge()
+                            val parsed = parser.encode_local(m)
+                            // FIXME parsed?.let { p -> s.getOutputStream().write(p) }
                         } finally {
                             sleep(200)
                         }
@@ -262,10 +289,15 @@ class DecoderService : Service() {
                     read = it.read(buffer)
                     Log.i(TAG, "Received $read bytes")
                     if (read > 0) {
-                        val json = processTcpMsg(buffer.copyOf(read),
-                                vostokDecoderId(decoder.ipAddress, decoder.port))
+                        val json = processTcpMsg(
+                            buffer.copyOf(read),
+                            vostokDecoderId(decoder.ipAddress, decoder.port)
+                        )
 
-                        if (json.get("recordType").toString().isNotEmpty()) sendBroadcastData(decoder, json)
+                        if (json.get("recordType").toString().isNotEmpty()) sendBroadcastData(
+                            decoder,
+                            json
+                        )
                         when (json.get("recordType").toString()) {
                             "Passing" -> {
                                 appendDriver(json)
@@ -298,16 +330,22 @@ class DecoderService : Service() {
                             "GPS" -> {
                             }
                             else -> {
-                                CloudDB.badMessageReport(application as MyApp, "tcp_unknown_data", buffer.toHexString())
+                                CloudDB.badMessageReport(
+                                    application as MyApp,
+                                    "tcp_unknown_data",
+                                    buffer.toHexString()
+                                )
                                 Log.w(TAG, "received unknown data $json")
                             }
                         }
 
                         if (json.has("decoderType-text")) {
-                            json.getString("decoderType-text").let { type -> decoders.addOrUpdate(decoder.copy(decoderType = type)) }
+                            json.getString("decoderType-text")
+                                .let { type -> decoders.addOrUpdate(decoder.copy(decoderType = type)) }
                         } else {
                             if (json.has("decoderType")) {
-                                json.getString("decoderType").let { type -> decoders.addOrUpdate(decoder.copy(decoderType = type)) }
+                                json.getString("decoderType")
+                                    .let { type -> decoders.addOrUpdate(decoder.copy(decoderType = type)) }
                             }
                         }
                         decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis()))
@@ -351,8 +389,14 @@ class DecoderService : Service() {
     }
 
     private fun processTcpMsg(msg: ByteArray, decoderIdVostok: String?): JSONObject {
+        val b = RustBridge()
+        val x =
+            b.p3_to_json_local("8e023300e5630000010001047a00000003041fd855000408589514394cd8040005026d0006025000080200008104501304008f")
+//        Log.i(MainActivity.TAG,x)
+
+
         return if (msg.size > 1 && msg[0] == 0x8e.toByte()) {
-            JSONObject(Parser.decode(msg))
+            JSONObject(b.p3_to_json_local(String(msg)))
         } else if (msg.size > 1 && msg[0] == 1.toByte()) {
             JSONObject(P98Parser.parse(msg, decoderIdVostok ?: "-"))
         } else {
@@ -364,7 +408,8 @@ class DecoderService : Service() {
 
     private fun processUdpMsg(msgB: ByteArray) {
         Log.d(TAG, "Data received: ${msgB.size}")
-        val msg = Parser.decode(msgB)
+        val parser = RustBridge()
+        val msg = parser.p3_to_json_local("msgB")
         val json = JSONObject(msg)
         Log.d(TAG, ">> $json")
 
@@ -432,9 +477,10 @@ class DecoderService : Service() {
             DatagramSocket(P3_DEF_PORT).use { socket ->
                 socket.broadcast = true
                 socket.connect(InetAddress.getByName("255.255.255.255"), P3_DEF_PORT)
-                val bytes = Parser.encode(msg)
-                Log.d(TAG, "Bytes size ${bytes.size}")
-                socket.send(DatagramPacket(bytes, bytes.size))
+                val parser = RustBridge()
+                val bytes = parser.encode_local(msg)
+//                Log.d(TAG, "Bytes size ${bytes.size}")
+// FIXME                socket.send(DatagramPacket(bytes, bytes.size))
             }
         } catch (e: java.lang.Exception) {
             Log.w(TAG, "Error $e", e)
@@ -475,7 +521,10 @@ class DecoderService : Service() {
         Log.d(TAG, "Broadcast passing sent $intent")
 
         if (defaultSharedPreferences.getBoolean(Const.transponderSoundK, true)) {
-            ToneGenerator(AudioManager.STREAM_MUSIC, 100).startTone(ToneGenerator.TONE_CDMA_INTERCEPT, 200)
+            ToneGenerator(
+                AudioManager.STREAM_MUSIC,
+                100
+            ).startTone(ToneGenerator.TONE_CDMA_INTERCEPT, 200)
         }
     }
 
