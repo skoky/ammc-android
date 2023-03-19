@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.PowerManager
 import android.os.PowerManager.PARTIAL_WAKE_LOCK
 import android.util.Log
+import com.skoky.fragment.Time
 
 object Tools {
 
@@ -68,7 +69,32 @@ object Tools {
 
     }
 
-    fun ByteArray.toHexString() = joinToString("") {
-        Integer.toUnsignedString(java.lang.Byte.toUnsignedInt(it), 16).padStart(2, '0').uppercase()
+    fun String.decodeHex(): ByteArray {
+        check(length % 2 == 0) { "Must have an even length" }
+
+        val byteIterator = chunkedSequence(2)
+            .map { it.toInt(16).toByte() }
+            .iterator()
+
+        return ByteArray(length / 2) { byteIterator.next() }
     }
+
+    fun ByteArray.toHexString(): String {
+        return this.joinToString("") {
+            java.lang.String.format("%02x", it)
+        }
+    }
+
+    fun rtcTimeFromString(rtc: String): Time {
+        val t: String = AmmcBridge.time_to_millis(rtc)
+        Log.i(TAG, "ttm: $rtc > $t")
+        return try {
+            val timeLong = t.toLong()
+            Time(timeLong * 1000)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error parsing time", e)
+            Time(0) // TODO better handling?
+        }
+    }
+
 }

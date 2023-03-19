@@ -1,5 +1,6 @@
 package com.skoky
 
+import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
 
 
@@ -7,17 +8,39 @@ const val DELIM = "\t"
 const val VOSTOK_ID = "101"
 const val VOSTOK_NAME = "Vostok"
 
-data class Status(val recordType: String, val decoderType: String, val decoderId: String, val packetSequenceNum: Int, val noise: Int, val crcOk: Boolean)
-data class Passing(val recordType: String, val decoderType: String, val decoderId: String, val packetSequenceNum: Int, val transponderCode: String,
-                   val timeSinceStart: Float, val hitCounts: Int, val signalStrength: Int,
-                   val passingStatus: Int, val crcOk: Boolean,
-                   val msecs_since_start: Long)
+data class Status(
+    val msg: String,
+    val decoderType: String,
+    val decoderId: String,
+    val packetSequenceNum: Int,
+    val noise: Int,
+    val crcOk: Boolean
+)
 
-data class Error(val recordType: String, val msg: String)
+data class Passing(
+    val msg: String,
+    val decoderType: String,
+    val decoderId: String,
+    val packetSequenceNum: Int,
+    val transponderCode: String,
+    val timeSinceStart: Float,
+    val hitCounts: Int,
+    val signalStrength: Int,
+    val passingStatus: Int,
+    val crcOk: Boolean,
+    val msecs_since_start: Long
+)
+
+data class Error(val msg: String, val description: String)
 
 val gson = GsonBuilder().setPrettyPrinting().create()
 
 object P98Parser {
+
+    fun myGson() =
+        GsonBuilder().setFieldNamingStrategy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+            .create();
+
     fun parse(msgMaybeMore: ByteArray, id: String): String {
 
         // FIXME parse all messages, not only first!
@@ -25,8 +48,8 @@ object P98Parser {
 
         return try {
             when (msg[1].toInt().toChar()) {
-                '#' -> parserStatus(msg.copyOfRange(1,msg.size-1), id)
-                '@' -> parsePassing(msg.copyOfRange(1,msg.size-1), id)
+                '#' -> parserStatus(msg.copyOfRange(1, msg.size - 1), id)
+                '@' -> parsePassing(msg.copyOfRange(1, msg.size - 1), id)
                 else -> makeError("unknown 98 record type")
             }
         } catch (e: Exception) {
@@ -36,18 +59,24 @@ object P98Parser {
 
     private fun parserStatus(msg: ByteArray, id: String): String {
         val fields = String(msg).split(DELIM)
-        if (fields.size != 5) return makeError("Status does not have 5 fields - ${fields.size} / ${String(msg)}")
+        if (fields.size != 5) return makeError(
+            "Status does not have 5 fields - ${fields.size} / ${
+                String(
+                    msg
+                )
+            }"
+        )
         val isCrcOk = checkCrc(msg, fields[4])
         val type = if (fields[1] == VOSTOK_ID) VOSTOK_NAME else ""
         val status = Status(
-                recordType = "Status",
-                decoderType = type,
-                decoderId = id,
-                packetSequenceNum = fields[2].toInt(),
-                noise = fields[3].toInt(),
-                crcOk = isCrcOk
+            msg = "Status",
+            decoderType = type,
+            decoderId = id,
+            packetSequenceNum = fields[2].toInt(),
+            noise = fields[3].toInt(),
+            crcOk = isCrcOk
         )
-        return gson.toJson(status)
+        return myGson().toJson(status)
     }
 
     private fun parsePassing(msg: ByteArray, id: String): String {
@@ -59,23 +88,24 @@ object P98Parser {
         val type = if (fields[1] == VOSTOK_ID) VOSTOK_NAME else ""
         val tss = fields[4].toFloat()
         val passing = Passing(
-                recordType = "Passing",
-                decoderType = type,
-                decoderId = id,
-                packetSequenceNum = fields[2].toInt(),
-                transponderCode = fields[3],
-                timeSinceStart = tss,
-                hitCounts = fields[5].toInt(),
-                signalStrength = fields[6].toInt(),
-                passingStatus = fields[7].toInt(),
-                crcOk = isCrcOk,
-                msecs_since_start = (tss * 1000).toLong()  // conversion to millis since start
+            msg = "PASSING",
+            decoderType = type,
+            decoderId = id,
+            packetSequenceNum = fields[2].toInt(),
+            transponderCode = fields[3],
+            timeSinceStart = tss,
+            hitCounts = fields[5].toInt(),
+            signalStrength = fields[6].toInt(),
+            passingStatus = fields[7].toInt(),
+            crcOk = isCrcOk,
+            msecs_since_start = (tss * 1000).toLong()  // conversion to millis since start
         )
-        return gson.toJson(passing)
+
+        return myGson().toJson(passing)
     }
 
     private fun makeError(msg: String): String {
-        return gson.toJson(Error("Error", msg))
+        return myGson().toJson(Error("Error", msg))
     }
 
 

@@ -50,7 +50,7 @@ class RacingModeFragment : FragmentCommon() {
     class PassingDataReceiver(val handler: (String) -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             intent?.let {
-                handler(it.getStringExtra("Passing") ?: "")
+                handler(it.getStringExtra("PASSING") ?: "")
             }
         }
     }

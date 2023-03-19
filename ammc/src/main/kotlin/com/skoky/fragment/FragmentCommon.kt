@@ -8,6 +8,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.skoky.*
+import com.skoky.Tools.rtcTimeFromString
 import com.skoky.services.DecoderService
 import org.json.JSONObject
 
@@ -69,8 +70,7 @@ open class FragmentCommon : Fragment() {
 
     fun getTimeFromPassingJson(json: JSONObject): Time {
         return when {
-            json.has("RTC_Time") -> Time((json.get("RTC_Time") as String).toLong())
-            json.has("UTC_Time") -> Time((json.get("UTC_Time") as String).toLong())
+            json.has("rtc_time") -> rtcTimeFromString(json.get("rtc_time") as String)
             json.has("msecs_since_start") ->
                 Time((json.get("msecs_since_start") as Int).toLong() * 1000)
             else -> {

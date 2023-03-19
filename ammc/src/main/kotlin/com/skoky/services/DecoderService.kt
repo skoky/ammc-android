@@ -5,16 +5,17 @@ import android.content.Intent
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.Binder
-import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import com.skoky.*
 import com.skoky.Tools.P3_DEF_PORT
+import com.skoky.Tools.decodeHex
 import com.skoky.Tools.toHexString
 import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
+import org.json.JSONArray
 import org.json.JSONObject
 import java.lang.Thread.sleep
 import java.net.*
@@ -168,6 +169,7 @@ class DecoderService : Service() {
         found?.let { connectDecoder2(it) }
     }
 
+
     fun connectDecoder2(decoder: Decoder, notifyError: Boolean = true) {
 
         if (decoder.connection == null || (decoder.connection != null && !decoder.connection!!.isConnected)) {
@@ -202,11 +204,11 @@ class DecoderService : Service() {
                     }
 
                     if (isP3Decoder(decoder)) {
-                        val parser = RustBridge()
+                        val parser = AmmcBridge()
                         val versionRequest =
-                            parser.encode_local("{\"recordType\":\"Version\",\"emptyFields\":[\"decoderType\"],\"VERSION\":\"2\"}")
+                            parser.encode_local("{\"msg\":\"Version\",\"empty_fields\":[\"decoderType\"]}")
 
-                        // FIXME socket.getOutputStream().write(versionRequest)
+                        socket.getOutputStream().write(versionRequest.decodeHex())
                     }
                 } catch (e: Exception) {
                     socket.close()
@@ -242,18 +244,18 @@ class DecoderService : Service() {
     }
 
     private val exploreMessages = listOf(
-        "{\"recordType\":\"Version\",\"emptyFields\":[\"decoderType\"],\"VERSION\":\"2\"}",
-        "{\"recordType\":\"Status\",\"emptyFields\":[\"loopTriggers\",\"noise\",\"gps\", \"temperature\",\"inputVoltage\",\"satInUse\"],\"VERSION\":\"2\"}",
-        "{\"recordType\":\"AuxiliarySettings\",\"emptyFields\":[\"photocellHoldOff\",\"externalStartHoldOff\",\"syncHoldOff\"],\"VERSION\":\"2\"}",
-        "{\"recordType\":\"GeneralSettings\",\"emptyFields\":[\"statusInterval\",\"realTimeClock\",\"enableFirstContactRecord\",\"decoderMode\"],\"VERSION\":\"2\"}",
-        "{\"recordType\":\"GPS\",\"emptyFields\":[\"longtitude\",\"latitude\",\"numOfSatInUse\"],\"VERSION\":\"2\"}",
-        "{\"recordType\":\"LoopTrigger\",\"emptyFields\":[\"flags\",\"pingCount\",\"temperature\",\"strength\",\"code\",\"lastReceivedPingRtcTime\",\"lastReceivedPingUtcTime\",\"actStrength\",\"recordIndex\"],\"VERSION\":\"2\"}",
-        "{\"recordType\":\"NetworkSettings\",\"emptyFields\":[\"automatic\",\"staticSubnetMask\",\"obtained\",\"activeIPAddress\",\"activeDNS\",\"activeGateway\",\"staticDNSServer\",\"activeSubNetMask\",\"activate\",\"interfaceNumber\",\"staticIpAddress\",\"staticGateway\"],\"VERSION\":\"2\"}",
-        "{\"recordType\":\"ServerSettings\",\"emptyFields\":[\"host\",\"ipPort\",\"interfaceName\"],\"VERSION\":\"2\"}",
-        "{\"recordType\":\"Signals\",\"emptyFields\":[\"beepFrequency\",\"beepDuration\",\"beepHoldOff\",\"auxiliaryOutput\"],\"VERSION\":\"2\"}",
-        "{\"recordType\":\"Time\",\"emptyFields\":[\"RTC_Time\",\"UTC_Time\",\"flags\"],\"VERSION\":\"2\"}",
-        "{\"recordType\":\"Timeline\",\"emptyFields\":[\"gateTime\",\"ID\",\"name\",\"sports\",\"loopTriggerEnabled\",\"minOutField\",\"squelch\"],\"VERSION\":\"2\"}",
-        "{\"recordType\":\"Version\",\"emptyFields\":[\"description\",\"options\",\"version\",\"decoderType\",\"release\",\"registration\",\"buildNumber\"],\"VERSION\":\"2\"}"
+        "{\"msg\":\"Version\",\"empty_fields\":[\"decoderType\"]}",
+//        "{\"recordType\":\"Status\",\"emptyFields\":[\"loopTriggers\",\"noise\",\"gps\", \"temperature\",\"inputVoltage\",\"satInUse\"],\"VERSION\":\"2\"}",
+//        "{\"recordType\":\"AuxiliarySettings\",\"emptyFields\":[\"photocellHoldOff\",\"externalStartHoldOff\",\"syncHoldOff\"],\"VERSION\":\"2\"}",
+//        "{\"recordType\":\"GeneralSettings\",\"emptyFields\":[\"statusInterval\",\"realTimeClock\",\"enableFirstContactRecord\",\"decoderMode\"],\"VERSION\":\"2\"}",
+//        "{\"recordType\":\"GPS\",\"emptyFields\":[\"longtitude\",\"latitude\",\"numOfSatInUse\"],\"VERSION\":\"2\"}",
+//        "{\"recordType\":\"LoopTrigger\",\"emptyFields\":[\"flags\",\"pingCount\",\"temperature\",\"strength\",\"code\",\"lastReceivedPingRtcTime\",\"lastReceivedPingUtcTime\",\"actStrength\",\"recordIndex\"],\"VERSION\":\"2\"}",
+//        "{\"recordType\":\"NetworkSettings\",\"emptyFields\":[\"automatic\",\"staticSubnetMask\",\"obtained\",\"activeIPAddress\",\"activeDNS\",\"activeGateway\",\"staticDNSServer\",\"activeSubNetMask\",\"activate\",\"interfaceNumber\",\"staticIpAddress\",\"staticGateway\"],\"VERSION\":\"2\"}",
+//        "{\"recordType\":\"ServerSettings\",\"emptyFields\":[\"host\",\"ipPort\",\"interfaceName\"],\"VERSION\":\"2\"}",
+//        "{\"recordType\":\"Signals\",\"emptyFields\":[\"beepFrequency\",\"beepDuration\",\"beepHoldOff\",\"auxiliaryOutput\"],\"VERSION\":\"2\"}",
+//        "{\"recordType\":\"Time\",\"emptyFields\":[\"RTC_Time\",\"UTC_Time\",\"flags\"],\"VERSION\":\"2\"}",
+//        "{\"recordType\":\"Timeline\",\"emptyFields\":[\"gateTime\",\"ID\",\"name\",\"sports\",\"loopTriggerEnabled\",\"minOutField\",\"squelch\"],\"VERSION\":\"2\"}",
+//        "{\"recordType\":\"Version\",\"emptyFields\":[\"description\",\"options\",\"version\",\"decoderType\",\"release\",\"registration\",\"buildNumber\"],\"VERSION\":\"2\"}"
     )
 
 
@@ -266,9 +268,13 @@ class DecoderService : Service() {
 
                     exploreMessages.forEach { m ->
                         try {
-                            val parser = RustBridge()
+                            val parser = AmmcBridge()
                             val parsed = parser.encode_local(m)
-                            // FIXME parsed?.let { p -> s.getOutputStream().write(p) }
+                            parsed.let { p ->
+                                if (p.isNotEmpty()) {
+                                    s.getOutputStream().write(p.decodeHex())
+                                }
+                            }
                         } finally {
                             sleep(200)
                         }
@@ -294,28 +300,28 @@ class DecoderService : Service() {
                             vostokDecoderId(decoder.ipAddress, decoder.port)
                         )
 
-                        if (json.get("recordType").toString().isNotEmpty()) sendBroadcastData(
+                        if (json.get("msg").toString().isNotEmpty()) sendBroadcastData(
                             decoder,
                             json
                         )
-                        when (json.get("recordType").toString()) {
-                            "Passing" -> {
+                        when (json.get("msg").toString()) {
+                            "PASSING" -> {
                                 appendDriver(json)
                                 sendBroadcastPassing(json.toString())
                             }
-                            "Version" -> {
-                                val decoderType = json.get("decoderType-text") as? String
+                            "VERSION" -> {
+                                val decoderType = json.get("decoder_type") as? String
                                 decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
                                 sendBroadcastData(decoder, json)
                             }
-                            "Status" -> {
-//                                if (json.get("decoderType") == VOSTOK_NAME) {
-//                                    decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis(), decoderType = VOSTOK_NAME))
-//                                } else {
-//                                    decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis()))
-//                                }
+                            "STATUS" -> {
+                                if (json.get("decoder_type") == VOSTOK_NAME) {
+                                    decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis(), decoderType = VOSTOK_NAME))
+                                } else {
+                                    decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis()))
+                                }
                             }
-                            "NetworkSettings" -> {
+                            "NETWORKSETTINGS" -> {
                             }
                             "AuxiliarySettings" -> {
                             }
@@ -339,12 +345,12 @@ class DecoderService : Service() {
                             }
                         }
 
-                        if (json.has("decoderType-text")) {
-                            json.getString("decoderType-text")
+                        if (json.has("decoder_type")) {
+                            json.getString("decoder_type")
                                 .let { type -> decoders.addOrUpdate(decoder.copy(decoderType = type)) }
                         } else {
-                            if (json.has("decoderType")) {
-                                json.getString("decoderType")
+                            if (json.has("decoder_type")) {
+                                json.getString("decoder_type")
                                     .let { type -> decoders.addOrUpdate(decoder.copy(decoderType = type)) }
                             }
                         }
@@ -356,7 +362,7 @@ class DecoderService : Service() {
             }
             Log.i(TAG, "Connected ${socket.isConnected}, read $read")
         } catch (e: Exception) {
-            Log.w(TAG, "Decoder connection error $decoder -> $e")
+            Log.w(TAG, "Decoder connection error $decoder", e)
         } catch (t: Throwable) {
             Log.e(TAG, "Decoder connection throwable $decoder", t)
         } finally {
@@ -370,12 +376,12 @@ class DecoderService : Service() {
 
     private fun appendDriver(json: JSONObject) {
 
-        val transponder = if (json.has("transponderCode"))
-            json.getString("transponderCode")
+        val transponder = if (json.has("tran_code"))
+            json.getString("tran_code")
         else if (json.has("transponder"))
             json.getString("transponder")
-        else if (json.has("driverId"))
-            json.getString("driverId")
+        else if (json.has("driver_id"))
+            json.getString("driver_id")
         else null
 
         transponder?.let {
@@ -389,27 +395,29 @@ class DecoderService : Service() {
     }
 
     private fun processTcpMsg(msg: ByteArray, decoderIdVostok: String?): JSONObject {
-        val b = RustBridge()
-        val x =
-            b.p3_to_json_local("8e023300e5630000010001047a00000003041fd855000408589514394cd8040005026d0006025000080200008104501304008f")
-//        Log.i(MainActivity.TAG,x)
-
+        val parser = AmmcBridge()
 
         return if (msg.size > 1 && msg[0] == 0x8e.toByte()) {
-            JSONObject(b.p3_to_json_local(String(msg)))
+            val responses = JSONArray(parser.p3_to_json_local(msg.toHexString()))
+            Log.i(TAG,"response $responses")
+            if (responses.length() > 0) {
+                return responses.get(0) as JSONObject // FIXME get all messages
+            }
+            JSONObject("{\"msg\":\"Error\",\"description\":\"No message\"}")
         } else if (msg.size > 1 && msg[0] == 1.toByte()) {
             JSONObject(P98Parser.parse(msg, decoderIdVostok ?: "-"))
         } else {
             Log.w(TAG, "Invalid msg on TCP " + msg.toHexString())
             CloudDB.badMessageReport(application as MyApp, "tcp_msg_error", msg.toHexString())
-            JSONObject("{\"recordType\":\"Error\",\"description\":\"Invalid message\"}")
+            JSONObject("{\"msg\":\"Error\",\"description\":\"Invalid message\"}")
         }
     }
 
     private fun processUdpMsg(msgB: ByteArray) {
         Log.d(TAG, "Data received: ${msgB.size}")
-        val parser = RustBridge()
-        val msg = parser.p3_to_json_local("msgB")
+        val parser = AmmcBridge()
+        val msg = parser.p3_to_json_local(msgB.toHexString())
+        Log.i(TAG,"HEX String {msg}")
         val json = JSONObject(msg)
         Log.d(TAG, ">> $json")
 
@@ -418,8 +426,8 @@ class DecoderService : Service() {
         }
 
         val decoderId: String?
-        if (json.has("decoderId")) {
-            decoderId = json.get("decoderId") as String
+        if (json.has("decoder_id")) {
+            decoderId = json.get("decoder_id") as String
         } else {
             Log.w(TAG, "Received P3 message without decoderId. Wired! $json")
             return
@@ -435,26 +443,26 @@ class DecoderService : Service() {
 
         decoder.let { d ->
 
-            if (json.has("recordType")) when (json.get("recordType")) {
-                "Status" -> {
+            if (json.has("msg")) when (json.get("msg")) {
+                "STATUS" -> {
                     sendUdpNetworkRequest()
                     sendUdpVersionRequest()
                     sendBroadcastData(d, json)
                     decoders.addOrUpdate(decoder)
                 }
-                "NetworkSettings" ->
-                    if (json.has("activeIPAddress")) {
+                "NETWORKSETTINGS" ->
+                    if (json.has("activeIPAddress")) {  // FIXME naming?
                         val ipAddress = json.get("activeIPAddress") as? String
                         decoders.addOrUpdate(decoder.copy(ipAddress = ipAddress))
                         sendBroadcastData(d, json)
                     }
-                "Version" ->
-                    if (json.has("decoderType-text")) {
-                        val decoderType = json.get("decoderType-text") as? String
+                "VERSION" ->
+                    if (json.has("decoder_type")) {
+                        val decoderType = json.get("decoder_type") as? String
                         decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
                         sendBroadcastData(d, json)
                     }
-                "Error" ->
+                "ERROR" ->
                     CloudDB.badMessageReport(application as MyApp, "tcp_error", msgB.toHexString())
 
             } else {
@@ -465,11 +473,11 @@ class DecoderService : Service() {
     }
 
     private fun sendUdpVersionRequest() {
-        sendUdpBroadcastMessage("{\"recordType\":\"Version\",\"emptyFields\":[\"decoderType\"],\"VERSION\":\"2\"}")
+        sendUdpBroadcastMessage("{\"msg\":\"VERSION\",\"empty_fields\":[\"decoderType\"]}")
     }
 
     private fun sendUdpNetworkRequest() {
-        sendUdpBroadcastMessage("{\"recordType\":\"NetworkSettings\",\"emptyFields\":[\"activeIPAddress\"],\"VERSION\":\"2\"}")
+        sendUdpBroadcastMessage("{\"msg\":\"NETWORKSETTINGS\",\"empty_fields\":[\"activeIPAddress\"]}")
     }
 
     private fun sendUdpBroadcastMessage(msg: String) {
@@ -477,10 +485,11 @@ class DecoderService : Service() {
             DatagramSocket(P3_DEF_PORT).use { socket ->
                 socket.broadcast = true
                 socket.connect(InetAddress.getByName("255.255.255.255"), P3_DEF_PORT)
-                val parser = RustBridge()
+                val parser = AmmcBridge()
                 val bytes = parser.encode_local(msg)
-//                Log.d(TAG, "Bytes size ${bytes.size}")
-// FIXME                socket.send(DatagramPacket(bytes, bytes.size))
+                val bytes2 = bytes.decodeHex()
+                Log.d(TAG, "Bytes size ${bytes2.size}")
+                socket.send(DatagramPacket(bytes2, bytes2.size))
             }
         } catch (e: java.lang.Exception) {
             Log.w(TAG, "Error $e", e)
@@ -516,7 +525,7 @@ class DecoderService : Service() {
     private fun sendBroadcastPassing(jsonData: String) {
         val intent = Intent()
         intent.action = DECODER_PASSING
-        intent.putExtra("Passing", jsonData)
+        intent.putExtra("PASSING", jsonData)
         applicationContext.sendBroadcast(intent)
         Log.d(TAG, "Broadcast passing sent $intent")
 

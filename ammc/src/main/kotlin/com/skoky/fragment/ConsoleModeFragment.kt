@@ -33,12 +33,12 @@ class ConsoleModeFragment : FragmentCommon() {
         dataHandler = DataReceiver {
             if (!updating) {
                 val json = JSONObject(it)
-                Log.d(TAG, json.getString("recordType"))
-                if (json.getString("recordType") != "Passing") {
+                Log.d(TAG, json.getString("msg"))
+                if (json.getString("msg") != "PASSING") {
 
                     json.keys().forEach { key ->
                         if (shouldShow(json, key)) {
-                            val newTag = json.getString("recordType").replace("-text", "") + "." + key
+                            val newTag = json.getString("msg").replace("-text", "") + "." + key
                             val found = ll.childrenSequence().find { it.tag == newTag }
 
                             val newView: TextView
@@ -58,7 +58,7 @@ class ConsoleModeFragment : FragmentCommon() {
         return view
     }
 
-    private val skipped = listOf("recordType", "SPARE", "crcOk", "FLAGS", "VERSION",
+    private val skipped = listOf("msg", "SPARE", "crcOk", "FLAGS", "VERSION",
             "gps", "temperature", "decoderType", "origin", "decoderType", "requestId", "emptyFields")    // TODO review all messages
 
     private fun shouldShow(json: JSONObject, key: String?): Boolean {

@@ -49,7 +49,7 @@ class ConsoleModeVostokFragment : FragmentCommon() {
         dataHandler = DataReceiver {
 
             val json = JSONObject(it)
-            Log.d(TAG, json.getString("recordType"))
+            Log.d(TAG, json.getString("msg"))
 
             json.keys().forEach { key ->
                 if (shouldShow(json, key)) {
@@ -71,7 +71,7 @@ class ConsoleModeVostokFragment : FragmentCommon() {
         return view
     }
 
-    private val skipped = listOf("recordType", "SPARE", "crcOk", "FLAGS", "VERSION",
+    private val skipped = listOf("msg", "SPARE", "crcOk", "FLAGS", "VERSION",
             "gps", "temperature", "decoderType", "origin", "decoderType", "requestId", "emptyFields")    // TODO review all messages
 
     private fun shouldShow(json: JSONObject, key: String?): Boolean {

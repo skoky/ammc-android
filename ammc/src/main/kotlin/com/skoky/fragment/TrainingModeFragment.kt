@@ -44,7 +44,7 @@ class TrainingModeFragment : FragmentCommon() {
     class PassingDataReceiver(val handler: (String) -> Unit) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             intent?.let {
-                handler(it.getStringExtra("Passing").orEmpty())
+                handler(it.getStringExtra("PASSING").orEmpty())
             }
         }
     }

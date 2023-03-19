@@ -81,6 +81,7 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     testImplementation 'com.nhaarman:mockito-kotlin:1.6.0'
     testImplementation 'org.amshove.kluent:kluent:1.14'
+    testImplementation 'org.skyscreamer:jsonassert:1.5.0'
 }
 
 apply plugin: 'com.google.gms.google-services'
