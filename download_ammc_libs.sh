@@ -1,0 +1,2 @@
+curl http://10.0.10.140:8080/view/active/job/plib-rs/job/main/lastSuccessfulBuild/artifact/android/libammc_aarch64.so -o ammc/src/main/jniLibs/arm64-v8a/libammc.so
+curl http://10.0.10.140:8080/view/active/job/plib-rs/job/main/lastSuccessfulBuild/artifact/android/libammc_x86_64.so -o ammc/src/main/jniLibs/x86_64/libammc.so

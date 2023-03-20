@@ -315,7 +315,7 @@ class DecoderService : Service() {
                                 sendBroadcastData(decoder, json)
                             }
                             "STATUS" -> {
-                                if (json.get("decoder_type") == VOSTOK_NAME) {
+                                if (json.has("decoder_type") && json.get("decoder_type") == VOSTOK_NAME) {
                                     decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis(), decoderType = VOSTOK_NAME))
                                 } else {
                                     decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis()))
