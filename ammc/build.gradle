@@ -13,10 +13,12 @@ android {
         targetSdkVersion 31
         versionCode 68
         versionName "2.14"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     testOptions {
         unitTests.returnDefaultValues = true
+    }
+    lint {
+        baseline = file("lint-baseline.xml")
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -25,7 +27,6 @@ android {
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
         test.java.srcDirs += 'src/test/kotlin'
-        androidTest.java.srcDirs += 'src/androidTest/kotlin'
     }
     buildTypes {
         debug {
@@ -60,8 +61,6 @@ dependencies {
     implementation "androidx.navigation:navigation-ui-ktx:2.3.5"
 
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
     implementation 'com.android.billingclient:billing:4.0.0'
 

@@ -600,7 +600,7 @@ class MainActivity : AppCompatActivity() {
             android.R.id.home -> {
                 val dl = findViewById<DrawerLayout>(R.id.drawer_layout)
                 val nl = dl.findViewById<NavigationMenuItemView>(R.id.nav_version)
-                nl.setTitle("Version ${BuildConfig.VERSION_NAME}/${BuildConfig.VERSION_CODE}")
+//                nl.setTitle("Version ${BuildConfig.VERSION_NAME}/${BuildConfig.VERSION_CODE}")
                 dl.openDrawer(GravityCompat.START)
                 true
             }
