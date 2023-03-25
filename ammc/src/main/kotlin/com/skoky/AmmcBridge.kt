@@ -7,13 +7,16 @@ class AmmcBridge {
 
     companion object {
         @JvmStatic
-        private external fun p3_to_json(p3_bin: String): String
+        external fun p3_to_json(p3_bin: String): String
 
         @JvmStatic
-        private external fun encode(json_str: String): String
+        external fun encode(json_str: String): String
 
         @JvmStatic
         external fun time_to_millis(json_str: String): String
+
+        @JvmStatic
+        external fun version(): String
     }
 
     fun p3_to_json_local(to: String): String {

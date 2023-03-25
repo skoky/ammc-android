@@ -30,6 +30,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
+import com.skoky.AmmcBridge.Companion.version
 import com.skoky.Const.LAST_IP
 import com.skoky.Const.badMsgK
 import com.skoky.Const.defaultTimeToSpeechPattern
@@ -51,7 +52,6 @@ import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import java.util.*
-
 
 
 class MainActivity : AppCompatActivity() {
@@ -87,15 +87,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         app = application as MyApp
 
-        val b = AmmcBridge()
-        // TODO call version
-        val x = b.p3_to_json_local("8e023300e5630000010001047a00000003041fd855000408589514394cd8040005026d0006025000080200008104501304008f")
-        Log.i(TAG,x)
-        val y = b.encode_local("{\"decoder_id\":\"041350\",\"gps_locked\":false,\"hits\":80,\"low_battery\":false,\"modified\":false,\"msg\":\"VERSION\",\"passing_number\":122,\"resend\":false,\"rtc_time\":\"2013-03-19 19:36:33.607\",\"strength\":109.0,\"transponder\":5625887}")
-        Log.i(TAG,y)
-
-        // TODO convert to test
-
+        val ammc_version = version()
+        Log.i(TAG,"AMMC lib version $ammc_version")
 
         setContentView(R.layout.main)
 
