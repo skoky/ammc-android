@@ -5,12 +5,12 @@ apply plugin: 'kotlin-android'
 
 android {
     useLibrary 'org.apache.http.legacy'
-    compileSdkVersion 31
+    compileSdkVersion 33
     buildToolsVersion '31.0.0'
     defaultConfig {
         applicationId "com.skoky"
         minSdkVersion 29
-        targetSdkVersion 31
+        targetSdkVersion 33
         versionCode 68
         versionName "2.14"
     }
