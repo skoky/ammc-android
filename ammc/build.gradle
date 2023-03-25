@@ -11,8 +11,8 @@ android {
         applicationId "com.skoky"
         minSdkVersion 29
         targetSdkVersion 33
-        versionCode 68
-        versionName "2.14"
+        versionCode 69
+        versionName "2.2"
     }
     testOptions {
         unitTests.returnDefaultValues = true
