@@ -11,7 +11,7 @@ android {
         applicationId "com.skoky"
         minSdkVersion 29
         targetSdkVersion 33
-        versionCode 69
+        versionCode 70
         versionName "2.2"
     }
     testOptions {
@@ -40,7 +40,6 @@ android {
 
 dependencies {
 
-//    implementation 'eu.plib:plib_2.11:2.7.1'
     implementation 'com.j256.ormlite:ormlite-android:5.1'
 
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
