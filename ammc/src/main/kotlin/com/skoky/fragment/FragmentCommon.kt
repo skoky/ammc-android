@@ -88,6 +88,7 @@ open class FragmentCommon : Fragment() {
         return when {
             json.has("transponder") -> (json.get("transponder") as Int).toString()
             json.has("transponderCode") -> json.get("transponderCode") as String
+            json.has("transponder_code") -> json.get("transponder_code") as String
             json.has("driverId") -> json.get("driverId") as String
             else -> {
                 Log.w(TrainingModeFragment.TAG, "No racer identification in Passing $json")

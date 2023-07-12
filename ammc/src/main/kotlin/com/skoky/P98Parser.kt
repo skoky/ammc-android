@@ -1,5 +1,6 @@
 package com.skoky
 
+import android.util.Log
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
 
@@ -35,6 +36,8 @@ data class Error(val msg: String, val description: String)
 
 val gson = GsonBuilder().setPrettyPrinting().create()
 
+const val TAG = "P98Parser"
+
 object P98Parser {
 
     fun myGson() =
@@ -46,11 +49,12 @@ object P98Parser {
         // FIXME parse all messages, not only first!
         val msg = String(msgMaybeMore).split("\r\n").first().toByteArray()
 
+        Log.i(TAG,String(msg))
         return try {
-            when (msg[1].toInt().toChar()) {
+            when (msg[0].toInt().toChar()) {
                 '#' -> parserStatus(msg.copyOfRange(1, msg.size - 1), id)
                 '@' -> parsePassing(msg.copyOfRange(1, msg.size - 1), id)
-                else -> makeError("unknown 98 record type")
+                else -> makeError("unknown 98 record type ${String(msg)}")
             }
         } catch (e: Exception) {
             makeError("${e.message}")
@@ -82,7 +86,7 @@ object P98Parser {
     private fun parsePassing(msg: ByteArray, id: String): String {
 
         val fields = String(msg).split(DELIM)
-        if (fields.size != 9) return makeError("Passing does not have 9 fields")
+        if (fields.size != 9) return makeError("Passing does not have 9 fields , ${fields.size}")
 
         val isCrcOk = checkCrc(msg, fields[8])
         val type = if (fields[1] == VOSTOK_ID) VOSTOK_NAME else ""

@@ -169,7 +169,6 @@ class DecoderService : Service() {
         found?.let { connectDecoder2(it) }
     }
 
-
     fun connectDecoder2(decoder: Decoder, notifyError: Boolean = true) {
 
         if (decoder.connection == null || (decoder.connection != null && !decoder.connection!!.isConnected)) {
@@ -380,6 +379,8 @@ class DecoderService : Service() {
             json.getString("tran_code")
         else if (json.has("transponder"))
             json.getString("transponder")
+        else if (json.has("transponder_code"))
+            json.getString("transponder_code")
         else if (json.has("driver_id"))
             json.getString("driver_id")
         else null
@@ -404,10 +405,11 @@ class DecoderService : Service() {
                 return responses.get(0) as JSONObject // FIXME get all messages
             }
             JSONObject("{\"msg\":\"Error\",\"description\":\"No message\"}")
-        } else if (msg.size > 1 && msg[0] == 1.toByte()) {
+        } else if (msg.size > 1 && (msg[0] == '@'.code.toByte() || msg[0] == '#'.code.toByte())) {
             JSONObject(P98Parser.parse(msg, decoderIdVostok ?: "-"))
         } else {
             Log.w(TAG, "Invalid msg on TCP " + msg.toHexString())
+            Log.w(TAG, "Invalid msg on TCP $msg")
             CloudDB.badMessageReport(application as MyApp, "tcp_msg_error", msg.toHexString())
             JSONObject("{\"msg\":\"Error\",\"description\":\"Invalid message\"}")
         }
