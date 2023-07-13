@@ -298,7 +298,7 @@ class DecoderService : Service() {
                             buffer.copyOf(read),
                             vostokDecoderId(decoder.ipAddress, decoder.port)
                         )
-
+                        Log.d(TAG,"JSON: $json")
                         if (json.get("msg").toString().isNotEmpty()) sendBroadcastData(
                             decoder,
                             json
@@ -333,6 +333,10 @@ class DecoderService : Service() {
                             "LoopTrigger" -> {
                             }
                             "GPS" -> {
+                            }
+                            "ERROR" -> {
+                            }
+                            "Error" -> {
                             }
                             else -> {
                                 CloudDB.badMessageReport(

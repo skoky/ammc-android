@@ -63,7 +63,7 @@ object P98Parser {
 
     private fun parserStatus(msg: ByteArray, id: String): String {
         val fields = String(msg).split(DELIM)
-        if (fields.size != 5) return makeError(
+        if (fields.size < 5) return makeError(
             "Status does not have 5 fields - ${fields.size} / ${
                 String(
                     msg
@@ -73,7 +73,7 @@ object P98Parser {
         val isCrcOk = checkCrc(msg, fields[4])
         val type = if (fields[1] == VOSTOK_ID) VOSTOK_NAME else ""
         val status = Status(
-            msg = "Status",
+            msg = "STATUS",
             decoderType = type,
             decoderId = id,
             packetSequenceNum = fields[2].toInt(),
