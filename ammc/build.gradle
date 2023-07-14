@@ -11,7 +11,7 @@ android {
         applicationId "com.skoky"
         minSdkVersion 29
         targetSdkVersion 33
-        versionCode 71
+        versionCode 72
         versionName "2.2.1"
     }
     testOptions {

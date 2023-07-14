@@ -298,7 +298,7 @@ class DecoderService : Service() {
                             buffer.copyOf(read),
                             vostokDecoderId(decoder.ipAddress, decoder.port)
                         )
-                        Log.d(TAG,"JSON: $json")
+                        Log.d(TAG, "JSON: $json")
                         if (json.get("msg").toString().isNotEmpty()) sendBroadcastData(
                             decoder,
                             json
@@ -315,7 +315,12 @@ class DecoderService : Service() {
                             }
                             "STATUS" -> {
                                 if (json.has("decoder_type") && json.get("decoder_type") == VOSTOK_NAME) {
-                                    decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis(), decoderType = VOSTOK_NAME))
+                                    decoders.addOrUpdate(
+                                        decoder.copy(
+                                            lastSeen = System.currentTimeMillis(),
+                                            decoderType = VOSTOK_NAME
+                                        )
+                                    )
                                 } else {
                                     decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis()))
                                 }
@@ -399,12 +404,18 @@ class DecoderService : Service() {
         return "$ipAddress:$port"
     }
 
-    private fun processTcpMsg(msg: ByteArray, decoderIdVostok: String?): JSONObject {
+    private fun processTcpMsg(msg_imut: ByteArray, decoderIdVostok: String?): JSONObject {
         val parser = AmmcBridge()
-
+        var msg2 = msg_imut.toMutableList()
+        if (msg2[0] == 0x01.toByte()) {
+            val m = msg2.toMutableList()
+            m.removeAt(0)
+            msg2 = m.toMutableList()
+        }
+        val msg = msg2.toByteArray()
         return if (msg.size > 1 && msg[0] == 0x8e.toByte()) {
             val responses = JSONArray(parser.p3_to_json_local(msg.toHexString()))
-            Log.i(TAG,"response $responses")
+            Log.i(TAG, "response $responses")
             if (responses.length() > 0) {
                 return responses.get(0) as JSONObject // FIXME get all messages
             }
@@ -423,7 +434,7 @@ class DecoderService : Service() {
         Log.d(TAG, "Data received: ${msgB.size}")
         val parser = AmmcBridge()
         val msg = parser.p3_to_json_local(msgB.toHexString())
-        Log.i(TAG,"HEX String {msg}")
+        Log.i(TAG, "HEX String {msg}")
         val json = JSONObject(msg)
         Log.d(TAG, ">> $json")
 
