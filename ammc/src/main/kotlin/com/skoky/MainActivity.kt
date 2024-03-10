@@ -17,17 +17,21 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
-import android.widget.*
+import android.widget.Button
+import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.TextView
+import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.core.Preferences
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.internal.NavigationMenuItemView
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -49,14 +53,19 @@ import com.skoky.Const.startupDelayValueK
 import com.skoky.Const.timeToSpeech
 import com.skoky.Const.timeToSpeechPattern
 import com.skoky.Const.transponderSoundK
-import com.skoky.fragment.*
+import com.skoky.fragment.ConsoleModeFragment
+import com.skoky.fragment.ConsoleModeVostokFragment
+import com.skoky.fragment.DriversFragment
+import com.skoky.fragment.HelpFragment
+import com.skoky.fragment.OptionsFragment
+import com.skoky.fragment.RacingModeFragment
+import com.skoky.fragment.StartupFragment
+import com.skoky.fragment.TrainingModeFragment
 import com.skoky.services.Decoder
 import com.skoky.services.DecoderService
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.util.*
-
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -94,8 +103,8 @@ class MainActivity : AppCompatActivity() {
         app = application as MyApp
         prefs = DefaultPrefs(applicationContext)
 
-        val ammc_version = version()
-        Log.i(TAG, "AMMC lib version $ammc_version")
+        val ammcVersion = version()
+        Log.i(TAG, "AMMC lib version $ammcVersion")
 
         setContentView(R.layout.main)
 
@@ -109,7 +118,7 @@ class MainActivity : AppCompatActivity() {
         bindService(intent, decoderServiceConnection, Context.BIND_AUTO_CREATE)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        GlobalScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch(Dispatchers.IO) {
             app.firebaseAnalytics = FirebaseAnalytics.getInstance(app.applicationContext)
 
             app.firestore = FirebaseFirestore.getInstance()
@@ -154,7 +163,7 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        GlobalScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch(Dispatchers.IO) {
             tts = TextToSpeech(app, TextToSpeech.OnInitListener { status ->
                 if (status != TextToSpeech.ERROR) {
                     try {  //if there is no error then set language
@@ -185,7 +194,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
+        super.onBackPressed()
         if (currentFragment() is StartupFragment) {
             exitWithConfirm()
             app.decoderService.disconnectAllDecoders()
@@ -273,12 +284,8 @@ class MainActivity : AppCompatActivity() {
         val decodersCopy = app.decoderService.getDecoders()
 
         val et = dialog.findViewById<EditText>(R.id.decoder_address_edittext)
-//        val dataStore: DataStore<Preferences> = this.createDataStore(name = "settings")
 
-
-        val sharedPref = prefs
-
-        et.setText(sharedPref.getString(LAST_IP, ""))
+        et.setText(prefs.getString(LAST_IP, ""))
 
         val kd = dialog.findViewById<RadioGroup>(R.id.known_decoders)
 
@@ -593,9 +600,7 @@ class MainActivity : AppCompatActivity() {
         prefs.getBoolean(timeToSpeech, true)
 
     fun getTimeToSpeechPattern() =
-        prefs
-            .getString(timeToSpeechPattern, defaultTimeToSpeechPattern)
-            .orEmpty()
+        prefs.getString(timeToSpeechPattern, defaultTimeToSpeechPattern)
 
     private val decoderServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(

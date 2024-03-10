@@ -81,7 +81,7 @@ class TrainingModeFragment : FragmentCommon() {
             }
             context?.let {
                 it.registerReceiver(receiver, IntentFilter(DECODER_PASSING),
-                    Context.RECEIVER_NOT_EXPORTED)
+                    Context.RECEIVER_EXPORTED)
             }
 
         }

@@ -55,7 +55,7 @@ class ConsoleModeFragment : FragmentCommon() {
             }
         }
         context?.let { it.registerReceiver(dataHandler, IntentFilter(DECODER_DATA),
-            Context.RECEIVER_NOT_EXPORTED) }
+            Context.RECEIVER_EXPORTED) }
 
         return view
     }

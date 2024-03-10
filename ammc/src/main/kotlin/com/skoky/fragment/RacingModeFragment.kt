@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.skoky.*
@@ -83,7 +84,7 @@ class RacingModeFragment : FragmentCommon() {
                 if (raceRunning) {
                     (adapter as RacingModeRecyclerViewAdapter).addRecord(transponder, time)
                     (adapter as RacingModeRecyclerViewAdapter).notifyDataSetChanged()
-                    GlobalScope.launch(Dispatchers.IO) {
+                    lifecycleScope.launch(Dispatchers.IO) {
                         activity?.let {
                             val myApp = it.application as MyApp
                             (adapter as RacingModeRecyclerViewAdapter).updateDriverName(
@@ -101,7 +102,7 @@ class RacingModeFragment : FragmentCommon() {
             }
             context?.let {
                 it.registerReceiver(receiver, IntentFilter(DECODER_PASSING),
-                    Context.RECEIVER_NOT_EXPORTED)
+                    Context.RECEIVER_EXPORTED)
             }
 
         }

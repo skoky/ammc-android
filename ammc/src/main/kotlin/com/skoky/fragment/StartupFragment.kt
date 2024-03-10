@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.fragment.app.FragmentActivity
 import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
@@ -43,19 +44,18 @@ class StartupFragment : FragmentCommon() {
         connectReceiverDisconnect = ConnectionReceiver(this@StartupFragment::visualStateHandlerDisconnect)
         context?.let {
             it.registerReceiver(connectReceiverStateUpdateOrConnect, IntentFilter(DECODERS_UPDATE),
-                Context.RECEIVER_NOT_EXPORTED)
+                Context.RECEIVER_EXPORTED)
             it.registerReceiver(connectReceiverStateUpdateOrConnect, IntentFilter(DECODER_CONNECT),
-                Context.RECEIVER_NOT_EXPORTED)
+                Context.RECEIVER_EXPORTED)
             it.registerReceiver(connectReceiverDisconnect, IntentFilter(DECODER_DISCONNECTED),
-                Context.RECEIVER_NOT_EXPORTED)
-
+                Context.RECEIVER_EXPORTED)
         }
 
         activity?.let {act ->
             val app = act.application as MyApp
 
             Log.i(TAG, app.decoderService.getDecoders().toString())
-            if (app.decoderService.getDecoders().isNullOrEmpty()) {
+            if (app.decoderService.getDecoders().isEmpty()) {
                 val connectedDecoder = app.decoderService.getConnectedDecoder()
                 if (connectedDecoder != null)
                     visualStateHandler2(connectedDecoder)

@@ -55,9 +55,9 @@ open class FragmentCommon : Fragment() {
         }
         context?.let {
             it.registerReceiver(disconnectReceiver, IntentFilter(DecoderService.DECODER_DISCONNECTED),
-                Context.RECEIVER_NOT_EXPORTED)
+                Context.RECEIVER_EXPORTED)
             it.registerReceiver(connectReceiver, IntentFilter(DecoderService.DECODER_CONNECT),
-                Context.RECEIVER_NOT_EXPORTED)
+                Context.RECEIVER_EXPORTED)
 
         }
     }
