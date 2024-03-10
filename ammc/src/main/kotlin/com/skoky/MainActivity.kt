@@ -283,13 +283,13 @@ class MainActivity : AppCompatActivity() {
 
         val decodersCopy = app.decoderService.getDecoders()
 
-        val et = dialog.findViewById<EditText>(R.id.decoder_address_edittext)
+        val decoderAddressEt = dialog.findViewById<EditText>(R.id.decoder_address_edittext)
 
-        et.setText(prefs.getString(LAST_IP, ""))
+        decoderAddressEt.setText(prefs.getString(LAST_IP, ""))
 
         val kd = dialog.findViewById<RadioGroup>(R.id.known_decoders)
 
-        et.addTextChangedListener(SimpleTextWatcher(kd))
+        decoderAddressEt.addTextChangedListener(SimpleTextWatcher(kd))
 
         decodersCopy.forEach { d2 ->
             if (d2.ipAddress != null) {
@@ -299,7 +299,7 @@ class MainActivity : AppCompatActivity() {
                 b.id = d2.hashCode()
                 b.setOnCheckedChangeListener { view, checked ->
                     Log.d(TAG, "Checked $view $checked")
-                    et.text = null
+                    decoderAddressEt.text = null
                 }
                 kd.addView(b)
             }
@@ -308,16 +308,18 @@ class MainActivity : AppCompatActivity() {
         val d = dialog.findViewById<Button>(R.id.decoder_select_ok_button)
         d.setOnClickListener {
             val checkDecoderHashCode = kd.checkedRadioButtonId
-            val foundDecoder =
+            val foundDecoderOpt =
                 decodersCopy.find { decoder -> decoder.hashCode() == checkDecoderHashCode }
-            Log.i(TAG, "decoder $foundDecoder")
+            Log.i(TAG, "decoder $foundDecoderOpt")
 
-            if (et.text.isNotEmpty()) {
-                val dd = et.text.toString().trim()
-                if (dd.isNotBlank()) prefs.putString(LAST_IP, dd)
-                app.decoderService.connectDecoder(dd)
+            if (decoderAddressEt.text.isNotEmpty()) {
+                val decoderFromForm = decoderAddressEt.text.toString().trim()
+                if (decoderFromForm.isNotBlank()) {
+                    prefs.putString(LAST_IP, decoderFromForm)
+                    app.decoderService.connectDecoder(decoderFromForm)
+                }
             } else
-                foundDecoder?.let { d3 -> app.decoderService.connectDecoder2(d3) }
+                foundDecoderOpt?.let { foundDecoder -> app.decoderService.connectDecoderParsed(foundDecoder) }
 
             dialog.cancel()
         }

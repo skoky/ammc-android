@@ -6,7 +6,6 @@ import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.Binder
 import android.os.IBinder
-import android.preference.PreferenceManager
 import android.util.Log
 import android.widget.Toast
 import com.skoky.*
@@ -93,9 +92,9 @@ class DecoderService : Service() {
 
         decoderAutoCleanup()
 
-// FIXME       CoroutineScope(Dispatchers.IO).launch {
-//            NetworkBroadcastHandler.receiveBroadcastData { processUdpMsg(it) }
-//        }
+        CoroutineScope(Dispatchers.IO).launch {
+            NetworkBroadcastHandler.receiveBroadcastData { processUdpMsg(it) }
+        }
 
         CoroutineScope(Dispatchers.IO).launch {
             while (true) {
@@ -168,12 +167,12 @@ class DecoderService : Service() {
     fun connectDecoderByUUID(decoderUUIDString: String) {
         val uuid = UUID.fromString(decoderUUIDString)
         val found = decoders.find { it.uuid == uuid }
-        found?.let { connectDecoder2(it) }
+        found?.let { connectDecoderParsed(it) }
     }
 
-    fun connectDecoder2(decoder: Decoder, notifyError: Boolean = true) {
+    fun connectDecoderParsed(decoder: Decoder, notifyError: Boolean = true) {
 
-        if (decoder.connection == null || (decoder.connection != null && !decoder.connection!!.isConnected)) {
+        if (decoder.connection == null || (!decoder.connection!!.isConnected)) {
             CoroutineScope(Dispatchers.IO).launch {
                 val socket = Socket()
                 try {
@@ -212,11 +211,16 @@ class DecoderService : Service() {
                         socket.getOutputStream().write(versionRequest.decodeHex())
                     }
                 } catch (e: Exception) {
+
                     socket.close()
                     if (notifyError) {
                         Log.e(TAG, "Error connecting decoder", e)
                         withContext(Dispatchers.Main) {
-                            Toast.makeText(applicationContext,"Connection not possible to ${decoder.ipAddress}:${decoder.port}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                applicationContext,
+                                "Connection not possible to ${decoder.ipAddress}:${decoder.port}",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 }
@@ -305,67 +309,7 @@ class DecoderService : Service() {
                             decoder,
                             json
                         )
-                        when (json.get("msg").toString()) {
-                            "PASSING" -> {
-                                appendDriver(json)
-                                sendBroadcastPassing(json.toString())
-                            }
-
-                            "VERSION" -> {
-                                val decoderType = json.get("decoder_type") as? String
-                                decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
-                                sendBroadcastData(decoder, json)
-                            }
-
-                            "STATUS" -> {
-                                if (json.has("decoder_type") && json.get("decoder_type") == VOSTOK_NAME) {
-                                    decoders.addOrUpdate(
-                                        decoder.copy(
-                                            lastSeen = System.currentTimeMillis(),
-                                            decoderType = VOSTOK_NAME
-                                        )
-                                    )
-                                } else {
-                                    decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis()))
-                                }
-                            }
-
-                            "NETWORKSETTINGS" -> {
-                            }
-
-                            "AuxiliarySettings" -> {
-                            }
-
-                            "ServerSettings" -> {
-                            }
-
-                            "Timeline" -> {
-                            }
-
-                            "Signals" -> {
-                            }
-
-                            "LoopTrigger" -> {
-                            }
-
-                            "GPS" -> {
-                            }
-
-                            "ERROR" -> {
-                            }
-
-                            "Error" -> {
-                            }
-
-                            else -> {
-                                CloudDB.badMessageReport(
-                                    application as MyApp,
-                                    "tcp_unknown_data",
-                                    buffer.toHexString()
-                                )
-                                Log.w(TAG, "received unknown data $json")
-                            }
-                        }
+                        handleMessage(json, decoder, buffer)
 
                         if (json.has("decoder_type")) {
                             json.getString("decoder_type")
@@ -396,6 +340,71 @@ class DecoderService : Service() {
         }
     }
 
+    private fun handleMessage(json: JSONObject, decoder: Decoder, buffer: ByteArray) {
+        when (json.get("msg").toString()) {
+            "PASSING" -> {
+                appendDriver(json)
+                sendBroadcastPassing(json.toString())
+            }
+
+            "VERSION" -> {
+                val decoderType = json.get("decoder_type") as? String
+                decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
+                sendBroadcastData(decoder, json)
+            }
+
+            "STATUS" -> {
+                if (json.has("decoder_type") && json.get("decoder_type") == VOSTOK_NAME) {
+                    decoders.addOrUpdate(
+                        decoder.copy(
+                            lastSeen = System.currentTimeMillis(),
+                            decoderType = VOSTOK_NAME
+                        )
+                    )
+                } else {
+                    decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis()))
+                }
+            }
+
+            "NETWORKSETTINGS" -> {
+            }
+
+            "AuxiliarySettings" -> {
+            }
+
+            "ServerSettings" -> {
+            }
+
+            "Timeline" -> {
+            }
+
+            "Signals" -> {
+            }
+
+            "LoopTrigger" -> {
+            }
+
+            "GPS" -> {
+            }
+
+            "ERROR" -> {
+            }
+
+            "Error" -> {
+            }
+
+            else -> {
+                CloudDB.badMessageReport(
+                    application as MyApp,
+                    "tcp_unknown_data",
+                    buffer.toHexString()
+                )
+                Log.w(TAG, "received unknown data $json")
+            }
+        }
+
+    }
+
     private fun appendDriver(json: JSONObject) {
 
         val transponder = if (json.has("tran_code"))
@@ -418,9 +427,9 @@ class DecoderService : Service() {
         return "$ipAddress:$port"
     }
 
-    private fun processTcpMsg(msg_imut: ByteArray, decoderIdVostok: String?): JSONObject {
+    private fun processTcpMsg(msgImut: ByteArray, decoderIdVostok: String?): JSONObject {
         val parser = AmmcBridge()
-        var msg2 = msg_imut.toMutableList()
+        var msg2 = msgImut.toMutableList()
         if (msg2[0] == 0x01.toByte()) {
             val m = msg2.toMutableList()
             m.removeAt(0)
@@ -619,7 +628,7 @@ class DecoderService : Service() {
         var addressIp: String = ""
         var port: Int? = null
 
-        val foundByIp = if (address.contains(":") && address.split(":").size == 2) {
+        val foundByIp: Decoder? = if (address.contains(":") && address.split(":").size == 2) {
             val fields = address.split(":")
             addressIp = fields[0]
             port = fields[1].toInt()
@@ -630,13 +639,16 @@ class DecoderService : Service() {
         }
 
         if (foundByIp != null) {
-            connectDecoder2(foundByIp)
+            connectDecoderParsed(foundByIp)
         } else {  // create new decoder
             //toast("Connecting to $addressIp:$port")
             if (port != null) {
-                connectDecoder2(Decoder.newDecoder(ipAddress = addressIp, port = port), notifyError)
+                connectDecoderParsed(
+                    Decoder.newDecoder(ipAddress = addressIp, port = port),
+                    notifyError
+                )
             } else {
-                connectDecoder2(Decoder.newDecoder(ipAddress = address), notifyError)
+                connectDecoderParsed(Decoder.newDecoder(ipAddress = address), notifyError)
             }
         }
         sendBroadcastDecodersUpdate()
