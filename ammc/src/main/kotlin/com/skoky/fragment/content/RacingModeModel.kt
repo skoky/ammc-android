@@ -1,9 +1,15 @@
 package com.skoky.fragment.content
 
 import com.skoky.fragment.Time
-import org.jetbrains.anko.collections.forEachWithIndex
 
-data class Racer(var pos: Int, val transponder: String, var driverName: String?, var laps: Int, var lastTimeMs: Long, var lastLapTimeMs: Int)
+data class Racer(
+    var pos: Int,
+    val transponder: String,
+    var driverName: String?,
+    var laps: Int,
+    var lastTimeMs: Long,
+    var lastLapTimeMs: Int
+)
 
 class RacingModeModel {
 
@@ -15,19 +21,20 @@ class RacingModeModel {
             val i = m.indexOf(found)
             found.laps = found.laps + 1
             // TODO add red or green based on better or worse time
-            found.lastLapTimeMs = (time.us/1000 - found.lastTimeMs).toInt()
-            found.lastTimeMs = time.us/1000
+            found.lastLapTimeMs = (time.us / 1000 - found.lastTimeMs).toInt()
+            found.lastTimeMs = time.us / 1000
             m[i] = found
 
         } else {
-            m.add(Racer(values.size + 1, transponder, null, 0, time.us/1000, 0))
+            m.add(Racer(values.size + 1, transponder, null, 0, time.us / 1000, 0))
         }
 
         // TODO calculate diff from first
 
-        val sorted = m.sortedWith(compareByDescending<Racer> { it.laps }.thenBy { it.lastLapTimeMs })
+        val sorted =
+            m.sortedWith(compareByDescending<Racer> { it.laps }.thenBy { it.lastLapTimeMs })
 
-        sorted.forEachWithIndex { i, r ->
+        sorted.forEachIndexed { i, r ->
             r.pos = i + 1
         }
 

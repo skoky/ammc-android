@@ -18,10 +18,14 @@ import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import android.widget.*
+import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import com.google.android.material.internal.NavigationMenuItemView
@@ -48,9 +52,9 @@ import com.skoky.Const.transponderSoundK
 import com.skoky.fragment.*
 import com.skoky.services.Decoder
 import com.skoky.services.DecoderService
-import org.jetbrains.anko.defaultSharedPreferences
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.toast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.*
 
 
@@ -58,6 +62,8 @@ class MainActivity : AppCompatActivity() {
 
 
     private lateinit var app: MyApp
+
+    private lateinit var prefs: DefaultPrefs
 
     //    private var mAdView: AdView? = null
     private var mDecoderServiceBound = false
@@ -86,9 +92,10 @@ class MainActivity : AppCompatActivity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         app = application as MyApp
+        prefs = DefaultPrefs(applicationContext)
 
         val ammc_version = version()
-        Log.i(TAG,"AMMC lib version $ammc_version")
+        Log.i(TAG, "AMMC lib version $ammc_version")
 
         setContentView(R.layout.main)
 
@@ -102,7 +109,7 @@ class MainActivity : AppCompatActivity() {
         bindService(intent, decoderServiceConnection, Context.BIND_AUTO_CREATE)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        doAsync {
+        GlobalScope.launch(Dispatchers.IO) {
             app.firebaseAnalytics = FirebaseAnalytics.getInstance(app.applicationContext)
 
             app.firestore = FirebaseFirestore.getInstance()
@@ -135,6 +142,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_console -> menuItem.isChecked = switchFragment { openConsoleMode(null) }
                 R.id.nav_drivers_editor -> menuItem.isChecked =
                     switchFragment { openDriversEditor(null) }
+
                 R.id.nav_options -> menuItem.isChecked = switchFragment { openOptions(null) }
                 R.id.nav_connection_help -> menuItem.isChecked = switchFragment { openHelp(null) }
                 else -> {
@@ -146,7 +154,7 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        doAsync {
+        GlobalScope.launch(Dispatchers.IO) {
             tts = TextToSpeech(app, TextToSpeech.OnInitListener { status ->
                 if (status != TextToSpeech.ERROR) {
                     try {  //if there is no error then set language
@@ -265,7 +273,12 @@ class MainActivity : AppCompatActivity() {
         val decodersCopy = app.decoderService.getDecoders()
 
         val et = dialog.findViewById<EditText>(R.id.decoder_address_edittext)
-        et.setText(defaultSharedPreferences.getString(LAST_IP, ""))
+//        val dataStore: DataStore<Preferences> = this.createDataStore(name = "settings")
+
+
+        val sharedPref = prefs
+
+        et.setText(sharedPref.getString(LAST_IP, ""))
 
         val kd = dialog.findViewById<RadioGroup>(R.id.known_decoders)
 
@@ -294,7 +307,7 @@ class MainActivity : AppCompatActivity() {
 
             if (et.text.isNotEmpty()) {
                 val dd = et.text.toString().trim()
-                if (!dd.isBlank()) defaultSharedPreferences.edit().putString(LAST_IP, dd).apply()
+                if (dd.isNotBlank()) prefs.putString(LAST_IP, dd)
                 app.decoderService.connectDecoder(dd)
             } else
                 foundDecoder?.let { d3 -> app.decoderService.connectDecoder2(d3) }
@@ -358,23 +371,23 @@ class MainActivity : AppCompatActivity() {
     fun optionsDisableBadMsgReporting(view: View) {
         val c = view as CheckBox
         val reportBadMsg = c.isChecked
-        defaultSharedPreferences.edit().putBoolean(badMsgK, reportBadMsg).apply()
+        prefs.putBoolean(badMsgK, reportBadMsg)
         app.badMsgReport = reportBadMsg
     }
 
     fun optionsDriversSync(view: View) {
         val c = view as CheckBox
-        defaultSharedPreferences.edit().putBoolean(driversyncK, c.isChecked).apply()
+        prefs.putBoolean(driversyncK, c.isChecked)
     }
 
     fun optionsTransponderSound(view: View) {
         val c = view as CheckBox
-        defaultSharedPreferences.edit().putBoolean(transponderSoundK, c.isChecked).apply()
+        prefs.putBoolean(transponderSoundK, c.isChecked)
     }
 
     fun optionsTimeToSpeech(view: View) {
         val c = view as CheckBox
-        defaultSharedPreferences.edit().putBoolean(timeToSpeech, c.isChecked).apply()
+        prefs.putBoolean(timeToSpeech, c.isChecked)
         showHideTimeToSpeechPattern(c.isChecked)
     }
 
@@ -387,7 +400,7 @@ class MainActivity : AppCompatActivity() {
 
     fun optionsStartStopSound(view: View) {
         val c = view as CheckBox
-        defaultSharedPreferences.edit().putBoolean(startStopSoundK, c.isChecked).apply()
+        prefs.putBoolean(startStopSoundK, c.isChecked)
     }
 
     fun optionsRaceDuration(view: View) {
@@ -411,25 +424,28 @@ class MainActivity : AppCompatActivity() {
         saveIntValue(std, startupDelayValueK)
     }
 
-    private fun saveStartupDelay(checkbox: CheckBox) =
-        defaultSharedPreferences.edit().putBoolean(startupDelayK, checkbox.isChecked).apply()
+    private fun saveStartupDelay(checkbox: CheckBox) {
+        prefs.putBoolean(startupDelayK, checkbox.isChecked)
+    }
 
-    private fun saveRaceDuration(checkbox: CheckBox) =
-        defaultSharedPreferences.edit().putBoolean(raceDurationK, checkbox.isChecked).apply()
+    private fun saveRaceDuration(checkbox: CheckBox) {
+        prefs.putBoolean(raceDurationK, checkbox.isChecked)
+    }
 
-    private fun saveIncludeMinLapTime(checkbox: CheckBox) =
-        defaultSharedPreferences.edit().putBoolean(includeMinLapTimeK, checkbox.isChecked).apply()
+    private fun saveIncludeMinLapTime(checkbox: CheckBox) {
+        prefs.putBoolean(includeMinLapTimeK, checkbox.isChecked)
+    }
 
     fun saveIntValue(delayText: EditText, key: String) = try {
         val delay = (Integer.valueOf(delayText.text.toString()))
-        defaultSharedPreferences.edit().putInt(key, delay).apply()
+        prefs.putInt(key, delay)
     } catch (e: Exception) {
         Log.e(TAG, "Value not saved! $key", e)
     }
 
     fun saveStringValue(text: EditText, key: String) = try {
         val t = text.text.toString()
-        defaultSharedPreferences.edit().putString(key, t).apply()
+        prefs.putString(key, t)
     } catch (e: Exception) {
         Log.e(TAG, "Value not saved! $key", e)
     }
@@ -543,19 +559,42 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun getBadMsgFlag() = defaultSharedPreferences.getBoolean(badMsgK, false)
-    fun getDriverSyncFlag() = defaultSharedPreferences.getBoolean(driversyncK, true)
-    fun getStartupDelayFlag() = defaultSharedPreferences.getBoolean(startupDelayK, false)
-    fun getStartupDelayValueFlag() = defaultSharedPreferences.getInt(startupDelayValueK, 3)
-    fun getRaceDurationFlag() = defaultSharedPreferences.getBoolean(raceDurationK, false)
-    fun getRaceDurationValueFlag() = defaultSharedPreferences.getInt(raceDurationValueK, 5)
-    fun getIncludeMinLapTimeFlag() = defaultSharedPreferences.getBoolean(includeMinLapTimeK, false)
-    fun getMinLapTimeFlag() = defaultSharedPreferences.getInt(minLapTimeK, 20)
-    fun getTransponderSoundFlag() = defaultSharedPreferences.getBoolean(transponderSoundK, true)
-    fun getStartStopSoundFlag() = defaultSharedPreferences.getBoolean(startStopSoundK, true)
-    fun getTimeToSpeechFlag() = defaultSharedPreferences.getBoolean(timeToSpeech, true)
+    fun getBadMsgFlag() =
+        prefs.getBoolean(badMsgK, false)
+
+    fun getDriverSyncFlag() =
+        prefs.getBoolean(driversyncK, true)
+
+    fun getStartupDelayFlag() =
+        prefs.getBoolean(startupDelayK, false)
+
+    fun getStartupDelayValueFlag() =
+        prefs.getInt(startupDelayValueK, 3)
+
+    fun getRaceDurationFlag() =
+        prefs.getBoolean(raceDurationK, false)
+
+    fun getRaceDurationValueFlag() =
+        prefs.getInt(raceDurationValueK, 5)
+
+    fun getIncludeMinLapTimeFlag() =
+        prefs.getBoolean(includeMinLapTimeK, false)
+
+    fun getMinLapTimeFlag() =
+        prefs.getInt(minLapTimeK, 20)
+
+    fun getTransponderSoundFlag() =
+        prefs.getBoolean(transponderSoundK, true)
+
+    fun getStartStopSoundFlag() =
+        prefs.getBoolean(startStopSoundK, true)
+
+    fun getTimeToSpeechFlag() =
+        prefs.getBoolean(timeToSpeech, true)
+
     fun getTimeToSpeechPattern() =
-        defaultSharedPreferences.getString(timeToSpeechPattern, defaultTimeToSpeechPattern)
+        prefs
+            .getString(timeToSpeechPattern, defaultTimeToSpeechPattern)
             .orEmpty()
 
     private val decoderServiceConnection = object : ServiceConnection {
@@ -575,7 +614,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
-            toast("Service disconnected? This is unexpected stop. Restart the app")
+            Toast.makeText(
+                applicationContext,
+                "Service disconnected? This is unexpected stop. Restart the app",
+                LENGTH_LONG
+            ).show()
             finish()
         }
     }
@@ -590,6 +633,7 @@ class MainActivity : AppCompatActivity() {
                     openStartupFragment()
                 true
             }
+
             android.R.id.home -> {
                 val dl = findViewById<DrawerLayout>(R.id.drawer_layout)
                 val nl = dl.findViewById<NavigationMenuItemView>(R.id.nav_version)
@@ -597,6 +641,7 @@ class MainActivity : AppCompatActivity() {
                 dl.openDrawer(GravityCompat.START)
                 true
             }
+
             else -> super.onOptionsItemSelected(item)
         }
     }

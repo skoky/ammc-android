@@ -14,10 +14,10 @@ import android.view.View
 import android.view.View.GONE
 import android.view.ViewGroup
 import android.widget.*
+import androidx.core.view.children
 import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
-import org.jetbrains.anko.childrenSequence
 
 data class DriverPair(val t: String, val d: String)
 
@@ -46,7 +46,7 @@ class DriversFragment : FragmentCommon() {
             }
 
             view.findViewById<ImageView>(R.id.addDriverImage).setOnClickListener { addNewDriverHandler(it) }
-            val ll = (view as ScrollView).childrenSequence().first() as LinearLayout
+            val ll = (view as ScrollView).children.first() as LinearLayout
             activity?.let { act2 ->
                 val app = act2.application as MyApp
                 val transponders = app.recentTransponders.map { DriverPair(it, "") }.toMutableList()
@@ -64,7 +64,7 @@ class DriversFragment : FragmentCommon() {
         val enabled = (activity as MainActivity).getDriverSyncFlag()
         if (!enabled) return
 
-        val ll = (view as ScrollView).childrenSequence().first() as LinearLayout
+        val ll = (view as ScrollView).children.first() as LinearLayout
 
         activity?.let { act ->
             val app = act.application as MyApp

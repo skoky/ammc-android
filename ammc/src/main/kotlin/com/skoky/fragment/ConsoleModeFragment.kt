@@ -1,6 +1,7 @@
 package com.skoky.fragment
 
 import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
@@ -11,11 +12,11 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import androidx.core.view.children
 import com.skoky.MainActivity
 import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.services.DecoderService.Companion.DECODER_DATA
-import org.jetbrains.anko.childrenSequence
 import org.json.JSONObject
 
 
@@ -29,7 +30,7 @@ class ConsoleModeFragment : FragmentCommon() {
 
         registerConnectionHandlers()
 
-        val ll = (view as ScrollView).childrenSequence().first() as LinearLayout
+        val ll = (view as ScrollView).children.first() as LinearLayout
         dataHandler = DataReceiver {
             if (!updating) {
                 val json = JSONObject(it)
@@ -39,7 +40,7 @@ class ConsoleModeFragment : FragmentCommon() {
                     json.keys().forEach { key ->
                         if (shouldShow(json, key)) {
                             val newTag = json.getString("msg").replace("-text", "") + "." + key
-                            val found = ll.childrenSequence().find { it.tag == newTag }
+                            val found = ll.children.find { it.tag == newTag }
 
                             val newView: TextView
                             if (found == null) {
@@ -53,7 +54,8 @@ class ConsoleModeFragment : FragmentCommon() {
                 }
             }
         }
-        context?.let { it.registerReceiver(dataHandler, IntentFilter(DECODER_DATA)) }
+        context?.let { it.registerReceiver(dataHandler, IntentFilter(DECODER_DATA),
+            Context.RECEIVER_NOT_EXPORTED) }
 
         return view
     }
@@ -90,8 +92,8 @@ class ConsoleModeFragment : FragmentCommon() {
     private var updating = false
     private fun doRefresh() {
         updating = true
-        val ll = (view as ScrollView).childrenSequence().first() as LinearLayout
-        ll.childrenSequence().iterator().withIndex().forEach { i ->
+        val ll = (view as ScrollView).children.first() as LinearLayout
+        ll.children.iterator().withIndex().forEach { i ->
             if (i.index > 0) (i.value as? TextView)?.text = ""
         }
         updating = false

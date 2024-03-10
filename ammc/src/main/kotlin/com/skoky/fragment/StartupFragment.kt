@@ -42,9 +42,12 @@ class StartupFragment : FragmentCommon() {
         connectReceiverStateUpdateOrConnect = ConnectionReceiver(this@StartupFragment::visualStateHandlerState)
         connectReceiverDisconnect = ConnectionReceiver(this@StartupFragment::visualStateHandlerDisconnect)
         context?.let {
-            it.registerReceiver(connectReceiverStateUpdateOrConnect, IntentFilter(DECODERS_UPDATE))
-            it.registerReceiver(connectReceiverStateUpdateOrConnect, IntentFilter(DECODER_CONNECT))
-            it.registerReceiver(connectReceiverDisconnect, IntentFilter(DECODER_DISCONNECTED))
+            it.registerReceiver(connectReceiverStateUpdateOrConnect, IntentFilter(DECODERS_UPDATE),
+                Context.RECEIVER_NOT_EXPORTED)
+            it.registerReceiver(connectReceiverStateUpdateOrConnect, IntentFilter(DECODER_CONNECT),
+                Context.RECEIVER_NOT_EXPORTED)
+            it.registerReceiver(connectReceiverDisconnect, IntentFilter(DECODER_DISCONNECTED),
+                Context.RECEIVER_NOT_EXPORTED)
 
         }
 

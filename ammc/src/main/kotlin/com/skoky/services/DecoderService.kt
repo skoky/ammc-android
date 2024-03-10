@@ -6,15 +6,17 @@ import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.Binder
 import android.os.IBinder
+import android.preference.PreferenceManager
 import android.util.Log
+import android.widget.Toast
 import com.skoky.*
 import com.skoky.Tools.P3_DEF_PORT
 import com.skoky.Tools.decodeHex
 import com.skoky.Tools.toHexString
-import org.jetbrains.anko.defaultSharedPreferences
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.toast
-import org.jetbrains.anko.uiThread
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.lang.Thread.sleep
@@ -91,11 +93,11 @@ class DecoderService : Service() {
 
         decoderAutoCleanup()
 
-        doAsync {
-            NetworkBroadcastHandler.receiveBroadcastData { processUdpMsg(it) }
-        }
+// FIXME       CoroutineScope(Dispatchers.IO).launch {
+//            NetworkBroadcastHandler.receiveBroadcastData { processUdpMsg(it) }
+//        }
 
-        doAsync {
+        CoroutineScope(Dispatchers.IO).launch {
             while (true) {
 
                 val connectedDecoder = getConnectedDecoder()
@@ -172,7 +174,7 @@ class DecoderService : Service() {
     fun connectDecoder2(decoder: Decoder, notifyError: Boolean = true) {
 
         if (decoder.connection == null || (decoder.connection != null && !decoder.connection!!.isConnected)) {
-            doAsync {
+            CoroutineScope(Dispatchers.IO).launch {
                 val socket = Socket()
                 try {
                     socket.connect(InetSocketAddress(decoder.ipAddress, decoder.port ?: 5403), 5000)
@@ -198,7 +200,7 @@ class DecoderService : Service() {
                     Log.i(TAG, "Decoder $decoder connected")
                     sendBroadcastConnect(decoder)
 
-                    doAsync {
+                    CoroutineScope(Dispatchers.IO).launch {
                         listenOnSocketConnection(socket, decoder)
                     }
 
@@ -213,8 +215,8 @@ class DecoderService : Service() {
                     socket.close()
                     if (notifyError) {
                         Log.e(TAG, "Error connecting decoder", e)
-                        uiThread {
-                            toast("Connection not possible to ${decoder.ipAddress}:${decoder.port}")
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(applicationContext,"Connection not possible to ${decoder.ipAddress}:${decoder.port}", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -261,7 +263,7 @@ class DecoderService : Service() {
     fun exploreDecoder(uuid: UUID) {
         val socket = decoders.find { it.uuid == uuid }?.connection
 
-        doAsync {
+        CoroutineScope(Dispatchers.IO).launch {
             socket?.let { s ->
                 if (s.isConnected) {
 
@@ -308,11 +310,13 @@ class DecoderService : Service() {
                                 appendDriver(json)
                                 sendBroadcastPassing(json.toString())
                             }
+
                             "VERSION" -> {
                                 val decoderType = json.get("decoder_type") as? String
                                 decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
                                 sendBroadcastData(decoder, json)
                             }
+
                             "STATUS" -> {
                                 if (json.has("decoder_type") && json.get("decoder_type") == VOSTOK_NAME) {
                                     decoders.addOrUpdate(
@@ -325,24 +329,34 @@ class DecoderService : Service() {
                                     decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis()))
                                 }
                             }
+
                             "NETWORKSETTINGS" -> {
                             }
+
                             "AuxiliarySettings" -> {
                             }
+
                             "ServerSettings" -> {
                             }
+
                             "Timeline" -> {
                             }
+
                             "Signals" -> {
                             }
+
                             "LoopTrigger" -> {
                             }
+
                             "GPS" -> {
                             }
+
                             "ERROR" -> {
                             }
+
                             "Error" -> {
                             }
+
                             else -> {
                                 CloudDB.badMessageReport(
                                     application as MyApp,
@@ -467,18 +481,21 @@ class DecoderService : Service() {
                     sendBroadcastData(d, json)
                     decoders.addOrUpdate(decoder)
                 }
+
                 "NETWORKSETTINGS" ->
                     if (json.has("activeIPAddress")) {  // FIXME naming?
                         val ipAddress = json.get("activeIPAddress") as? String
                         decoders.addOrUpdate(decoder.copy(ipAddress = ipAddress))
                         sendBroadcastData(d, json)
                     }
+
                 "VERSION" ->
                     if (json.has("decoder_type")) {
                         val decoderType = json.get("decoder_type") as? String
                         decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
                         sendBroadcastData(d, json)
                     }
+
                 "ERROR" ->
                     CloudDB.badMessageReport(application as MyApp, "tcp_error", msgB.toHexString())
 
@@ -546,7 +563,9 @@ class DecoderService : Service() {
         applicationContext.sendBroadcast(intent)
         Log.d(TAG, "Broadcast passing sent $intent")
 
-        if (defaultSharedPreferences.getBoolean(Const.transponderSoundK, true)) {
+
+
+        if (DefaultPrefs(applicationContext).getBoolean(Const.transponderSoundK, true)) {
             ToneGenerator(
                 AudioManager.STREAM_MUSIC,
                 100

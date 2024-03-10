@@ -17,8 +17,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.skoky.*
 import com.skoky.fragment.content.TrainingModeModel
 import com.skoky.services.DecoderService.Companion.DECODER_PASSING
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.lang.Thread.sleep
 import java.util.concurrent.Future
@@ -29,7 +31,8 @@ class TrainingModeFragment : FragmentCommon() {
 
     lateinit var startStopButtonM: Button
 
-    private var tmm: TrainingModeModel = TrainingModeModel()    // a dummy model with no recentTransponders
+    private var tmm: TrainingModeModel =
+        TrainingModeModel()    // a dummy model with no recentTransponders
 
     private lateinit var timingContentView: RecyclerView
 
@@ -49,8 +52,10 @@ class TrainingModeFragment : FragmentCommon() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         val view = inflater.inflate(R.layout.fragment_trainingmode_list, container, false)
 
         clockViewX = view.findViewById(R.id.clockView)
@@ -75,7 +80,8 @@ class TrainingModeFragment : FragmentCommon() {
                 }
             }
             context?.let {
-                it.registerReceiver(receiver, IntentFilter(DECODER_PASSING))
+                it.registerReceiver(receiver, IntentFilter(DECODER_PASSING),
+                    Context.RECEIVER_NOT_EXPORTED)
             }
 
         }
@@ -88,12 +94,12 @@ class TrainingModeFragment : FragmentCommon() {
 
     private fun sayLastTime(adapter: TrainingModeRecyclerViewAdapter) {
         if ((activity as MainActivity).getTimeToSpeechFlag()) {
-            doAsync {
+            CoroutineScope(Dispatchers.IO).launch {
                 val a = (activity as MainActivity)
 
                 adapter.getLastLap()?.let {
                     if (it.number > 0) {
-                        val toSay = Tools.timeToTextSpeech(it.lapTimeMs,a.getTimeToSpeechPattern())
+                        val toSay = Tools.timeToTextSpeech(it.lapTimeMs, a.getTimeToSpeechPattern())
                         Log.d(TAG, "To sayLastTime $toSay")
                         a.sayTimeText(toSay)
                     }
@@ -109,7 +115,7 @@ class TrainingModeFragment : FragmentCommon() {
             val trs = app.recentTransponders.toTypedArray()
 
             val b = AlertDialog.Builder(act)
-                    .setTitle(getString(R.string.select_label))
+                .setTitle(getString(R.string.select_label))
             if (trs.isEmpty()) {
                 b.setMessage(getString(R.string.no_transponder))
             } else {
@@ -150,12 +156,12 @@ class TrainingModeFragment : FragmentCommon() {
                 doStart()
             } else {
                 AlertDialog.Builder(context).setTitle("Clear results and start new training?")
-                        .setPositiveButton("Yes") { dialog, _ ->
-                            dialog.cancel()
-                            doStart()
-                        }
-                        .setNegativeButton("No") { dialog, _ -> dialog.cancel() }
-                        .create().show()
+                    .setPositiveButton("Yes") { dialog, _ ->
+                        dialog.cancel()
+                        doStart()
+                    }
+                    .setNegativeButton("No") { dialog, _ -> dialog.cancel() }
+                    .create().show()
             }
         }
 
@@ -197,22 +203,24 @@ class TrainingModeFragment : FragmentCommon() {
         val delayStartTime = System.currentTimeMillis()
         val ma = activity as MainActivity
 
-        clock = doAsync {
-            while (System.currentTimeMillis() - delayStartTime < delaySecs * 1000 && preStartDelayRunning && !isInterrupted) {
-                val diffSecs = (System.currentTimeMillis() - delayStartTime) / 1000
-                val time = delaySecs - diffSecs
-                if (ma.getStartStopSoundFlag())
-                    if (time == 2.toLong() || time == 1.toLong()) Tone.preStartTone(ma.toneGenerator)
-                val str = "Start in ${time}s"
-                uiThread {
-                    clockViewX.text = str
+        clock?.let {
+            CoroutineScope(Dispatchers.IO).launch {
+                while (System.currentTimeMillis() - delayStartTime < delaySecs * 1000 && preStartDelayRunning && !isInterrupted) {
+                    val diffSecs = (System.currentTimeMillis() - delayStartTime) / 1000
+                    val time = delaySecs - diffSecs
+                    if (ma.getStartStopSoundFlag())
+                        if (time == 2.toLong() || time == 1.toLong()) Tone.preStartTone(ma.toneGenerator)
+                    val str = "Start in ${time}s"
+                    withContext(Dispatchers.Main) {
+                        clockViewX.text = str
+                    }
+                    sleep(1000)
                 }
-                sleep(1000)
-            }
 
-            if (!isInterrupted) {
-                uiThread {
-                    doStartNow()
+                if (!isInterrupted) {
+                    withContext(Dispatchers.Main) {
+                        doStartNow()
+                    }
                 }
             }
         }
@@ -226,19 +234,20 @@ class TrainingModeFragment : FragmentCommon() {
         val trainingStartTime = System.currentTimeMillis()
         var isInterrupted = false
         val ma = activity as MainActivity
-        clock = doAsync {
-
-            if (ma.getStartStopSoundFlag()) Tone.startTone(ma.toneGenerator)
-            while (trainingRunning && !isInterrupted) {  // TBD handle interrupt
-                val timeMs = System.currentTimeMillis() - trainingStartTime
-                val str = Tools.millisToTimeWithMillis(timeMs)
-                uiThread {
-                    clockViewX.text = str
-                }
-                try {
-                    sleep(30)
-                } catch (e: InterruptedException) {
-                    Log.d(TAG,"Sleep interrupted")
+        clock?.let {
+            CoroutineScope(Dispatchers.IO).launch {
+                if (ma.getStartStopSoundFlag()) Tone.startTone(ma.toneGenerator)
+                while (trainingRunning && !isInterrupted) {  // TBD handle interrupt
+                    val timeMs = System.currentTimeMillis() - trainingStartTime
+                    val str = Tools.millisToTimeWithMillis(timeMs)
+                    withContext(Dispatchers.Main) {
+                        clockViewX.text = str
+                    }
+                    try {
+                        sleep(30)
+                    } catch (e: InterruptedException) {
+                        Log.d(TAG, "Sleep interrupted")
+                    }
                 }
             }
         }

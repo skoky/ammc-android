@@ -14,10 +14,10 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import androidx.core.view.children
 import com.skoky.MyApp
 import com.skoky.R
 import com.skoky.services.DecoderService.Companion.DECODER_DATA
-import org.jetbrains.anko.childrenSequence
 import org.json.JSONObject
 
 
@@ -45,7 +45,7 @@ class ConsoleModeVostokFragment : FragmentCommon() {
 
         registerConnectionHandlers()
 
-        val ll = (view as ScrollView).childrenSequence().first() as LinearLayout
+        val ll = (view as ScrollView).children.first() as LinearLayout
         dataHandler = DataReceiver {
 
             val json = JSONObject(it)
@@ -54,7 +54,7 @@ class ConsoleModeVostokFragment : FragmentCommon() {
             json.keys().forEach { key ->
                 if (shouldShow(json, key)) {
                     val newTag = key
-                    val found = ll.childrenSequence().find { it.tag == newTag }
+                    val found = ll.children.find { it.tag == newTag }
 
                     val newView: TextView
                     if (found == null) {
@@ -66,7 +66,8 @@ class ConsoleModeVostokFragment : FragmentCommon() {
                 }
             }
         }
-        context?.let { it.registerReceiver(dataHandler, IntentFilter(DECODER_DATA)) }
+        context?.let { it.registerReceiver(dataHandler, IntentFilter(DECODER_DATA),
+            Context.RECEIVER_NOT_EXPORTED) }
 
         return view
     }

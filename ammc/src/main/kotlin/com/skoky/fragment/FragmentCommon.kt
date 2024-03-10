@@ -4,8 +4,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import com.skoky.*
 import com.skoky.Tools.rtcTimeFromString
@@ -52,8 +54,10 @@ open class FragmentCommon : Fragment() {
             Toast.makeText(activity, getString(R.string.decoder_re_connected), Toast.LENGTH_SHORT).show()
         }
         context?.let {
-            it.registerReceiver(disconnectReceiver, IntentFilter(DecoderService.DECODER_DISCONNECTED))
-            it.registerReceiver(connectReceiver, IntentFilter(DecoderService.DECODER_CONNECT))
+            it.registerReceiver(disconnectReceiver, IntentFilter(DecoderService.DECODER_DISCONNECTED),
+                Context.RECEIVER_NOT_EXPORTED)
+            it.registerReceiver(connectReceiver, IntentFilter(DecoderService.DECODER_CONNECT),
+                Context.RECEIVER_NOT_EXPORTED)
 
         }
     }

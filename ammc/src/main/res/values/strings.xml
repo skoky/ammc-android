@@ -6,6 +6,7 @@
     <string name="querying_decoders">Querying decoders...</string>
     <string name="show_more_decoders">More decoders >>></string>
     <string name="connect">Connect</string>
+    <string name="open_practice">Open Practice</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="disconnect">Disconnect</string>
