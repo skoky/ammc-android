@@ -178,23 +178,7 @@ class DecoderService : Service() {
                 try {
                     socket.connect(InetSocketAddress(decoder.ipAddress, decoder.port ?: 5403), 5000)
 
-                    if (!isP3Decoder(decoder)) {
-                        decoders.addOrUpdate(
-                            decoder.copy(
-                                decoderId = vostokDecoderId(
-                                    decoder.ipAddress,
-                                    decoder.port
-                                ), connection = socket, lastSeen = System.currentTimeMillis()
-                            )
-                        )
-                    } else if (isP3Decoder(decoder)) {
-                        decoders.addOrUpdate(
-                            decoder.copy(
-                                connection = socket,
-                                lastSeen = System.currentTimeMillis()
-                            )
-                        )
-                    }
+                    updateDecoder(decoder, socket)
 
                     Log.i(TAG, "Decoder $decoder connected")
                     sendBroadcastConnect(decoder)
@@ -203,13 +187,7 @@ class DecoderService : Service() {
                         listenOnSocketConnection(socket, decoder)
                     }
 
-                    if (isP3Decoder(decoder)) {
-                        val parser = AmmcBridge()
-                        val versionRequest =
-                            parser.encode_local("{\"msg\":\"Version\",\"empty_fields\":[\"decoderType\"]}")
-
-                        socket.getOutputStream().write(versionRequest.decodeHex())
-                    }
+                    sendInitialVersionRequest(decoder, socket)
                 } catch (e: Exception) {
 
                     socket.close()
@@ -225,15 +203,45 @@ class DecoderService : Service() {
                     }
                 }
             }
+
         } else {
             Log.e(TAG, "Decoder already connected $decoder")
         }
     }
 
+    private fun sendInitialVersionRequest(decoder: Decoder, socket: Socket) {
+        if (isP3Decoder(decoder)) {
+            val parser = AmmcBridge()
+            val versionRequest =
+                parser.encode_local("{\"msg\":\"Version\",\"empty_fields\":[\"decoderType\"]}")
+
+            socket.getOutputStream().write(versionRequest.decodeHex())
+        }
+    }
+
+    private fun updateDecoder(decoder: Decoder, socket: Socket) {
+
+        if (!isP3Decoder(decoder)) {
+            decoders.addOrUpdate(
+                decoder.copy(
+                    decoderId = vostokDecoderId(
+                        decoder.ipAddress,
+                        decoder.port
+                    ), connection = socket, lastSeen = System.currentTimeMillis()
+                )
+            )
+        } else if (isP3Decoder(decoder)) {
+            decoders.addOrUpdate(
+                decoder.copy(
+                    connection = socket,
+                    lastSeen = System.currentTimeMillis()
+                )
+            )
+        }
+    }
+
     private fun isVostok(d: Decoder): Boolean {
-        if (d.decoderType == VOSTOK_NAME || d.decoderId == VOSTOK_NAME) return true
-//        if (d.port != P3_DEF_PORT) return true  // bit speculative :(
-        return false
+        return d.decoderType == VOSTOK_NAME || d.decoderId == VOSTOK_NAME
     }
 
     fun isConnectedDecoderVostok(): Boolean {
@@ -313,11 +321,23 @@ class DecoderService : Service() {
 
                         if (json.has("decoder_type")) {
                             json.getString("decoder_type")
-                                .let { type -> decoders.addOrUpdate(decoder.copy(decoderType = type)) }
+                                .let { type ->
+                                    decoders.addOrUpdate(
+                                        decoder.copy(
+                                            decoderType = type
+                                        )
+                                    )
+                                }
                         } else {
                             if (json.has("decoder_type")) {
                                 json.getString("decoder_type")
-                                    .let { type -> decoders.addOrUpdate(decoder.copy(decoderType = type)) }
+                                    .let { type ->
+                                        decoders.addOrUpdate(
+                                            decoder.copy(
+                                                decoderType = type
+                                            )
+                                        )
+                                    }
                             }
                         }
                         decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis()))
@@ -427,7 +447,10 @@ class DecoderService : Service() {
         return "$ipAddress:$port"
     }
 
-    private fun processTcpMsg(msgImut: ByteArray, decoderIdVostok: String?): JSONObject {
+    private fun processTcpMsg(
+        msgImut: ByteArray,
+        decoderIdVostok: String?
+    ): JSONObject {
         val parser = AmmcBridge()
         var msg2 = msgImut.toMutableList()
         if (msg2[0] == 0x01.toByte()) {
@@ -448,7 +471,11 @@ class DecoderService : Service() {
         } else {
             Log.w(TAG, "Invalid msg on TCP " + msg.toHexString())
             Log.w(TAG, "Invalid msg on TCP $msg")
-            CloudDB.badMessageReport(application as MyApp, "tcp_msg_error", msg.toHexString())
+            CloudDB.badMessageReport(
+                application as MyApp,
+                "tcp_msg_error",
+                msg.toHexString()
+            )
             JSONObject("{\"msg\":\"Error\",\"description\":\"Invalid message\"}")
         }
     }
@@ -462,7 +489,11 @@ class DecoderService : Service() {
         Log.d(TAG, ">> $json")
 
         if (msg.contains("Error")) {
-            CloudDB.badMessageReport(application as MyApp, "tcp_msg_with_error", msgB.toHexString())
+            CloudDB.badMessageReport(
+                application as MyApp,
+                "tcp_msg_with_error",
+                msgB.toHexString()
+            )
         }
 
         val decoderId: String?
@@ -506,7 +537,11 @@ class DecoderService : Service() {
                     }
 
                 "ERROR" ->
-                    CloudDB.badMessageReport(application as MyApp, "tcp_error", msgB.toHexString())
+                    CloudDB.badMessageReport(
+                        application as MyApp,
+                        "tcp_error",
+                        msgB.toHexString()
+                    )
 
             } else {
                 Log.w(TAG, "Msg with record type on UDP. Wired! $json")
@@ -574,7 +609,11 @@ class DecoderService : Service() {
 
 
 
-        if (DefaultPrefs(applicationContext).getBoolean(Const.transponderSoundK, true)) {
+        if (DefaultPrefs(applicationContext).getBoolean(
+                Const.transponderSoundK,
+                true
+            )
+        ) {
             ToneGenerator(
                 AudioManager.STREAM_MUSIC,
                 100
@@ -609,16 +648,18 @@ class DecoderService : Service() {
     }
 
     fun disconnectAllDecoders() {
-        decoders.forEach { d ->
-            d.connection?.let { c ->
-                if (c.isConnected) {
-                    try {
-                        c.close()
-                    } catch (e: Exception) {
-                        Log.i(TAG, "Disconnection issue for decoder $d, error $e")
-                    }
+        getConnectedDecoder()?.connection?.let { c ->
+            if (c.isConnected) {
+                try {
+                    c.close()
+                } catch (e: Exception) {
+                    Log.i(
+                        TAG,
+                        "Disconnection issue for decoder ${getConnectedDecoder()}, error $e"
+                    )
                 }
             }
+            getConnectedDecoder()?.connection = null
         }
     }
 
@@ -628,15 +669,16 @@ class DecoderService : Service() {
         var addressIp: String = ""
         var port: Int? = null
 
-        val foundByIp: Decoder? = if (address.contains(":") && address.split(":").size == 2) {
-            val fields = address.split(":")
-            addressIp = fields[0]
-            port = fields[1].toInt()
-            decoders.find { it.ipAddress == addressIp && it.port == port }
+        val foundByIp: Decoder? =
+            if (address.contains(":") && address.split(":").size == 2) {
+                val fields = address.split(":")
+                addressIp = fields[0]
+                port = fields[1].toInt()
+                decoders.find { it.ipAddress == addressIp && it.port == port }
 
-        } else {
-            decoders.find { it.ipAddress == address }
-        }
+            } else {
+                decoders.find { it.ipAddress == address }
+            }
 
         if (foundByIp != null) {
             connectDecoderParsed(foundByIp)
@@ -648,7 +690,10 @@ class DecoderService : Service() {
                     notifyError
                 )
             } else {
-                connectDecoderParsed(Decoder.newDecoder(ipAddress = address), notifyError)
+                connectDecoderParsed(
+                    Decoder.newDecoder(ipAddress = address),
+                    notifyError
+                )
             }
         }
         sendBroadcastDecodersUpdate()
