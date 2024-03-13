@@ -10,7 +10,7 @@ allprojects {
 }
 
 buildscript {
-    ext.kotlin_version = '1.9.22'
+    ext.kotlin_version = '1.9.23'
     repositories {
         maven { url 'https://maven.google.com' }
         mavenCentral()

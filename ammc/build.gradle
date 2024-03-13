@@ -9,8 +9,8 @@ android {
         applicationId "com.skoky"
         minSdkVersion 33
         targetSdkVersion 34
-        versionCode 72
-        versionName "2.2.1"
+        versionCode 73
+        versionName "2.2.2"
     }
     testOptions {
         unitTests.returnDefaultValues = true
@@ -63,8 +63,8 @@ dependencies {
 
     testImplementation 'junit:junit:4.13.2'
 
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0'
 
     implementation "androidx.datastore:datastore-preferences:1.0.0"
     implementation "androidx.datastore:datastore-core:1.0.0"
