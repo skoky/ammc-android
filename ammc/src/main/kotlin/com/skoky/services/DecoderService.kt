@@ -30,12 +30,14 @@ const val VOSTOK_DEFAULT_PORT = 8899
 
 class DecoderService : Service() {
 
-    private var decoderConnector = DecoderConnector(applicationContext, application as MyApp);
+    private lateinit var decoderConnector: DecoderConnector
     private lateinit var udpJob: Job
     private lateinit var vostokJob: Job
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "Created")
+
+        decoderConnector = DecoderConnector(applicationContext, application as MyApp);
 
         udpJob = CoroutineScope(Dispatchers.IO).launch {
             NetworkBroadcastHandler.receiveBroadcastData {
