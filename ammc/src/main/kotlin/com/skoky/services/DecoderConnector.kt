@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.lang.Thread.sleep
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.util.Timer
@@ -23,6 +24,7 @@ class DecoderConnector(appContext: Context, private var app: MyApp) {
     // Decoder(id = "1111", decoderType = "TranX", ipAddress = "10.0.0.10"))
     private var decoders = mutableListOf<Decoder>()
     private var context: Context = appContext;
+    private var shouldReconnect = false
 
     init {
         decoderAutoCleanup()
@@ -144,34 +146,62 @@ class DecoderConnector(appContext: Context, private var app: MyApp) {
 
         if (decoder.connection == null || (!decoder.connection!!.isConnected)) {
             CoroutineScope(Dispatchers.IO).launch {
-                val socket = Socket()
-                try {
-                    socket.connect(InetSocketAddress(decoder.ipAddress, decoder.port ?: 5403), 5000)
+                do {
+                    val socket = Socket()
+                    try {
+                        socket.connect(
+                            InetSocketAddress(decoder.ipAddress, decoder.port ?: 5403),
+                            5000
+                        )
 
-                    updateDecoder(decoder, socket)
+                        updateDecoder(decoder, socket)
 
-                    Log.i(TAG, "Decoder $decoder connected")
-                    sendBroadcastConnect(decoder, context)
+                        Log.i(TAG, "Decoder $decoder connected")
+                        sendBroadcastConnect(decoder, context)
 
-                    CoroutineScope(Dispatchers.IO).launch {
-                        listenOnSocketConnection(socket, decoder)
-                    }
+                        CoroutineScope(Dispatchers.IO).launch {
+                            listenOnSocketConnection(socket, decoder)
+                        }
 
-                    sendInitialVersionRequest(decoder, socket)
-                } catch (e: Exception) {
+                        sendInitialVersionRequest(decoder, socket)
+                        shouldReconnect = true
 
-                    socket.close()
-                    if (notifyError) {
-                        Log.e(TAG, "Error connecting decoder", e)
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(
-                                context,
-                                "Connection not possible to ${decoder.ipAddress}:${decoder.port}",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                        while (isDecoderConnected()) {
+                            val currentDecoder = getConnectedDecoder() ?: break
+                            if (System.currentTimeMillis() - currentDecoder.lastSeen > 10_000) { // TODO move to options
+                                currentDecoder.connection?.close()
+                            }
+
+                            Log.d(TAG, "Watchdog sleeping waiting")
+                            sleep(1000)
+                        }
+
+
+                    } catch (e: Exception) {
+
+                        socket.close()
+                        if (notifyError) {
+                            Log.e(TAG, "Error connecting decoder", e)
+                            val uiMsg = if (shouldReconnect) {
+                                "Reconnecting..."
+                            } else {
+                                "Connection not possible to ${decoder.ipAddress}:${decoder.port}"
+                            }
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    context,
+                                    uiMsg,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    } finally {
+                        if (shouldReconnect) {
+                            Log.i(TAG, "Sleeping before reconnecting")
+                            sleep(300)
                         }
                     }
-                }
+                } while (shouldReconnect)
             }
 
         } else {
@@ -244,7 +274,7 @@ class DecoderConnector(appContext: Context, private var app: MyApp) {
     }
 
 
-    fun getConnectedDecoder() =
+    fun getConnectedDecoder(): Decoder? =
         decoders.find { d -> d.connection != null && d.connection!!.isConnected }
 
     fun getAllDecoders() = decoders
@@ -254,6 +284,7 @@ class DecoderConnector(appContext: Context, private var app: MyApp) {
     fun isDecoderConnected() = decoders.any { it.connection != null }
 
     fun disconnectAllDecoders() {
+        shouldReconnect = false
         getConnectedDecoder()?.connection?.let { c ->
             if (c.isConnected) {
                 try {
@@ -281,7 +312,7 @@ class DecoderConnector(appContext: Context, private var app: MyApp) {
     }
 }
 
-fun MutableList<Decoder>.addOrUpdate(decoder: Decoder) {
+fun MutableList<Decoder>.addOrUpdate(decoder: Decoder) {  // TODO use copy everywhere with this function
 
     var found = false
 
