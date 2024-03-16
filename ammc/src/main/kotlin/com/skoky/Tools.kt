@@ -9,7 +9,7 @@ import com.skoky.fragment.Time
 
 object Tools {
 
-    private val TAG = "P3Tools"
+    private const val TAG = "P3Tools"
 
     var P3_DEF_PORT = 5403
 

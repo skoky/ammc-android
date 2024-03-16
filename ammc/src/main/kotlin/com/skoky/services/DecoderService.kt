@@ -2,27 +2,16 @@ package com.skoky.services
 
 import android.app.Service
 import android.content.Intent
-import android.media.AudioManager
-import android.media.ToneGenerator
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
-import android.widget.Toast
 import com.skoky.*
-import com.skoky.Tools.P3_DEF_PORT
-import com.skoky.Tools.decodeHex
-import com.skoky.Tools.toHexString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.json.JSONArray
-import org.json.JSONObject
 import java.lang.Thread.sleep
-import java.net.*
 import java.util.*
-import kotlin.concurrent.schedule
 
 const val VOSTOK_DEFAULT_IP = "10.10.100.254"
 const val VOSTOK_DEFAULT_PORT = 8899
@@ -31,7 +20,8 @@ const val VOSTOK_DEFAULT_PORT = 8899
 class DecoderService : Service() {
 
     private lateinit var decoderConnector: DecoderConnector
-    private lateinit var udpJob: Job
+    private lateinit var udpListenerJob: Job
+    private lateinit var udpSenderJob: Job
     private lateinit var vostokJob: Job
     override fun onCreate() {
         super.onCreate()
@@ -39,7 +29,7 @@ class DecoderService : Service() {
 
         decoderConnector = DecoderConnector(applicationContext, application as MyApp);
 
-        udpJob = CoroutineScope(Dispatchers.IO).launch {
+        udpListenerJob = CoroutineScope(Dispatchers.IO).launch {
             NetworkBroadcastHandler.receiveBroadcastData {
                 processUdpMsg(
                     application as MyApp,
@@ -49,10 +39,20 @@ class DecoderService : Service() {
                 )
             }
         }
+        udpSenderJob = CoroutineScope(Dispatchers.IO).launch {
+            while (true) {
+                if (!decoderConnector.isDecoderConnected()) {
+                    sendUdpNetworkRequest()
+                }
+                sleep(5000)
+            }
+        }
 
         vostokJob = CoroutineScope(Dispatchers.IO).launch {
             while (true) {
-                checkVostok(applicationContext, decoderConnector)
+                if (!decoderConnector.isDecoderConnected()) {
+                    checkVostok(applicationContext, decoderConnector)
+                }
                 sleep(5000)
             }
         }
@@ -63,6 +63,9 @@ class DecoderService : Service() {
     private val myBinder = MyLocalBinder()
     override fun onDestroy() {
         super.onDestroy()
+        udpListenerJob.cancel()
+        udpSenderJob.cancel()
+        vostokJob.cancel()
         Tools.wakeLock(this, false)
         Log.w(TAG, "Destroyed")
     }

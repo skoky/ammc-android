@@ -17,7 +17,7 @@ object NetworkBroadcastHandler {
         val incomingBuffer = ByteArray(1024)
         var socket: DatagramSocket? = null
         while (true) {
-            sleep(2000)
+            Log.i(TAG, "UDP loop")
             socket = try {
                 DatagramSocket(INCOMING_PORT)
             } catch (e: Exception) {

@@ -172,7 +172,7 @@ class DecoderConnector(appContext: Context, private var app: MyApp) {
                                 currentDecoder.connection?.close()
                             }
 
-                            Log.d(TAG, "Watchdog sleeping waiting")
+                            Log.d(TAG, "Watchdog sleeping waiting + broadcast")
                             sleep(1000)
                         }
 

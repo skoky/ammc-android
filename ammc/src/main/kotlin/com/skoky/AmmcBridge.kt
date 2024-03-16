@@ -10,6 +10,9 @@ class AmmcBridge {
         external fun p3_to_json(p3_bin: String): String
 
         @JvmStatic
+        external fun p3_network_to_json(p3_bin: String): String
+
+        @JvmStatic
         external fun encode(json_str: String): String
 
         @JvmStatic
@@ -23,6 +26,12 @@ class AmmcBridge {
         val jsonStr = p3_to_json(to)
         Log.i(TAG, "to_json: $to > $jsonStr <")
         return jsonStr
+    }
+
+    fun p3_network_to_json_local(to: String): String {
+        val ip = p3_network_to_json(to)
+        Log.i(TAG, "network ip: $to > $ip <")
+        return ip
     }
 
     fun encode_local(json_str: String): String {
