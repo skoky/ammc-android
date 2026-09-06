@@ -10,13 +10,14 @@ import android.util.Log
 import android.widget.Toast
 import com.skoky.*
 import com.skoky.Tools.P3_DEF_PORT
-import com.skoky.Tools.decodeHex
 import com.skoky.Tools.toHexString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONArray
 import org.json.JSONObject
 import java.lang.Thread.sleep
 import java.net.*
@@ -25,6 +26,13 @@ import kotlin.concurrent.schedule
 
 const val VOSTOK_DEFAULT_IP = "10.10.100.254"
 const val VOSTOK_DEFAULT_PORT = 8899
+
+// The library encodes VERSION, NETWORKSETTINGS and PING only. Every other request
+// type was dropped, and the decoder records answering them (settings, GPS, timeline,
+// signals, loop triggers) are logged inside the library instead of being returned.
+const val VERSION_REQUEST = """{"msg":"VERSION","empty_fields":["decoderType"]}"""
+const val NETWORK_REQUEST = """{"msg":"NETWORKSETTINGS","empty_fields":["activeIPAddress"]}"""
+const val PING_REQUEST = """{"msg":"PING"}"""
 
 data class Decoder(
     val uuid: UUID, var decoderId: String? = null, var ipAddress: String? = null,
@@ -83,6 +91,8 @@ class DecoderService : Service() {
 
     // Decoder(id = "1111", decoderType = "TranX", ipAddress = "10.0.0.10"))
     private var decoders = mutableListOf<Decoder>()
+
+    private var keepAliveJob: Job? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -188,6 +198,7 @@ class DecoderService : Service() {
                     }
 
                     sendInitialVersionRequest(decoder, socket)
+                    startKeepAlive(decoder, socket)
                 } catch (e: Exception) {
 
                     socket.close()
@@ -209,13 +220,53 @@ class DecoderService : Service() {
         }
     }
 
+    /**
+     * Pings the decoder every second for as long as it stays connected.
+     *
+     * A silent socket is the problem: WiFi power saving puts the radio to sleep, the
+     * decoder or an access point drops an idle TCP connection, and [decoderAutoCleanup]
+     * discards a decoder that has said nothing for [INACTIVE_DECODER_TIMEOUT] even
+     * though its socket is still open. The ping keeps traffic on the link both ways -
+     * the decoder's answer is a normal message, so it also refreshes `lastSeen`.
+     *
+     * P3 decoders only; the Vostok text protocol has no ping.
+     */
+    private fun startKeepAlive(decoder: Decoder, socket: Socket) {
+        stopKeepAlive()
+        if (!isP3Decoder(decoder)) return
+
+        val ping = AmmcBridge.encodeRequest(PING_REQUEST)
+        if (ping == null) {
+            Log.w(TAG, "Library did not encode a ping, keep-alive disabled")
+            return
+        }
+
+        keepAliveJob = CoroutineScope(Dispatchers.IO).launch {
+            Log.i(TAG, "Keep-alive ping started for $decoder")
+            while (isActive && socket.isConnected && !socket.isClosed) {
+                delay(KEEP_ALIVE_INTERVAL)
+                try {
+                    socket.getOutputStream().write(ping)
+                } catch (e: Exception) {
+                    // the read loop notices the same failure and reports the disconnect
+                    Log.i(TAG, "Keep-alive ping failed, stopping: $e")
+                    return@launch
+                }
+            }
+            Log.i(TAG, "Keep-alive ping stopped")
+        }
+    }
+
+    private fun stopKeepAlive() {
+        keepAliveJob?.cancel()
+        keepAliveJob = null
+    }
+
     private fun sendInitialVersionRequest(decoder: Decoder, socket: Socket) {
         if (isP3Decoder(decoder)) {
-            val parser = AmmcBridge()
-            val versionRequest =
-                parser.encode_local("{\"msg\":\"Version\",\"empty_fields\":[\"decoderType\"]}")
-
-            socket.getOutputStream().write(versionRequest.decodeHex())
+            AmmcBridge.encodeRequest(VERSION_REQUEST)?.let {
+                socket.getOutputStream().write(it)
+            }
         }
     }
 
@@ -256,21 +307,10 @@ class DecoderService : Service() {
         return d.port == P3_DEF_PORT
     }
 
-    private val exploreMessages = listOf(
-        "{\"msg\":\"Version\",\"empty_fields\":[\"decoderType\"]}",
-//        "{\"recordType\":\"Status\",\"emptyFields\":[\"loopTriggers\",\"noise\",\"gps\", \"temperature\",\"inputVoltage\",\"satInUse\"],\"VERSION\":\"2\"}",
-//        "{\"recordType\":\"AuxiliarySettings\",\"emptyFields\":[\"photocellHoldOff\",\"externalStartHoldOff\",\"syncHoldOff\"],\"VERSION\":\"2\"}",
-//        "{\"recordType\":\"GeneralSettings\",\"emptyFields\":[\"statusInterval\",\"realTimeClock\",\"enableFirstContactRecord\",\"decoderMode\"],\"VERSION\":\"2\"}",
-//        "{\"recordType\":\"GPS\",\"emptyFields\":[\"longtitude\",\"latitude\",\"numOfSatInUse\"],\"VERSION\":\"2\"}",
-//        "{\"recordType\":\"LoopTrigger\",\"emptyFields\":[\"flags\",\"pingCount\",\"temperature\",\"strength\",\"code\",\"lastReceivedPingRtcTime\",\"lastReceivedPingUtcTime\",\"actStrength\",\"recordIndex\"],\"VERSION\":\"2\"}",
-//        "{\"recordType\":\"NetworkSettings\",\"emptyFields\":[\"automatic\",\"staticSubnetMask\",\"obtained\",\"activeIPAddress\",\"activeDNS\",\"activeGateway\",\"staticDNSServer\",\"activeSubNetMask\",\"activate\",\"interfaceNumber\",\"staticIpAddress\",\"staticGateway\"],\"VERSION\":\"2\"}",
-//        "{\"recordType\":\"ServerSettings\",\"emptyFields\":[\"host\",\"ipPort\",\"interfaceName\"],\"VERSION\":\"2\"}",
-//        "{\"recordType\":\"Signals\",\"emptyFields\":[\"beepFrequency\",\"beepDuration\",\"beepHoldOff\",\"auxiliaryOutput\"],\"VERSION\":\"2\"}",
-//        "{\"recordType\":\"Time\",\"emptyFields\":[\"RTC_Time\",\"UTC_Time\",\"flags\"],\"VERSION\":\"2\"}",
-//        "{\"recordType\":\"Timeline\",\"emptyFields\":[\"gateTime\",\"ID\",\"name\",\"sports\",\"loopTriggerEnabled\",\"minOutField\",\"squelch\"],\"VERSION\":\"2\"}",
-//        "{\"recordType\":\"Version\",\"emptyFields\":[\"description\",\"options\",\"version\",\"decoderType\",\"release\",\"registration\",\"buildNumber\"],\"VERSION\":\"2\"}"
-    )
-
+    // Console mode asks the decoder about itself. Only these two requests survive in
+    // the library; the settings / GPS / timeline / signals / loop-trigger requests it
+    // used to encode are gone, and the decoder's answers to them are no longer parsed.
+    private val exploreMessages = listOf(VERSION_REQUEST, PING_REQUEST)
 
     fun exploreDecoder(uuid: UUID) {
         val socket = decoders.find { it.uuid == uuid }?.connection
@@ -281,12 +321,8 @@ class DecoderService : Service() {
 
                     exploreMessages.forEach { m ->
                         try {
-                            val parser = AmmcBridge()
-                            val parsed = parser.encode_local(m)
-                            parsed.let { p ->
-                                if (p.isNotEmpty()) {
-                                    s.getOutputStream().write(p.decodeHex())
-                                }
+                            AmmcBridge.encodeRequest(m)?.let { bytes ->
+                                s.getOutputStream().write(bytes)
                             }
                         } finally {
                             sleep(200)
@@ -308,37 +344,22 @@ class DecoderService : Service() {
                     read = it.read(buffer)
                     Log.i(TAG, "Received $read bytes")
                     if (read > 0) {
-                        val json = processTcpMsg(
+                        // one read can carry several records; the library returns them all
+                        val messages = processTcpMsg(
                             buffer.copyOf(read),
                             vostokDecoderId(decoder.ipAddress, decoder.port)
                         )
-                        Log.d(TAG, "JSON: $json")
-                        if (json.get("msg").toString().isNotEmpty()) sendBroadcastData(
-                            decoder,
-                            json
-                        )
-                        handleMessage(json, decoder, buffer)
-
-                        if (json.has("decoder_type")) {
-                            json.getString("decoder_type")
-                                .let { type ->
-                                    decoders.addOrUpdate(
-                                        decoder.copy(
-                                            decoderType = type
-                                        )
-                                    )
-                                }
-                        } else {
-                            if (json.has("decoder_type")) {
-                                json.getString("decoder_type")
-                                    .let { type ->
-                                        decoders.addOrUpdate(
-                                            decoder.copy(
-                                                decoderType = type
-                                            )
-                                        )
-                                    }
+                        Log.d(TAG, "JSON: $messages")
+                        messages.forEach { json ->
+                            if (json.optString("msg").isNotEmpty()) {
+                                sendBroadcastData(decoder, json)
                             }
+                            handleMessage(json, decoder, buffer)
+
+                            json.optString("decoder_type").takeIf { it.isNotEmpty() }
+                                ?.let { type ->
+                                    decoders.addOrUpdate(decoder.copy(decoderType = type))
+                                }
                         }
                         decoders.addOrUpdate(decoder.copy(lastSeen = System.currentTimeMillis()))
                         sendBroadcastDecodersUpdate()
@@ -352,6 +373,7 @@ class DecoderService : Service() {
         } catch (t: Throwable) {
             Log.e(TAG, "Decoder connection throwable $decoder", t)
         } finally {
+            stopKeepAlive()
             decoder.connection?.close()
             decoder.connection = null
             Log.i(TAG, "Decoder disconnected")
@@ -361,20 +383,23 @@ class DecoderService : Service() {
     }
 
     private fun handleMessage(json: JSONObject, decoder: Decoder, buffer: ByteArray) {
-        when (json.get("msg").toString()) {
+        // PASSING, VERSION, STATUS and PING are everything the library hands back; the
+        // settings / GPS / timeline / signals / loop-trigger records it used to parse
+        // are now logged inside the library and never reach us.
+        when (json.optString("msg")) {
             "PASSING" -> {
                 appendDriver(json)
                 sendBroadcastPassing(json.toString())
             }
 
             "VERSION" -> {
-                val decoderType = json.get("decoder_type") as? String
+                val decoderType = json.optString("decoder_type").takeIf { it.isNotEmpty() }
                 decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
                 sendBroadcastData(decoder, json)
             }
 
             "STATUS" -> {
-                if (json.has("decoder_type") && json.get("decoder_type") == VOSTOK_NAME) {
+                if (json.optString("decoder_type") == VOSTOK_NAME) {
                     decoders.addOrUpdate(
                         decoder.copy(
                             lastSeen = System.currentTimeMillis(),
@@ -386,30 +411,11 @@ class DecoderService : Service() {
                 }
             }
 
-            "NETWORKSETTINGS" -> {
+            // the library answers a PING on its own; console mode just displays it
+            "PING" -> {
             }
 
-            "AuxiliarySettings" -> {
-            }
-
-            "ServerSettings" -> {
-            }
-
-            "Timeline" -> {
-            }
-
-            "Signals" -> {
-            }
-
-            "LoopTrigger" -> {
-            }
-
-            "GPS" -> {
-            }
-
-            "ERROR" -> {
-            }
-
+            // raised by us or by P98Parser, not by the decoder
             "Error" -> {
             }
 
@@ -422,7 +428,6 @@ class DecoderService : Service() {
                 Log.w(TAG, "received unknown data $json")
             }
         }
-
     }
 
     private fun appendDriver(json: JSONObject) {
@@ -450,124 +455,116 @@ class DecoderService : Service() {
     private fun processTcpMsg(
         msgImut: ByteArray,
         decoderIdVostok: String?
-    ): JSONObject {
-        val parser = AmmcBridge()
-        var msg2 = msgImut.toMutableList()
-        if (msg2[0] == 0x01.toByte()) {
-            val m = msg2.toMutableList()
-            m.removeAt(0)
-            msg2 = m.toMutableList()
-        }
-        val msg = msg2.toByteArray()
+    ): List<JSONObject> {
+        // some Vostok firmware prefixes a record with 0x01
+        val msg = if (msgImut.isNotEmpty() && msgImut[0] == 0x01.toByte())
+            msgImut.copyOfRange(1, msgImut.size)
+        else msgImut
+
         return if (msg.size > 1 && msg[0] == 0x8e.toByte()) {
-            val responses = JSONArray(parser.p3_to_json_local(msg.toHexString()))
-            Log.i(TAG, "response $responses")
-            if (responses.length() > 0) {
-                return responses.get(0) as JSONObject // FIXME get all messages
+            val messages = AmmcBridge.parse(msg)
+            if (messages.isEmpty()) {
+                // a settings / GPS / timeline answer, which the library only logs
+                Log.d(TAG, "No client message in P3 record ${msg.toHexString()}")
             }
-            JSONObject("{\"msg\":\"Error\",\"description\":\"No message\"}")
+            messages
         } else if (msg.size > 1 && (msg[0] == '@'.code.toByte() || msg[0] == '#'.code.toByte())) {
-            JSONObject(P98Parser.parse(msg, decoderIdVostok ?: "-"))
+            listOf(JSONObject(P98Parser.parse(msg, decoderIdVostok ?: "-")))
         } else {
             Log.w(TAG, "Invalid msg on TCP " + msg.toHexString())
-            Log.w(TAG, "Invalid msg on TCP $msg")
             CloudDB.badMessageReport(
                 application as MyApp,
                 "tcp_msg_error",
                 msg.toHexString()
             )
-            JSONObject("{\"msg\":\"Error\",\"description\":\"Invalid message\"}")
+            listOf(JSONObject("""{"msg":"Error","description":"Invalid message"}"""))
         }
     }
 
     private fun processUdpMsg(msgB: ByteArray) {
         Log.d(TAG, "Data received: ${msgB.size}")
-        val parser = AmmcBridge()
-        val msg = parser.p3_to_json_local(msgB.toHexString())
-        Log.i(TAG, "HEX String {msg}")
-        val json = JSONObject(msg)
-        Log.d(TAG, ">> $json")
 
-        if (msg.contains("Error")) {
-            CloudDB.badMessageReport(
-                application as MyApp,
-                "tcp_msg_with_error",
-                msgB.toHexString()
-            )
-        }
-
-        val decoderId: String?
-        if (json.has("decoder_id")) {
-            decoderId = json.get("decoder_id") as String
-        } else {
-            Log.w(TAG, "Received P3 message without decoderId. Wired! $json")
+        // A discovery reply carries only the decoder's address. It is no longer part of
+        // the parsed message stream and has its own entry point in the library.
+        AmmcBridge.parseNetworkResponse(msgB)?.let { network ->
+            val decoderId = network.decoderId
+            if (decoderId == null) {
+                Log.w(TAG, "Discovery reply without decoder id, ignoring")
+                return
+            }
+            val decoder = findOrCreateDecoder(decoderId)
+            decoders.addOrUpdate(decoder.copy(ipAddress = network.ipAddress))
+            sendBroadcastDecodersUpdate()
             return
         }
 
-        var decoder = decoders.find { it.decoderId == decoderId }
-        if (decoder == null) {
-            decoder = Decoder.newDecoder(decoderId = decoderId)
-            decoders.addOrUpdate(decoder)
+        val messages = AmmcBridge.parse(msgB)
+        if (messages.isEmpty()) {
+            // not worth a bad-message report: a broadcast the library only logs looks
+            // exactly the same from here as a malformed one
+            Log.d(TAG, "No client message in UDP record ${msgB.toHexString()}")
+            return
         }
 
+        messages.forEach { handleUdpMessage(it) }
+        sendBroadcastDecodersUpdate()
+    }
+
+    private fun handleUdpMessage(json: JSONObject) {
+        Log.d(TAG, ">> $json")
+
+        val decoderId = json.optString("decoder_id").takeIf { it.isNotEmpty() }
+        if (decoderId == null) {
+            Log.w(TAG, "Received P3 message without decoder id, ignoring $json")
+            return
+        }
+
+        val decoder = findOrCreateDecoder(decoderId)
         decoder.lastSeen = System.currentTimeMillis()
 
-        decoder.let { d ->
+        when (json.optString("msg")) {
+            "STATUS" -> {
+                sendUdpNetworkRequest()
+                sendUdpVersionRequest()
+                sendBroadcastData(decoder, json)
+                decoders.addOrUpdate(decoder)
+            }
 
-            if (json.has("msg")) when (json.get("msg")) {
-                "STATUS" -> {
-                    sendUdpNetworkRequest()
-                    sendUdpVersionRequest()
-                    sendBroadcastData(d, json)
-                    decoders.addOrUpdate(decoder)
+            "VERSION" ->
+                json.optString("decoder_type").takeIf { it.isNotEmpty() }?.let { decoderType ->
+                    decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
+                    sendBroadcastData(decoder, json)
                 }
 
-                "NETWORKSETTINGS" ->
-                    if (json.has("activeIPAddress")) {  // FIXME naming?
-                        val ipAddress = json.get("activeIPAddress") as? String
-                        decoders.addOrUpdate(decoder.copy(ipAddress = ipAddress))
-                        sendBroadcastData(d, json)
-                    }
+            "PASSING", "PING" -> sendBroadcastData(decoder, json)
 
-                "VERSION" ->
-                    if (json.has("decoder_type")) {
-                        val decoderType = json.get("decoder_type") as? String
-                        decoders.addOrUpdate(decoder.copy(decoderType = decoderType))
-                        sendBroadcastData(d, json)
-                    }
-
-                "ERROR" ->
-                    CloudDB.badMessageReport(
-                        application as MyApp,
-                        "tcp_error",
-                        msgB.toHexString()
-                    )
-
-            } else {
-                Log.w(TAG, "Msg with record type on UDP. Wired! $json")
-            }
-            sendBroadcastDecodersUpdate()
+            else -> Log.w(TAG, "Unexpected message on UDP $json")
         }
+    }
+
+    private fun findOrCreateDecoder(decoderId: String): Decoder {
+        decoders.find { it.decoderId == decoderId }?.let { return it }
+        val decoder = Decoder.newDecoder(decoderId = decoderId)
+        decoders.addOrUpdate(decoder)
+        return decoder
     }
 
     private fun sendUdpVersionRequest() {
-        sendUdpBroadcastMessage("{\"msg\":\"VERSION\",\"empty_fields\":[\"decoderType\"]}")
+        sendUdpBroadcastMessage(VERSION_REQUEST)
     }
 
     private fun sendUdpNetworkRequest() {
-        sendUdpBroadcastMessage("{\"msg\":\"NETWORKSETTINGS\",\"empty_fields\":[\"activeIPAddress\"]}")
+        sendUdpBroadcastMessage(NETWORK_REQUEST)
     }
 
     private fun sendUdpBroadcastMessage(msg: String) {
+        val bytes = AmmcBridge.encodeRequest(msg) ?: return
         try {
             DatagramSocket(P3_DEF_PORT).use { socket ->
                 socket.broadcast = true
                 socket.connect(InetAddress.getByName("255.255.255.255"), P3_DEF_PORT)
-                val parser = AmmcBridge()
-                val bytes = parser.encode_local(msg)
-                val bytes2 = bytes.decodeHex()
-                Log.d(TAG, "Bytes size ${bytes2.size}")
-                socket.send(DatagramPacket(bytes2, bytes2.size))
+                Log.d(TAG, "Bytes size ${bytes.size}")
+                socket.send(DatagramPacket(bytes, bytes.size))
             }
         } catch (e: java.lang.Exception) {
             Log.w(TAG, "Error $e", e)
@@ -634,6 +631,7 @@ class DecoderService : Service() {
     private val myBinder = MyLocalBinder()
     override fun onDestroy() {
         super.onDestroy()
+        stopKeepAlive()
         Tools.wakeLock(this, false)
         Log.w(TAG, "Destroyed")
     }
@@ -648,6 +646,7 @@ class DecoderService : Service() {
     }
 
     fun disconnectAllDecoders() {
+        stopKeepAlive()
         getConnectedDecoder()?.connection?.let { c ->
             if (c.isConnected) {
                 try {
@@ -714,6 +713,7 @@ class DecoderService : Service() {
         const val DECODER_PASSING = "com.skoky.decoder.broadcast.passing"
         const val DECODER_DISCONNECTED = "com.skoky.decoder.broadcast.disconnected"
         private const val INACTIVE_DECODER_TIMEOUT: Long = 10000  // 10secs
+        private const val KEEP_ALIVE_INTERVAL: Long = 1000  // 1sec
     }
 }
 

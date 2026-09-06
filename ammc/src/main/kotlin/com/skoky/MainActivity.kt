@@ -38,7 +38,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
-import com.skoky.AmmcBridge.Companion.version
+import com.skoky.AmmcBridge.version
 import com.skoky.Const.LAST_IP
 import com.skoky.Const.badMsgK
 import com.skoky.Const.defaultTimeToSpeechPattern
@@ -659,10 +659,6 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "MainActivity"
-
-        init {
-            System.loadLibrary("ammc")
-        }
 
         fun decoderLabel(d: Decoder): String {
 

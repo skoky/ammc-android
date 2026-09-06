@@ -90,10 +90,11 @@ open class FragmentCommon : Fragment() {
     fun getTransponderFromPassingJson(json: JSONObject): String {
 
         return when {
+            // `transponder` and `tran_code` come from the library, `transponder_code`
+            // from P98Parser
             json.has("transponder") -> (json.get("transponder") as Int).toString()
-            json.has("transponderCode") -> json.get("transponderCode") as String
+            json.has("tran_code") -> json.get("tran_code") as String
             json.has("transponder_code") -> json.get("transponder_code") as String
-            json.has("driverId") -> json.get("driverId") as String
             else -> {
                 Log.w(TrainingModeFragment.TAG, "No racer identification in Passing $json")
                 json.let {

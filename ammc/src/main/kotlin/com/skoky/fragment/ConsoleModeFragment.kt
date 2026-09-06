@@ -60,8 +60,10 @@ class ConsoleModeFragment : FragmentCommon() {
         return view
     }
 
-    private val skipped = listOf("msg", "SPARE", "crcOk", "FLAGS", "VERSION",
-            "gps", "temperature", "decoderType", "origin", "decoderType", "requestId", "emptyFields")    // TODO review all messages
+    // field names of the messages the library still returns: PASSING, VERSION,
+    // STATUS and PING
+    private val skipped = listOf("msg", "decoder_id", "controller_id", "request_id",
+            "decoder_type", "empty_fields")
 
     private fun shouldShow(json: JSONObject, key: String?): Boolean {
         key?.let { k ->

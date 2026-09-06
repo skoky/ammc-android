@@ -72,8 +72,8 @@ class ConsoleModeVostokFragment : FragmentCommon() {
         return view
     }
 
-    private val skipped = listOf("msg", "SPARE", "crcOk", "FLAGS", "VERSION",
-            "gps", "temperature", "decoderType", "origin", "decoderType", "requestId", "emptyFields")    // TODO review all messages
+    // P98Parser field names
+    private val skipped = listOf("msg", "crc_ok", "decoder_type", "decoder_id")
 
     private fun shouldShow(json: JSONObject, key: String?): Boolean {
         key?.let { k ->
